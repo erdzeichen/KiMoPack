@@ -1,3 +1,7 @@
+.. image:: https://readthedocs.org/projects/kimopack/badge/?version=latest
+:target: https://kimopack.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 KiMoPack
 ==========
 
@@ -29,7 +33,7 @@ Install and update using "conda":
 
 .. code-block:: text
 
-    $ conda install KiMoPack
+    $ conda install -c erdzeichen kimopack
 
 
 Links
