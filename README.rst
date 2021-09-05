@@ -1,15 +1,15 @@
-.. |docs| image:: https://readthedocs.org/projects/kimopack/badge/?version=latest
+.. image:: https://readthedocs.org/projects/kimopack/badge/?version=latest
 	:target: https://kimopack.readthedocs.io/en/latest/?badge=latest
 	:alt: Documentation Status
 	
-.. |licence| image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
 	:target: http://www.gnu.org/licenses/gpl-3.0
 	:alt: License: GPL v3
 	
-.. |installation| image:: https://anaconda.org/erdzeichen/kimopack/badges/installer/conda.svg   
+.. image:: https://anaconda.org/erdzeichen/kimopack/badges/installer/conda.svg   
 	:target: https://conda.anaconda.org/erdzeichen
 	
-.. |updated| image:: https://anaconda.org/erdzeichen/kimopack/badges/latest_release_date.svg   
+.. image:: https://anaconda.org/erdzeichen/kimopack/badges/latest_release_date.svg   
 	:target: https://anaconda.org/erdzeichen/kimopack
 	
 
@@ -68,3 +68,4 @@ Links
 	* Source Code: https://github.com/erdzeichen/KiMoPack
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
+
