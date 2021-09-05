@@ -35,6 +35,8 @@ Install and update using "conda":
 
     $ conda install -c erdzeichen kimopack
 
+Please note that the uploaded version is currently a dummy that will be replaced with the fully functional version closer to the publication
+===============================================================================================================================================
 
 Links
 -----

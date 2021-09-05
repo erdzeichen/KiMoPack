@@ -24,3 +24,6 @@ one or two dimensional data is provided. These are typical in the main module
 For typical use a series of juypter notebooks are provided that guide 
 through the a number of different use scenarios, and are suggesting the 
 parameter that are typically set.
+
+Please note that the uploaded version is currently a dummy that will be replaced with the fully functional version closer to the publication
+===============================================================================================================================================
