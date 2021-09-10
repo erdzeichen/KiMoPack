@@ -9,6 +9,9 @@
 .. image:: https://anaconda.org/erdzeichen/kimopack/badges/installer/conda.svg   
 	:target: https://conda.anaconda.org/erdzeichen
 	
+.. image:: https://badge.fury.io/py/KiMoPack.svg
+    :target: https://badge.fury.io/py/KiMoPack
+	
 .. image:: https://anaconda.org/erdzeichen/kimopack/badges/latest_release_date.svg   
 	:target: https://anaconda.org/erdzeichen/kimopack
 	
