@@ -35,6 +35,9 @@ For typical use a series of juypter notebooks are provided that guide
 through the a number of different use scenarios, and are suggesting the 
 parameter that are typically set.
 
+Please note that the uploaded version is currently a dummy that will be replaced with the fully functional version at the moment of publication
+===============================================================================================================================================
+
 Installion
 ----------
 
@@ -60,8 +63,7 @@ Install and update using "conda" from the channel erdzeichen:
 	
 After publication we will also add zenodo and a conda-forge branch
 
-Please note that the uploaded version is currently a dummy that will be replaced with the fully functional version closer to the publication
-===============================================================================================================================================
+
 
 Links
 -----
