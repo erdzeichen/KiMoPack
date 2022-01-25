@@ -18,6 +18,9 @@
 .. image:: https://mybinder.org/badge_logo.svg		  
 	:target: https://mybinder.org/v2/gh/erdzeichen/KiMoPack/HEAD
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5720587.svg
+   :target: https://doi.org/10.5281/zenodo.5720587
+
 KiMoPack
 ==========
 
@@ -37,7 +40,7 @@ through the a number of different use scenarios, and are suggesting the
 parameter that are typically set.
 
 Installation
-----------
+--------------
 
 The basis of the program is a module called "plot_func.py" that contains all the necessary functions and classes. 
 We provide a series of jupyter based work flow packages that guide the user through a series of typical tasks 
