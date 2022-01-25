@@ -1,0 +1,18 @@
+
+Fit Results:
+Model Used: External function
+
+The minimum error is:2.90569921e-02
+The minimum R2-value is:9.98879062e-01
+
+In Rates
+               value init_value   vary   min  max  expr
+k0          0.215485        0.5   True   0.1   10  None
+k1             1e-05      1e-05  False     0  inf  None
+t0                 0          0  False  -0.1  0.1  None
+resolution      0.07       0.07  False  0.04  0.2  None
+
+The rates converted to times with unit ps
+     value init_value   vary  min  max  expr
+k0  4.6407          2   True  0.1   10  None
+k1  100000     100000  False    0  inf  None

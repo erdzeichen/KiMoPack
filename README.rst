@@ -11,11 +11,12 @@
 	
 .. image:: https://badge.fury.io/py/KiMoPack.svg
     :target: https://badge.fury.io/py/KiMoPack
-	
+
 .. image:: https://anaconda.org/erdzeichen/kimopack/badges/latest_release_date.svg   
 	:target: https://anaconda.org/erdzeichen/kimopack
 	
-
+.. image:: https://mybinder.org/badge_logo.svg		  
+	:target: https://mybinder.org/v2/gh/erdzeichen/KiMoPack/HEAD
 
 KiMoPack
 ==========
@@ -26,7 +27,7 @@ optical transient absorption data, but it has been successfully adapted
 for the use with transient x-ray emission and spectro-electro chemistry
 data.
 
-It focuses on the main tasks an experimentator has
+It focuses on the main tasks an experimentator has:
 Loading and shaping of experiments, plotting of experiments, comparing of experiments,
 analysing experiments with fast and/or advanced fitting routines and saving/exporting/presenting 
 the results. 
@@ -35,10 +36,7 @@ For typical use a series of juypter notebooks are provided that guide
 through the a number of different use scenarios, and are suggesting the 
 parameter that are typically set.
 
-Please note that the uploaded version is currently a dummy that will be replaced with the fully functional version at the moment of publication
-===============================================================================================================================================
-
-Installion
+Installation
 ----------
 
 The basis of the program is a module called "plot_func.py" that contains all the necessary functions and classes. 
@@ -61,8 +59,6 @@ Install and update using "conda" from the channel erdzeichen:
 
     $ conda install -c erdzeichen kimopack
 	
-After publication we will also add zenodo and a conda-forge branch
-
 
 
 Links
@@ -73,4 +69,5 @@ Links
 	* Source Code: https://github.com/erdzeichen/KiMoPack
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
+	* Zenodo: https://doi.org/10.5281/zenodo.5720587
 

@@ -12,4 +12,13 @@ Welcome to KiMoPack's documentation!
    :caption: Contents:
 
    Introduction
+   Installation
    Main_tasks
+   Opening
+   Shaping
+   Plotting
+   Fitting
+   Comparing
+   Saving
+   genindex
+   plot_func
