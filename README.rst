@@ -64,7 +64,7 @@ Install and update using "conda" from the channel erdzeichen:
 	
 Citation
 ------------
-We have written and submitted a paper introducing the toolbox. Until then you can cite the Zenodo release under DOI:10.5281/zenodo.5720587
+We have written and submitted a paper introducing the toolbox. Until thisis published you can cite the Zenodo release under DOI:10.5281/zenodo.5720587
 
 Links
 -----
