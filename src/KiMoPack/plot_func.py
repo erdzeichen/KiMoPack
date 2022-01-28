@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.2.9"
+version = "6.2.10"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -897,6 +897,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		ds=ds.iloc[lower:upper,:]
 		
 	if ignore_time_region is not None:
+		ds=ds.fillna(value=0)
 		y=ds.index.values.astype('float')
 		if isinstance(ignore_time_region[0], numbers.Number):
 			lower=find_nearest_index(y,ignore_time_region[0])
@@ -919,6 +920,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		ds=ds.dropna(axis=0)
 		
 	if scattercut is not None:
+		ds=ds.fillna(value=0)
 		x=ds.columns.values.astype('float')
 		if isinstance(scattercut[0], numbers.Number):
 			lower=find_nearest_index(x,scattercut[0])
@@ -1125,10 +1127,8 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		fig=ax.get_images()
 	if timelimits is None:
 		timelimits=(ds.index.min(),ds.index.max())
-		
 	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, wavelength_bin = wavelength_bin, 
-				time_bin = time_bin, ignore_time_region = ignore_time_region, drop_scatter = False, drop_ignore = False)
-																							
+				time_bin = time_bin, ignore_time_region = ignore_time_region, drop_scatter = False, drop_ignore = False)		
 	if intensity_range is None:
 		try:
 			maxim=max([abs(ds.values.min()),abs(ds.values.max())])
@@ -1166,36 +1166,48 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	if ignore_time_region is None:
 		pass
 	elif isinstance(ignore_time_region[0], numbers.Number):
-		upper=find_nearest_index(y,ignore_time_region[1])
-		lower=find_nearest_index(y[:upper],ignore_time_region[0])
-		rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
-		ax.add_patch(rect)
+		try:
+			upper=find_nearest_index(y,ignore_time_region[1])
+			if upper==0:raise
+			lower=find_nearest_index(y[:upper],ignore_time_region[0])
+			rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+			ax.add_patch(rect)
+		except:
+			pass
 	else:
 		ignore_time_region_loc=flatten(ignore_time_region)
 		for k in range(len(ignore_time_region_loc)/2+1):
-			upper=find_nearest_index(y,ignore_time_region[k+1])
-			lower=find_nearest_index(y[:upper],ignore_time_region[k])
-			rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
-			ax.add_patch(rect)
-
+			try:
+				upper=find_nearest_index(y,ignore_time_region[k+1])
+				if upper==0:raise
+				lower=find_nearest_index(y[:upper],ignore_time_region[k])
+				rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+				ax.add_patch(rect)
+			except:
+				pass
 
 	if scattercut is None:
 		pass
 	elif isinstance(scattercut[0], numbers.Number):
-		upper=find_nearest_index(x,scattercut[1])
-		lower=find_nearest_index(x[:upper],scattercut[0])
-		rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
-		ax.add_patch(rect)
+		try:
+			upper=find_nearest_index(x,scattercut[1])
+			if upper==0:raise
+			lower=find_nearest_index(x[:upper],scattercut[0])
+			rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
+			ax.add_patch(rect)
+		except:
+			pass
 	else:
 		scattercut=flatten(scattercut)
 		for k in range(len(scattercut)/2+1):
-			upper=find_nearest_index(x,scattercut[k+1])
-			lower=find_nearest_index(x[:upper],scattercut[k])
-			rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
-			ax.add_patch(rect)	
-	
-	
-	
+			try:
+				upper=find_nearest_index(x,scattercut[k+1])
+				if upper==0:raise
+				lower=find_nearest_index(x[:upper],scattercut[k])
+				rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
+				ax.add_patch(rect)	
+			except:
+				pass	
 	if use_colorbar:
 		mid=(intensity_range[1]+intensity_range[0])/2
 		if log_scale:
@@ -1254,10 +1266,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	ax.set_ylabel('time in %s'%baseunit)
 	#ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 	if title:
-		ax.set_title(title)
-		
-
-	
+		ax.set_title(title)	
 	if ax_ori:return ax
 	return fig
 
