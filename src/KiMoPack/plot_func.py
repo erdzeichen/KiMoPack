@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.3"
+version = "6.3.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -873,6 +873,8 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		it is most useful for modulated data. A better choice for transient absorption that only 
 		affects the kinetics is 'time_width_percent'
 	'''
+	time_label=ds.index.name
+	energy_label=ds.columns.name
 	if (wavelength is not None) and (times is not None):raise ValueError('can not get wavelength and times back')
 	if bordercut is not None:
 		x=ds.columns.values.astype('float')
@@ -962,6 +964,10 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 				pass
 		ds=ds.dropna(axis=1)
 				
+	#until here we always have the same matrix
+	ds.index.name=time_label
+	ds.columns.name=energy_label
+	
 	if wavelength is not None:#ok we want to have singular wavelength
 		if not hasattr(wavelength,'__iter__'):wavelength=np.array([wavelength])
 		if len(wavelength)>1:wavelength.sort()
@@ -973,7 +979,8 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 				if wave in out.columns:continue
 				out[wave] = ds.loc[:,wave-wavelength_bin/2:wave+wavelength_bin/2].mean(axis='columns')
 		out.columns=out.columns.astype('float')
-		out.columns.name=ds.columns.name
+		out.columns.name=energy_label
+		out.index.name=time_label
 		ds=out
 	if times is not None:  #ok we want to have single times
 		if not hasattr(times, '__iter__'):times=np.array([times])
@@ -1003,7 +1010,8 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 					out.columns=['%.3g %s'%(time_scale[index],baseunit)]
 				else:
 					out['%.3g %s'%(time_scale[index],baseunit)]=ds.iloc[index,:]
-		out.index.name=ds.columns.name
+		out.columns.name=time_label
+		out.index.name=energy_label
 		ds=out
 		#ds.index.name='Wavelength in nm'
 	ds.fillna(value=0,inplace=True)#lets fill nan values with zero to catch probems
@@ -1148,8 +1156,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		fig=ax.get_images()
 	if timelimits is None:
 		timelimits=(ds.index.min(),ds.index.max())
-	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, wavelength_bin = wavelength_bin, 
-				time_bin = time_bin, ignore_time_region = ignore_time_region, drop_scatter = False, drop_ignore = False)		
+	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, 
+				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region, 
+				drop_scatter = False, drop_ignore = False)		
 	if intensity_range is None:
 		try:
 			maxim=max([abs(ds.values.min()),abs(ds.values.max())])
@@ -1242,16 +1251,20 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		labels[-1]='>'+labels[-1]
 		cbar=plt.colorbar(img, ax=ax,ticks=values,pad=0.01)
 		cbar.ax.set_yticklabels(labels)
-		if log_scale:
-			#if ax_ori:cbar.set_label('diff. Absorption in \n$\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35) 
-			if ax_ori:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=35)
-			else:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=35)		
-			#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35)
-		else:
-			if ax_ori:cbar.set_label(data_type, rotation=270,labelpad=35)
-			#if ax_ori:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
-			else:cbar.set_label(data_type, rotation=270,labelpad=35)
-			#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
+		a=ax.yaxis.label
+		fontsize=a.get_fontsize()
+		fontsize-=4
+		if not data_type is None:#we use this as a switch to enable a flexible avoidance of the label setting.
+			if log_scale:
+				#if ax_ori:cbar.set_label('diff. Absorption in \n$\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35) 
+				if ax_ori:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)
+				else:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)		
+				#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35)
+			else:
+				if ax_ori:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
+				#if ax_ori:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
+				else:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
+				#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
 	if "symlog" in plot_type:
 
 		ax.plot(ax.get_xlim(),[lintresh,lintresh],'black',lw=0.5,alpha=0.3)
@@ -1431,13 +1444,16 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	if patches:			
 		plot2d(re['A'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[0], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type)
 		plot2d(re['AC'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[1], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type)
 		plot2d(re['AE'], cmap = cmap, log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, ax = ax[2], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type)
 		for i in range(3):
 			ax[i].set_title(label='')
 			stringen=['measured','calculated','difference']
@@ -1453,14 +1469,18 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	else:
 		plot2d(re['A'], cmap = cmap, title = 'Measured', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[0], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)																					
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type)																					
 		plot2d(re['AC'], cmap = cmap, title = 'Calculated', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[1], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits , data_type = data_type)
 		plot2d(re['AE'], cmap = cmap, title = 'Difference', log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, 
 				ax = ax[2], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, timelimits = timelimits)
-		fig.subplots_adjust(left=0.15, bottom=0.067, right=0.97, top=0.97, wspace=0.0, hspace=0.398)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type)
+		#fig.subplots_adjust(left=0.15, bottom=0.067, right=0.97, top=0.97, wspace=0.0, hspace=0.398)
+	fig.tight_layout()
 	return fig
 	
 	
@@ -1749,7 +1769,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		#-------plot DAC------------
 		#for i,col in enumerate(re['DAC']):
 			#re['DAC'].iloc[:,i]=re['DAC'].iloc[:,i].values*re['c'].max().iloc[i]
-		fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(14,5.5),dpi=150)
+		fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=150)
 		n_colors=len(re['DAC'].columns)
 		DAC=re['DAC']
 		DAC_copy=DAC.copy()
@@ -3332,6 +3352,8 @@ def fill_int(ds,c,final=True,baseunit='ps'):
 	'''solving_equation_way,'''
 	time=ds.index.values.astype('float')
 	wl=ds.columns.values.astype('float')
+	time_label=ds.index.name
+	energy_label=ds.columns.name
 	A=ds.values
 	er=c.values
 	ert = er.T
@@ -3352,6 +3374,13 @@ def fill_int(ds,c,final=True,baseunit='ps'):
 		AC=pandas.DataFrame(AC,index=time,columns=wl)
 		AE=pandas.DataFrame(AE,index=time,columns=wl)
 		DAC=pandas.DataFrame(eps.T,index=wl)
+		A.index.name=time_label
+		A.columns.name=energy_label
+		AC.index.name=time_label
+		AC.columns.name=energy_label
+		AE.index.name=time_label
+		AE.columns.name=energy_label
+		DAC.index.name=energy_label
 		re={'A':A,'AC':AC,'AE':AE,'DAC':DAC,'error':fit_error,'c':c}
 	else:
 		re={'error':fit_error}
@@ -3419,6 +3448,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		parameter to disk 
 
 	'''
+	time_label=ds.index.name
+	energy_label=ds.columns.name
 	pardf=par_to_pardf(paras)
 	if log_fit:
 		pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
@@ -3429,6 +3460,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
 		else:#here we "bypass" the full consecutive and optimize the rates with the decays
 			c=build_c(times=ds.index.values.astype('float'),mod='paral',pardf=pardf)
+		c.index.name=time_label
 		re=fill_int(ds=ds,c=c)
 		if final:
 			labels=list(re['DAC'].columns.values)
@@ -4196,7 +4228,7 @@ class TA():	# object wrapper for the whole
 			self.ds_ori.columns.name = 'Energy in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
 		else:
 			self.ds_ori.columns.name = 'Energy in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
-		self.data_type= 'diff. Absorption \nin $\mathregular{\Delta OD}$' if not hasattr(self, 'data_type') else self.data_type
+		self.data_type= 'diff. Absorption in $\mathregular{\Delta OD}$' if not hasattr(self, 'data_type') else self.data_type
 		
 		try:#self.fitcoeff
 			self.fitcoeff
@@ -5097,6 +5129,8 @@ class TA():	# object wrapper for the whole
 		
 		#create-shape the data to be fitted	
 		fit_ds=sub_ds(ds=self.ds.copy(),scattercut=self.scattercut,bordercut=self.bordercut,timelimits=self.timelimits,wave_nm_bin=self.wave_nm_bin,time_bin=self.time_bin,ignore_time_region=self.ignore_time_region,drop_scatter=True,drop_ignore=True)
+		time_label=fit_ds.index.name
+		energy_label=fit_ds.columns.name
 		
 		############################################################################
 		#----Global optimisation------------------------------------------------------
