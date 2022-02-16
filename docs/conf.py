@@ -22,7 +22,7 @@ copyright = '2021, Jens Uhlig'
 author = 'Jens Uhlig'
 
 # The full version, including alpha/beta/rc tags
-release = '6.3.1'
+release = '6.4.0'
 
 
 # -- General configuration ---------------------------------------------------

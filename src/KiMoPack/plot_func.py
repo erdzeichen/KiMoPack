@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.3.1"
+version = "6.4.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -877,10 +877,8 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 	energy_label=ds.columns.name
 	if (wavelength is not None) and (times is not None):raise ValueError('can not get wavelength and times back')
 	if bordercut is not None:
-		x=ds.columns.values.astype('float')
-		lower=find_nearest_index(x,bordercut[0])
-		upper=find_nearest_index(x,bordercut[1])
-		ds=ds.iloc[:,lower:upper]
+		ds.columns=ds.columns.astype('float')
+		ds=ds.loc[:,bordercut[0]:bordercut[1]]
 	if (wave_nm_bin is not None) and (wavelength is None):
 		#print('rebinning')
 		x=ds.columns.values.astype('float')
@@ -912,33 +910,48 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		bins=(bins[1:]+bins[:-1])/2.
 		ds=pandas.DataFrame(bin_means,index=y,columns=bins)
 		ds=ds.T
+
 	if timelimits is not None:
-		y=ds.index.values.astype('float')
-		lower=find_nearest_index(y,timelimits[0])
-		upper=find_nearest_index(y,timelimits[1])
-		ds=ds.iloc[lower:upper,:]
-		
+		ds.index=ds.index.astype('float')
+		ds=ds.loc[timelimits[0]:timelimits[1],:]	
 	if ignore_time_region is not None:
 		ds=ds.fillna(value=0)
-		y=ds.index.values.astype('float')
-		if isinstance(ignore_time_region[0], numbers.Number):
-			lower=find_nearest_index(y,ignore_time_region[0])
-			upper=find_nearest_index(y,ignore_time_region[1])
-			if drop_ignore:
-				ds.iloc[lower:upper,:]=np.nan
+		if 0:#old version using find_nearest
+			y=ds.index.values.astype('float')
+			if isinstance(ignore_time_region[0], numbers.Number):
+				lower=find_nearest_index(y,ignore_time_region[0])
+				upper=find_nearest_index(y,ignore_time_region[1])
+				if drop_ignore:
+					ds.iloc[lower:upper,:]=np.nan
+				else:
+					ds.iloc[lower:upper,:]=0
 			else:
-				ds.iloc[lower:upper,:]=0
+				try:
+					for entries in ignore_time_region:
+						lower=find_nearest_index(y,entries[0])
+						upper=find_nearest_index(y,entries[1])
+						if drop_ignore:
+							ds.iloc[lower:upper,:]=np.nan
+						else:
+							ds.iloc[lower:upper,:]=0
+				except:
+					pass
 		else:
-			try:
-				for entries in ignore_time_region:
-					lower=find_nearest_index(y,entries[0])
-					upper=find_nearest_index(y,entries[1])
-					if drop_ignore:
-						ds.iloc[lower:upper,:]=np.nan
-					else:
-						ds.iloc[lower:upper,:]=0
-			except:
-				pass
+			ds.index=ds.index.astype('float')
+			if isinstance(ignore_time_region[0], numbers.Number):
+				if drop_ignore:
+					ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=np.nan
+				else:
+					ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=0
+			else:
+				try:
+					for entries in ignore_time_region:
+						if drop_ignore:
+							ds.loc[entries[0]:entries[1],:]=np.nan
+						else:
+							ds.loc[entries[0]:entries[1],:]=0
+				except:
+					pass
 		ds=ds.dropna(axis=0)
 		
 	if scattercut is not None:
@@ -1196,22 +1209,29 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	if ignore_time_region is None:
 		pass
 	elif isinstance(ignore_time_region[0], numbers.Number):
+		ds.index=ds.index.astype(float)
 		try:
-			upper=find_nearest_index(y,ignore_time_region[1])
-			if upper==0:raise
-			lower=find_nearest_index(y[:upper],ignore_time_region[0])
-			rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+			#upper=find_nearest_index(y,ignore_time_region[1])
+			upper=ds.loc[ignore_time_region[1]:,:].index.values.min()
+			#if upper==0:raise
+			#lower=find_nearest_index(y[:upper],ignore_time_region[0])
+			lower=ds.loc[ignore_time_region[0]:,:].index.values.min()
+			#rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+			rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 			ax.add_patch(rect)
 		except:
 			pass
 	else:
 		ignore_time_region_loc=flatten(ignore_time_region)
-		for k in range(len(ignore_time_region_loc)/2+1):
+		for k in range(int(len(ignore_time_region_loc)/2+1)):
 			try:
-				upper=find_nearest_index(y,ignore_time_region[k+1])
-				if upper==0:raise
-				lower=find_nearest_index(y[:upper],ignore_time_region[k])
-				rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+				#upper=find_nearest_index(y,ignore_time_region[k+1])
+				upper=ds.loc[ignore_time_region[k+1]:,:].index.values.min()
+				#if upper==0:raise
+				#lower=find_nearest_index(y[:upper],ignore_time_region[k])
+				lower=ds.loc[ignore_time_region[k]:,:].index.values.min()
+				#rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
+				rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)
 				ax.add_patch(rect)
 			except:
 				pass
@@ -1256,15 +1276,11 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		fontsize-=4
 		if not data_type is None:#we use this as a switch to enable a flexible avoidance of the label setting.
 			if log_scale:
-				#if ax_ori:cbar.set_label('diff. Absorption in \n$\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35) 
 				if ax_ori:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)
 				else:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)		
-				#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$ Log-scale', rotation=270,labelpad=35)
 			else:
 				if ax_ori:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
-				#if ax_ori:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
 				else:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
-				#else:cbar.set_label('diff. Absorption \nin $\mathregular{\Delta OD}$', rotation=270,labelpad=35)
 	if "symlog" in plot_type:
 
 		ax.plot(ax.get_xlim(),[lintresh,lintresh],'black',lw=0.5,alpha=0.3)
@@ -1299,7 +1315,6 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	
 	ax.set_xlabel(ds.columns.name)
 	ax.set_ylabel(ds.index.name)
-	#ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 	if title:
 		ax.set_title(title)	
 	if ax_ori:return ax
@@ -3387,7 +3402,7 @@ def fill_int(ds,c,final=True,baseunit='ps'):
 	return re
 
 
-def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, filename = None):
+def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, filename = None, ext_spectra = None):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting a single dataset.
 	
@@ -3446,6 +3461,12 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 	filename : None or str, optional
 		Only used in conjunction with 'dump_paras'. The program uses this filename to dump the 
 		parameter to disk 
+		
+	ext_spectra : DataFrame, optional
+		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
+		given in "C(t)" this function will only work for external models. The name of the spectral column 
+		must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
+		be interpolated to the spectral points of the model ds before the substraction. 
 
 	'''
 	time_label=ds.index.name
@@ -3511,13 +3532,30 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			return re['error']
 	else:
 		c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
-		re=fill_int(ds=ds,c=c)
+		if ext_spectra is None:
+			re=fill_int(ds=ds,c=c)
+		else:
+			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			c_temp=c.copy()
+			for col in ext_spectra.columns:
+				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+				ds=ds-C
+				c_temp.drop(col,axis=1,inplace=True)
+			re=fill_int(ds=ds,c=c_temp)
 		if final:
 			if len(re.keys())<3:#
 				print('error in the calculation')
 				return re
-			re['DAC'].columns=c.columns.values
-			re['c'].columns=c.columns.values
+			if ext_spectra is None:
+				re['DAC'].columns=c.columns.values
+				re['c'].columns=c.columns.values
+			else:
+				re['DAC'].columns=c_temp.columns.values
+				re['c'].columns=c_temp.columns.values
+				for col in ext_spectra.columns:
+					re['DAC'][col]=ext_spectra.loc[:,col].values
+					re['c'][col]=c.loc[:,col].values
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
 			return re
 		else:
@@ -3538,7 +3576,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 
 
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
-					unique_parameter = None, weights = None, dump_paras = False, filename = None):
+					unique_parameter = None, weights = None, dump_paras = False, filename = None, ext_spectra = None):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
 	
@@ -3627,6 +3665,12 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		If the weight object has the same number of items as the 'multi_project' it is assumed 
 		that ta (the embedded project) has the weight of 1, otherwise the first weight is for the 
 		embedded object
+		
+	ext_spectra : DataFrame, optional
+		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
+		given in "C(t)" this function will only work for external models. The name of the spectral column 
+		must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
+		be interpolated to the spectral points of the model ds before the substraction. 
 
 	'''									   
 	pardf_changing=par_to_pardf(paras)
@@ -4891,7 +4935,7 @@ class TA():	# object wrapper for the whole
 		return results, fit_ds
 		
 		
-	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, dump_paras = False, filename = None):
+	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, dump_paras = False, filename = None, ext_spectra = None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -4906,6 +4950,7 @@ class TA():	# object wrapper for the whole
 				based upon the starting parameter. (see below for a description of the models). 
 				This model formation can by done by using a build in or a user supplied function. 
 				(handled in the function "pf.build_c")
+			2.a. If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)
 			3. 	Then the process/species associated spectra for each of the species is calculated 
 				using the linalg.lstsq algorithm from numpy 
 				(https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html)
@@ -5016,6 +5061,12 @@ class TA():	# object wrapper for the whole
 				If the weight object has the same number of items as the 'multi_project' it is assumed 
 				that ta (the embedded project) has the weight of 1, otherwise the first weight is for the 
 				embedded object
+				
+			ext_spectra : DataFrame, optional
+				(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
+				given in "C(t)" this function will only work for external models. The name of the spectral column 
+				must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
+				be interpolated to the spectral points of the model ds before the substraction. 
 
 		Returns
 		------------------
@@ -5139,7 +5190,8 @@ class TA():	# object wrapper for the whole
 		if multi_project is None:
 			#check if there is any concentration to optimise
 			if pardf.vary.any():#ok we have something to optimize
-				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename})
+				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),
+										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra})
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
@@ -5157,7 +5209,7 @@ class TA():	# object wrapper for the whole
 			fit_chirp=False #chirp fitting currently only works for single problems
 			if pardf.vary.any():#ok we have something to optimize lets return the spectra
 				multi_project.insert(0,self)
-				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename})
+				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra})
 				if len(pardf[pardf.vary].index)>3:
 					print('we use adaptive mode for nelder')
 					results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
@@ -5191,9 +5243,9 @@ class TA():	# object wrapper for the whole
 			print('ATTENTION: we have not optimized anything but just returned the parameters')
 			self.par_fit=self.par
 		if multi_project is None:
-			re=err_func(paras=self.par_fit,ds=fit_ds,mod=self.mod,final=True,log_fit=self.log_fit)
+			re=err_func(paras=self.par_fit,ds=fit_ds,mod=self.mod,final=True,log_fit=self.log_fit,ext_spectra=ext_spectra)
 		else:
-			re=err_func_multi(paras=self.par_fit,mod=mod,final=True,log_fit=self.log_fit,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights)
+			re=err_func_multi(paras=self.par_fit,mod=mod,final=True,log_fit=self.log_fit,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,ext_spectra=ext_spectra)
 		
 		############################################################################
 		#----Estimate errors---------------------------------------------------------------------
@@ -5232,13 +5284,13 @@ class TA():	# object wrapper for the whole
 							else: #go above min
 								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=True)
 							
-							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,				unique_parameter=None,weights=None,target_s2=None):
+							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None):
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
-										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit})
+										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
 									else:
-										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':log_fit})
+										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
 									if len(pardf[pardf.vary].index)>3:
 										results_sub = mini_sub.minimize('Nelder',options={'maxiter':1e5,'adaptive':True})
 									else:
@@ -5247,12 +5299,12 @@ class TA():	# object wrapper for the whole
 									return local_error
 								else:
 									if multi_project is None:
-										return err_func(pardf_local,ds=fit_ds,mod=mod,log_fit=log_fit)
+										return err_func(pardf_local,ds=fit_ds,mod=mod,log_fit=log_fit,ext_spectra=ext_spectra)
 									else:
-										return err_func_multi(pardf_local,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,mod=mod,log_fit=log_fit)
+										return err_func_multi(pardf_local,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,mod=mod,log_fit=log_fit,ext_spectra=ext_spectra)
 							try:
 								
-								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2})							
+								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra})							
 								one_percent_precission=(target-1)*0.01*re['error']
 								#results_local = mini_local.minimize('least_squares',ftol=one_percent_precission)
 								results_local = mini_local.minimize(method='nelder',options={'maxiter':100,'fatol':one_percent_precission})
@@ -5316,7 +5368,11 @@ class TA():	# object wrapper for the whole
 		
 		
 		if self.ignore_time_region is not None:
-			Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(self.ignore_time_region[0],self.baseunit,self.ignore_time_region[1],self.baseunit)	
+			try:
+				Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(self.ignore_time_region[0],self.baseunit,self.ignore_time_region[1],self.baseunit)
+			except:#we got a list
+				for entry in self.ignore_time_region:
+					Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(entry[0],self.baseunit,entry[1],self.baseunit)
 		Result_string+='The minimum error is:{:.8e}\n'.format(re['error'])
 		Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
 		if confidence_level is not None:
