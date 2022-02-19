@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 version = "6.4.0"
-Copyright = '@Jens Uhlig'
+Copyright = '@Jens Uhlig 2011-2022'
 if 1: #Hide imports	
 	import os
 	from os import walk
