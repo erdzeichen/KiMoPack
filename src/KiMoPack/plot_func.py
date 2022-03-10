@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.4.1"
+version = "6.4.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5286,7 +5286,7 @@ class TA():	# object wrapper for the whole
 							else: #go above min
 								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=True)
 							
-							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None):
+							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None ):
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
