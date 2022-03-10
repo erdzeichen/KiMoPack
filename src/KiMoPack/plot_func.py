@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-version = "6.4.0"
-Copyright = '@Jens Uhlig 2011-2022'
+version = "6.4.1"
+Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
 	from os import walk
@@ -1240,21 +1240,23 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		pass
 	elif isinstance(scattercut[0], numbers.Number):
 		try:
-			upper=find_nearest_index(x,scattercut[1])
-			if upper==0:raise
-			lower=find_nearest_index(x[:upper],scattercut[0])
-			rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
+			upper=ds.loc[:,scattercut[1]:].columns.values.min()
+			#upper=find_nearest_index(x,scattercut[1])
+			#if upper==0:raise
+			#lower=find_nearest_index(x[:upper],scattercut[0])
+			lower=ds.loc[:,scattercut[0]:].columns.values.min()
+			rect = plt.Rectangle((lower,y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 			ax.add_patch(rect)
 		except:
 			pass
 	else:
 		scattercut=flatten(scattercut)
-		for k in range(len(scattercut)/2+1):
+		for k in range(int(len(scattercut)/2+1)):
 			try:
-				upper=find_nearest_index(x,scattercut[k+1])
+				upper=ds.loc[:,scattercut[k][1]:].columns.values.min()
 				if upper==0:raise
-				lower=find_nearest_index(x[:upper],scattercut[k])
-				rect = plt.Rectangle((x[lower],y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(x[upper]-x[lower]),facecolor=mid_color,alpha=1)#mid_color)
+				lower=ds.loc[:,scattercut[k][0]:].columns.values.min()
+				rect = plt.Rectangle((lower.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 				ax.add_patch(rect)	
 			except:
 				pass	
