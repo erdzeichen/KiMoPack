@@ -12,7 +12,11 @@
 #
 import os
 import sys
+<<<<<<< HEAD
 sys.path.insert(0, os.path.abspath('../code_folder'))
+=======
+sys.path.insert(0, os.path.abspath('..\\code_folder'))
+>>>>>>> 411a47776668c1867e1d34176a403d02fbec1c41
 
 
 # -- Project information -----------------------------------------------------
