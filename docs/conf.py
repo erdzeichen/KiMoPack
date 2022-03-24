@@ -12,15 +12,9 @@
 #
 import os
 import sys
-<<<<<<< HEAD
-<<<<<<< HEAD
-sys.path.insert(0, os.path.abspath('../code_folder'))
-=======
-sys.path.insert(0, os.path.abspath('..\\code_folder'))
->>>>>>> 411a47776668c1867e1d34176a403d02fbec1c41
-=======
+
 sys.path.insert(0, os.path.abspath('..\\src\\KiMoPack\\code_folder'))
->>>>>>> 39dde152772e39f3a4a111f0f77b0423f05ba1bc
+
 
 
 # -- Project information -----------------------------------------------------
