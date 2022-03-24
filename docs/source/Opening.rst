@@ -19,7 +19,7 @@ Files of this type can be read without any further adaption (using the standard 
 Opening single file and creating TA object
 ------------------------------------------
 
-Open single file: 			:meth:`pf.TA()<plot_func.TA.__init__>`
+Open single file: 			:meth:`pf.TA()<KiMoPack.plot_func.TA.__init__>`
 
 Typical use of the tool is based upon an object containing all
 parameter, functions and the data. This object is created by importing a
@@ -31,12 +31,12 @@ The function can either open a text style format (using any file ending) or the 
 The latter is exclusively used as internal storage formate that stores the complete project including the RAW data.
 
 After import of either filetype the missing parameter in the "TA" object are set with the 
-:meth:`self.__make_standard_parameter()<plot_func.TA.__make_standard_parameter>` function. 
+:meth:`self.__make_standard_parameter()<KiMoPack.plot_func.TA.__make_standard_parameter>` function. 
 
 Opening multiple files
 ----------------------------
 
-Open many files: 			:meth:`pf.GUI_open()<plot_func.GUI_open>`
+Open many files: 			:meth:`pf.GUI_open()<KiMoPack.plot_func.GUI_open>`
 
 Sometimes multiple files are to be opened. Typical use examples are the options to compare different 
 measurements or analysis runs. This function provides a convenient way to create a list of opened projects. 
@@ -47,12 +47,12 @@ One can
 	* open all files in a given folder 
 
 The general behavior is selected by the first parameter (project_list)
-For more details see the examples in :meth:`pf.GUI_open()<plot_func.GUI_open>`
+For more details see the examples in :meth:`pf.GUI_open()<KiMoPack.plot_func.GUI_open>`
 
 Opening and handling single scans
 ----------------------------------
 
-Combine many scans:			:meth:`pf.Summarize_scans()<plot_func.Summarize_scans>`
+Combine many scans:			:meth:`pf.Summarize_scans()<KiMoPack.plot_func.Summarize_scans>`
 
 Typically the experiments consists of a larger number of scans that are combined into a single experimental file.
 The function "Summarize_scans" reads, selects and eventually combines a

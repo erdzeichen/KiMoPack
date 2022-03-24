@@ -4,7 +4,7 @@ Data Export and Project Saving
 Save_Plots
 -------------------
 
-Save Plots						:meth:`self.Save_Plots()<plot_func.TA.Save_Plots>`
+Save Plots						:meth:`self.Save_Plots()<KiMoPack.plot_func.TA.Save_Plots>`
 
 Convenience function that calls both "Plot_RAW" and if possible
 "Plot_fit_output" and saves the plots. Effectively this is intented to
@@ -15,7 +15,7 @@ through.
 Save_Powerpoint
 --------------------
 
-Save Plots as Powerpoint		:meth:`self.Save_Powerpoint()<plot_func.TA.Save_Powerpoint>`
+Save Plots as Powerpoint		:meth:`self.Save_Powerpoint()<KiMoPack.plot_func.TA.Save_Powerpoint>`
 
 Convenience function that calls both "Plot_RAW" and if possible
 "Plot_fit_output" and saves the plots as "png". 
@@ -34,7 +34,7 @@ that looks close to the powerpoint file.
 Saving of the  project
 --------------------------------------
 
-Save Project as hdf5			:meth:`self.Save_project()<plot_func.TA.Save_project>`
+Save Project as hdf5			:meth:`self.Save_project()<KiMoPack.plot_func.TA.Save_project>`
 
 This software allows the saving of the TA project as a HDF5 file that
 can be reloaded. The HDF5 file contains all the set parameter as well as
@@ -59,7 +59,7 @@ ASCII file is used.
 Save ASCII data
 ---------------------------
 
-Save/export data as ascii/text	:meth:`self.Save_data()<plot_func.TA.Save_data>`
+Save/export data as ascii/text	:meth:`self.Save_data()<KiMoPack.plot_func.TA.Save_data>`
 
 This is a convenient function to export the data for use with other
 plotting programs, the chirp corrected data, all the slices defined by
