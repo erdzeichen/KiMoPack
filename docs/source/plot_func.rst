@@ -2,7 +2,7 @@ KiMoPack - Functions
 =====================
 
 .. autoclass:: plot_func.TA
-   :members: Background,Compare_DAC,Compare_at_time,Compare_at_wave,Copy,Cor_Chirp,Filter_data,Fit_Global,Man_Chirp,Plot_RAW,Plot_fit_output,Save_Plots,Save_Powerpoint,Save_data,Save_project,__make_standard_parameter,
+   :members: Background,Compare_DAC,Compare_at_time,Compare_at_wave,Copy,Cor_Chirp,Filter_data,Fit_Global,Man_Chirp,Plot_RAW,Plot_fit_output,Save_Plots,Save_Powerpoint,Save_data,Save_project
    :private-members: __make_standard_parameter
    
 .. automodule:: plot_func
