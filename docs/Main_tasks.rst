@@ -8,7 +8,7 @@ Different measurements or Fits can be compared and the results saved in various 
 
 * :ref:`Opening of data`
 
-	* Open single file: 			:meth:`plot_func.TA.__init__`
+	* Open single file: 			:meth:`self.TA.__init__`
 	* Open many files: 				:meth:`plot_func.GUI_open`
 	* Combine many scans:			:meth:`plot_func.Summarize_scans`
 
