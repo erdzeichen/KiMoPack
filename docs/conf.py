@@ -13,13 +13,12 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../src/KiMoPack'))
-sys.path.insert(0, os.path.abspath('./'))
-
+sys.path.insert(0, os.path.abspath('..\\src\\KiMoPack'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'KiMoPack'
-copyright = '2021, Jens Uhlig'
+copyright = '2022, Jens Uhlig'
 author = 'Jens Uhlig'
 
 # The full version, including alpha/beta/rc tags
