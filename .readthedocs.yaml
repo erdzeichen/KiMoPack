@@ -22,4 +22,9 @@ formats: all
   # Install our python package before building the docs
 #  install:
 #    - method: pip
-#      path: .
+dependencies:
+  - sphinx==4.0.2
+  - nbsphinx==0.8.1
+  - pip:
+    - sphinx_rtd_theme==1.0.0
+    
