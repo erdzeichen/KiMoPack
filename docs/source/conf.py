@@ -12,8 +12,9 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src/KiMoPack'))
-
+sys.path.insert(0, os.path.abspath(os.sep.join(['..','..','src','KiMoPack'])))
+sys.path.insert(0, os.path.abspath(os.sep.join(['src','KiMoPack'])))
+sys.path.insert(0, os.path.abspath(os.sep.join([os.getcwd(),'src','KiMoPack'])))
 
 # -- Project information -----------------------------------------------------
 
