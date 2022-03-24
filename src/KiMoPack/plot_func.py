@@ -4093,9 +4093,8 @@ class TA():	# object wrapper for the whole
 		
 	def __make_standard_parameter(self):
 		'''function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.
-		
 		Parameters
-		-----------
+		-------------
 		
 		log_scale : bool, optional
 			If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. 
