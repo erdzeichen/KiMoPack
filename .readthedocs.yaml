@@ -24,5 +24,4 @@ formats: all
 #    - method: pip
 
 dependencies:
-  - sphinx==4.0.2
-  - nbsphinx==0.8.1
+  sphinx>=4.0
