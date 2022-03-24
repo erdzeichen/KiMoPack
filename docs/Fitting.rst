@@ -1,7 +1,7 @@
 Fitting, Parameter optimization and Error estimation
 =======================================================
 
-Fitting data:				:meth:`plot_func.TA.Fit_Global`
+Fitting data:				:meth:`KiMoPack.plot_func.TA.Fit_Global`
 
 One of the main functions of this program is to perform Global analysis
 of one or multiple datasets. The fitting function is in its current
@@ -378,7 +378,7 @@ achieved fitting parameter. This is intended for long and slow
 optimizations to keep a record of the fits even if the fitting process
 did not finish.
 
-:meth:`plot_func.TA.Fit_Global`
+:meth:`KiMoPack.plot_func.TA.Fit_Global`
 
 Fitting multiple measured files at once
 -----------------------------------------
@@ -423,7 +423,7 @@ the f-statistics compares the number of
 "fitted parameter"=number of species*number of spectral points + number of kinetic parameter
 "free points"=number of datasets*number of spectral points*number of time points - fitted parameter
 within the target quality, meaning, what fraction do my variances need to have, so that I'm 100% * target_quality sure that they are different from zero
-This is done in the function :meth:`plot_func.s2_vs_smin2`. The confidence level then defines the cutoff value. For each (varied) parameter a separate optimization is performed, that attempts to find the upper and lower bound at which the total error of the re-optimized globally fitted results reaches the by F-statistics defined confidence bound. Careful, this option might run for very long time. Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200) The confidence level is to be understood that it defines the e.g. 0.65 * 100% area that the parameter with this set of values is within this bounds.
+This is done in the function :meth:`KiMoPack.plot_func.s2_vs_smin2`. The confidence level then defines the cutoff value. For each (varied) parameter a separate optimization is performed, that attempts to find the upper and lower bound at which the total error of the re-optimized globally fitted results reaches the by F-statistics defined confidence bound. Careful, this option might run for very long time. Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200) The confidence level is to be understood that it defines the e.g. 0.65 * 100% area that the parameter with this set of values is within this bounds.
 
 Iterative Fitting
 ------------------
