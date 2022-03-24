@@ -84,7 +84,7 @@ function can also be used to plot e.g. the measured spectra vs. an
 external spectrum without giving any "other" Projects. 
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_at_time()<KiMoPack.plot_func.TA.Compare_at_time>`
+:meth:`self.Compare_at_time()<plot_func.TA.Compare_at_time>`
 
 Compare_at_wave
 --------------------
@@ -103,7 +103,7 @@ many projects go into the same plot, things tend to get messy. As the
 files are saved separately this approach proofed to be useful.
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_at_wave()<KiMoPack.plot_func.TA.Compare_at_wave>`
+:meth:`self.Compare_at_wave()<plot_func.TA.Compare_at_wave>`
 
 Compare_DAC
 ----------------
@@ -120,4 +120,4 @@ spectrum. Others is optional and I use this function often to compare
 species associated spectra with one or multiple steady state spectra.
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_DAC()<KiMoPack.plot_func.TA.Compare_DAC>`
+:meth:`self.Compare_DAC()<plot_func.TA.Compare_DAC>`

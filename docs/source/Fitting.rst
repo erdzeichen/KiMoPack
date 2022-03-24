@@ -1,7 +1,7 @@
 Fitting, Parameter optimization and Error estimation
 =======================================================
 
-Fitting data:				:meth:`self.Fit_Global()<KiMoPack.plot_func.TA.Fit_Global>`
+Fitting data:				:meth:`self.Fit_Global()<plot_func.TA.Fit_Global>`
 
 One of the main functions of this program is to perform Global analysis
 of one or multiple datasets. The fitting function is in its current
@@ -378,7 +378,7 @@ achieved fitting parameter. This is intended for long and slow
 optimizations to keep a record of the fits even if the fitting process
 did not finish.
 
-:meth:`self.Fit_Global()<KiMoPack.plot_func.TA.Fit_Global>`
+:meth:`self.Fit_Global()<plot_func.TA.Fit_Global>`
 
 Fitting multiple measured files at once
 -----------------------------------------
