@@ -1,9 +1,9 @@
 Plotting functions
 ==================
 
-	* Plotting non Fitted data:	:meth:`KiMoPack.plot_func.TA.Plot_RAW`
-	* Plotting Fitted data:		:meth:`KiMoPack.plot_func.TA.Plot_fit_output`
-	* Adjust fonts in plots:		:meth:`KiMoPack.plot_func.TA.changefonts`
+	* Plotting non Fitted data:	:meth:`plot_func.TA.Plot_RAW`
+	* Plotting Fitted data:		:meth:`plot_func.TA.Plot_fit_output`
+	* Adjust fonts in plots:		:meth:`plot_func.TA.changefonts`
 
 One core function of this tool is to create plots for evaluation and
 publication. Internally there are a number of separate functions that 
@@ -24,12 +24,12 @@ is plotted or at what times the kinetics are extracted are defined by the
 Plot_RAW
 --------
 
-:meth:`KiMoPack.plot_func.TA.Plot_RAW` plots all raw figures. The different figures can be called
+:meth:`plot_func.TA.Plot_RAW` plots all raw figures. The different figures can be called
 separately or with a list of plots (standard) e.g. plotting=range(4)
 call plots 0-3, plotting=1 a single plot. The plots have the following
 numbers: 0 - Matrix, 1 - Kinetics, 2 - Spectra, 3 - SVD. The plotting
 can take all parameter from the "ta" object. See:
-:meth:`KiMoPack.plot_func.TA.Plot_RAW`
+:meth:`plot_func.TA.Plot_RAW`
 
 Plot_fit_output
 ---------------
@@ -40,7 +40,7 @@ including all rebinning or temporal restrictions. The figures can be
 called separately or with a list of plots (standard)
 The plotting function takes all parameter from the object.
 
-	:meth:`KiMoPack.plot_func.TA.Plot_fit_output`
+	:meth:`plot_func.TA.Plot_fit_output`
 
 **Contents of the plots**
 
@@ -67,7 +67,7 @@ conjunction with the object and the embedded parameter (see above). The
 use of qt as backend allows the easy customization of the plots via the
 GUI. If the plots are saved as "svg" they can easily be adjusted in
 inkscape or similar afterwards.
-For more details see: :meth:`KiMoPack.plot_func.TA.Plot_fit_output`
+For more details see: :meth:`plot_func.TA.Plot_fit_output`
 
 Plot shaping options without influence on the fitting
 -----------------------------------------------------
@@ -88,24 +88,24 @@ a number of parameter only affect one or multiple of the plots but not the fitti
 	(e.g. university colors)
 *	The titles of all plots are chosen either by the filename or can be given flexible in each plotting functions 
 	through the title parameter. All the plots can be automatically saved if **save_figures_to_folder** is set to True,
-	Which is useful for fast surveys, otherwise the method :meth:`KiMoPack.plot_func.TA.Save_Plots` 
+	Which is useful for fast surveys, otherwise the method :meth:`plot_func.TA.Save_Plots` 
 	stores all plots (see :ref:`Data Export and Project Saving`). The axis labels are accessible via the **baseunit** 
-	and the Fonts are accessible via the function :meth:`KiMoPack.plot_func.changefonts`
+	and the Fonts are accessible via the function :meth:`plot_func.changefonts`
 
 extended Raw plotting
 ---------------------
 
-:meth:`KiMoPack.plot_func.plot_raw` is an extended function. All the parameters are 
+:meth:`plot_func.plot_raw` is an extended function. All the parameters are 
 accessible (and need then to be set manually). This function also plots a single 
 or multiple plots bzt setting the "plotting" parameter. 
 
 There are even more detailed manipulations possible by using the
 separate plot functions:
  
-	* for plotting kinetics at fixed wavelength: :func:`KiMoPack.plot_func.plot1d`
-	* for plotting spectra at selected times :func:`KiMoPack.plot_func.plot_time` 
-	* for plotting the data matrix :func:`KiMoPack.plot_func.plot2d`
-	* for plotting the 3 fit data matrix :func:`KiMoPack.plot_func.plot2d_fit`
-	* for the SVD plots. :func:`KiMoPack.plot_func.SVD` 
+	* for plotting kinetics at fixed wavelength: :func:`plot_func.plot1d`
+	* for plotting spectra at selected times :func:`plot_func.plot_time` 
+	* for plotting the data matrix :func:`plot_func.plot2d`
+	* for plotting the 3 fit data matrix :func:`plot_func.plot2d_fit`
+	* for the SVD plots. :func:`plot_func.SVD` 
 	
 Each of the functions allows to hand in an axis and thus plot multiple things

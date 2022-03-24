@@ -42,7 +42,7 @@ Notebook.
 Bad data Filter
 ---------------
 
-Filter bad data:				:meth:`KiMoPack.plot_func.TA.Filter_data`
+Filter bad data:				:meth:`plot_func.TA.Filter_data`
 
 In some cases there are bad data points or other strange things. NA
 values will normally be replaced by 0 during import and all data is
@@ -60,7 +60,7 @@ ta.ds (the chirp corrected data) or ta.ds_ori[ta.ds_ori>20]=0 is the classical w
 Arrival time correction
 -----------------------
 
-Correct arrival time (Chirp)	:meth:`KiMoPack.plot_func.TA.Cor_Chirp` 
+Correct arrival time (Chirp)	:meth:`plot_func.TA.Cor_Chirp` 
 
 *Cor_Chirp* is a powerful Function to correct for a different arrival times of
 different wavelength (sometimes call chirp). 
@@ -93,13 +93,13 @@ The function *Cor_Chirp* selects in the order:
 	#. "stored_file"
 	#. call Man_Chirp (clicking by hand)
 
-Correct arrival time (Chirp)	:meth:`KiMoPack.plot_func.TA.Cor_Chirp` 
-Manual overwrite arrival time correction 	:meth:`KiMoPack.plot_func.TA.Man_Chirp` 
+Correct arrival time (Chirp)	:meth:`plot_func.TA.Cor_Chirp` 
+Manual overwrite arrival time correction 	:meth:`plot_func.TA.Man_Chirp` 
 
 Background subtraction
 ----------------------
 
-Background correction:			:meth:`KiMoPack.plot_func.TA.Background`
+Background correction:			:meth:`plot_func.TA.Background`
 
 This tool is one of two ways to remove a flat background from the data (typically seen before t=0). 
 This tool averages for each measured  wavelength separately the values from 'lowlimit' to 'uplimit' and 
@@ -129,7 +129,7 @@ RAW plotted fits as a feedback.
 * rebin the temporal axis (useful for e.g. steady state long term UV-vis data) *time_bin*
 * rebin the spectral axis (useful for prism based spectrometer) *wave_nm_bin* 
 
-For further details and examples see: :meth:`KiMoPack.plot_func.TA.__make_standard_parameter`
-or e.g. the general plotting function :meth:`KiMoPack.plot_func.plot_raw`.
+For further details and examples see: :meth:`plot_func.TA.__make_standard_parameter`
+or e.g. the general plotting function :meth:`plot_func.plot_raw`.
 
 The parameter that only change the plots are discussed in :ref:`Plot shaping options without influence on the fitting`

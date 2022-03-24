@@ -1,0 +1,13 @@
+python>=3.8
+pandas
+h5py>=3.1
+matplotlib>=3.3
+numpy>=1.19
+lmfit>=1.0
+python-pptx>=0.6.18
+scipy>=1.5
+pathlib
+qtconsole>=5
+QtPy
+
+
