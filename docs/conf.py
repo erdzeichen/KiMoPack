@@ -12,9 +12,9 @@
 #
 import os
 import sys
-<<<<<<< HEAD
 
-sys.path.insert(0, os.path.abspath('..\\src\\KiMoPack'))
+
+sys.path.insert(0, os.path.abspath(__file__))
 
 
 
