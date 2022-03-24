@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.4.3"
+version = "6.4.4"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4590,7 +4590,7 @@ class TA():	# object wrapper for the whole
 
 	def Plot_RAW(self, plotting = range(4), title = None, scale_type = 'symlog', times = None,
 				cmap = None, filename = None, path = "result_figures", savetype = 'png' , print_click_position = False,
-				plot_second_as_energy = True):
+				plot_second_as_energy = True, ds = None):
 		'''This is a wrapper function that triggers the plotting of various RAW (non fitted) plots. 
 		The shaping parameter are taken from the object and should be defined before.
 		The parameter in this plot call are to control the general look and features of the plot.
@@ -4672,6 +4672,10 @@ class TA():	# object wrapper for the whole
 			
 		print_click_position : bool, optional
 			if True then the click position is printed for the spectral plots 
+			
+		ds : DataFrame, optional
+			if None (Default), the program first tests self.ds and if this is not there then self.ds_ori.
+			This option was introduced to allow plotting of other matrixes with the same parameter
 		
 		Examples
 		------------
@@ -4695,10 +4699,11 @@ class TA():	# object wrapper for the whole
 		if self.save_figures_to_folder:
 			self.figure_path=path
 		if cmap is None:cmap=self.cmap
-		if self.ds is None: 
-			ds=self.ds_ori
-		else:
-			ds=self.ds.copy()
+		if ds is None:
+			if self.ds is None:
+				ds=self.ds_ori.copy()
+			else:
+				ds=self.ds.copy()
 		if filename is None: filename=self.filename
 		if not hasattr(plotting,"__iter__"):plotting=[plotting]
 		if title is None:

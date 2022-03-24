@@ -14,7 +14,7 @@ import os
 import sys
 
 
-sys.path.insert(0, os.path.abspath(__file__))
+sys.path.insert(0, os.path('../scr/KiMoPack')
 
 
 
@@ -25,7 +25,7 @@ copyright = '2022, Jens Uhlig'
 author = 'Jens Uhlig'
 
 # The full version, including alpha/beta/rc tags
-release = '6.4.3'
+release = '6.4.4'
 
 
 # -- General configuration ---------------------------------------------------
