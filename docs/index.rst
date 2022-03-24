@@ -21,4 +21,4 @@ Welcome to KiMoPack's documentation!
    Comparing
    Saving
    genindex
-   plot_func
+   KiMoPack.plot_func
