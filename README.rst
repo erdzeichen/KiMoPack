@@ -18,8 +18,8 @@
 .. image:: https://mybinder.org/badge_logo.svg		  
 	:target: https://mybinder.org/v2/gh/erdzeichen/KiMoPack/HEAD
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5720587.svg
-   :target: https://doi.org/10.5281/zenodo.5720587
+.. image:: https://zenodo.org/badge/400527965.svg
+   :target: https://zenodo.org/badge/latestdoi/400527965
 
 KiMoPack
 ==========
@@ -74,5 +74,5 @@ Links
 	* Source Code: https://github.com/erdzeichen/KiMoPack
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
-	* Zenodo: https://doi.org/10.5281/zenodo.5720587
-
+	* Zenodo: https://zenodo.org/badge/latestdoi/400527965
+5
