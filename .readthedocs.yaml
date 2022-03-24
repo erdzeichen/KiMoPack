@@ -22,7 +22,5 @@ python:
   install:
     setup_commands:
       - import sys
-      - sys.path.append('../')
-    selection:
-    new_path_syntax: true
+      - sys.path.append('src/KiMoPack')
     requirements: docs/source/requirements.txt
