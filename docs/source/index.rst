@@ -22,3 +22,4 @@ Welcome to KiMoPack's documentation!
    Saving
    genindex
    plot_func
+   KiMoPack.plot_func
