@@ -18,10 +18,12 @@ sphinx:
 # If using Sphinx, optionally build your docs in additional formats such as PDF
 formats: all
 
-#python:
-  # Install our python package before building the docs
-#  install:
-#    - method: pip
-
+name: docs
+channels:
+  - conda-forge
+  - defaults
 dependencies:
-  sphinx>=4.0
+  - sphinx==4.2.0
+  - nbsphinx==0.8.1
+  - pip:
+    - sphinx_rtd_theme==1.0.0
