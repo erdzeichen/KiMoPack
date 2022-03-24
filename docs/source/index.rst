@@ -8,7 +8,7 @@ Welcome to KiMoPack's documentation!
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    Introduction
@@ -21,4 +21,4 @@ Welcome to KiMoPack's documentation!
    Comparing
    Saving
    genindex
-   plot_func
+   KiMoPack
