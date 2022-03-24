@@ -22,9 +22,7 @@ python:
   install:
     - requirements: docs/source/requirements.txt
     - method: pip
-      path: .
-      extra_requirements:
+    - path: .
+    - extra_requirements:
         - docs
-    - method: setuptools
-      path: src/KiMoPack
-  system_packages: true
+    system_packages: true
