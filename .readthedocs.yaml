@@ -19,7 +19,4 @@ sphinx:
 formats: all
 
 python:
-  setup_commands:
-    - import sys
-    - sys.path.append('src/KiMoPack')
   requirements: docs/source/requirements.txt
