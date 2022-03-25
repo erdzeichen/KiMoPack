@@ -443,14 +443,11 @@ global fit after the chirp optimization. e.g. a 5 times iterative improvement ca
 Species Spectral Development
 -----------------------------
 
-A small but often useful function is :meth:`pf.Species_Spectra()<plot_func.Species_Spectra>`
-It takes either a TA-Object or a concentration and spectral DataFrame and combines the concentration with the 
-species associated spectrum. This leads to the matrix that is contributed by this specific species. As the concentration
-and the spectrum are combined, this represents the indeed measured signal. Here the ds-parameter of the Plot_RAW function 
-offers a useful combination
+A small but often useful function is :meth:`pf.Species_Spectra()<plot_func.Species_Spectra>` It takes either a TA-Object or a concentration and spectral DataFrame and combines the concentration with the species associated spectrum. This leads to the matrix that is contributed by this specific species. As the concentration and the spectrum are combined, this represents the indeed measured signal. Here the ds-parameter of the Plot_RAW function offers a useful combination.
 	
-	assuming that we fitted: species 0,1,2, (or more)
-	then:
+	assuming that we fitted: species 0,1,2, (or more) then:
 	
-	dicten=pf.Species_Spectra(ta) #extract the spectra
-	ta.Plot_RAW(ds=ta.re['A']-dicten[1]-dicten[2])  #plot the measured spectrum and substract the contribution of "1" and "2"
+	#extract the spectra
+	dicten=pf.Species_Spectra(ta) 
+	#plot the measured spectrum and substract the contribution of "1" and "2"
+	ta.Plot_RAW(ds=ta.re['A']-dicten[1]-dicten[2])  

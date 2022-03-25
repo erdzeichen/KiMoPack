@@ -3,7 +3,7 @@ Plotting functions
 
 	* Plotting non Fitted data:	:meth:`self.Plot_RAW()<plot_func.TA.Plot_RAW>`
 	* Plotting Fitted data:		:meth:`self.Plot_fit_output()<plot_func.TA.Plot_fit_output>`
-	* Adjust fonts in plots:		:meth:`pf.changefonts()<plot_func.TA.changefonts>`
+	* Adjust fonts in plots:		:meth:`pf.changefonts()<plot_func.changefonts>`
 
 One core function of this tool is to create plots for evaluation and
 publication. Internally there are a number of separate functions that 
