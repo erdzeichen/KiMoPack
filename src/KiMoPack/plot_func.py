@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.4.4"
+version = "6.5.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3017,6 +3017,52 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 	else:
 		return U, s, V2,ds
 
+def Species_Spectra(ta=None,conc=None,das=None):
+	'''useful help function that returns a dictionary that has DataFrame as entries and the names of the 
+	components as keys
+	
+	Parameters
+	-----------
+	
+	ta : plot_func.TA object, optional 
+		This object should contain a successful fit. The function will cycle through the fitted species 
+		and return the matrix that is formed from the dynamics and the species associated spectrum
+		If this given, then "conc" and "das" are ignored. We cycle through the columns of the concentration 
+		and take the same column from the das Frame. 
+	
+	conc : DataFrame, optional
+		Is read only if ta_object is None. This should contain the concentration matrix with the species as
+		as columns
+		
+	das : DataFrame, optional
+		This should contain the spectra of the species with one column per spectrum. The position of the columns 
+		must match the columns in the conc (at least this is what is assumed)
+		
+	Examples
+	---------
+	dicten=Species_Spectra(ta)
+	
+	'''
+	if ta is not None:
+		try:
+			time=ta.re['c'].index.values
+			WL=ta.re['DAC'].index.values
+			conc=ta.re['c']
+			das=ta.re['DAC']
+		except:
+			print('the TA object must contain a successful fit')
+			print(ta.re)
+			return False
+	else:
+		if (conc is None) or (das is None):
+			print('If the ta object is None, then we need both the conc and the das')
+			return False			
+	results={}
+	for i in range(len(conc.columns)):
+		A,B=np.meshgrid(conc.iloc[:,i].values,das.iloc[:,i].values)
+		C=pandas.DataFrame((A*B).T,index=time,columns=WL)
+		results[conc.columns[i]]=C
+	return results
 
 def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, 
 			shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
