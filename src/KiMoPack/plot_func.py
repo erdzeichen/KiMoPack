@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.5.1"
+version = "6.5.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4531,11 +4531,35 @@ class TA():	# object wrapper for the whole
 
 
 	def Man_Chirp(self,shown_window=[-1,1],path=None,max_points=40,cmap=cm.prism):
-		'''Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run aleady. 
-		Alternatively delete the chirp file.
+		'''Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run already. 
+		Alternatively delete the chirp file. This Function opens a plot in which the user manually selects a number of points
+		These points will then be interpolated with a 4th order polynomial
+		The user can then select a new t=0 point. 
+		The first option allows to fine select an intensity setting for this chirp correction.
+		However sometimes spikes are making this things difficult. In this case set a guessed intensity with self.intensity_range=1e-3
+		
+		Parameters
+		-------------
+		   
+		path : str or path object (optional)
+			if path is a string without the operation system dependent separator, it is treated as a relative path, 
+			e.g. data will look from the working directory in the sub director data. Otherwise this has to be a 
+			full path in either strong or path object form.
+		
+		shown_window : list (with two floats), optional
+			Defines the window that is shown during chirp correction. If the t=0 is not visible, adjust this parameter
+			to suit the experiment. If problems arise, I recomment to use Plot_Raw to check where t=0 is located
+
+		max_points : int, optional
+			Default = 40 max numbers of points to use in Gui selection. Useful option in case no middle mouse button
+			is available. (e.g. touchpad)
+		
+		cmap : matplotlib colourmap, optional
+			Colourmap to be used for the chirp correction. While there is a large selection here I recommend to choose
+			a different map than is used for the normal 2d plotting.\n
+			cm.prism (Default) has proofen to be very usefull
 		
 		'''
-		
 		
 		temp_ds = Fix_Chirp(self.ds_ori, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
 							wave_nm_bin = 10, shown_window = shown_window, filename = self.filename,
@@ -4561,6 +4585,9 @@ class TA():	# object wrapper for the whole
 		a middle click (sometime appreviated by clicking left and right together) 
 		finishes the selection. If no middle click exists, the process
 		automatically ends after max_points (40 preset).
+		
+		The first option allows to fine select an intensity setting for this chirp correction.
+		However sometimes spikes are making this things difficult. In this case set a guessed intensity with self.intensity_range=1e-3
 
 		After the first run the polynom is stored in self.fitcoeff, a new matrix 
 		calculated from self.ds_ori that is stored as self.ds and a file stored in the 
