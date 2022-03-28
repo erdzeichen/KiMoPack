@@ -1243,14 +1243,11 @@ file “fite1.txt” and a file with the time information “file1.tid”</p>
 <dt id="plot_func.TA.__make_standard_parameter">
 <code class="sig-name descname">__make_standard_parameter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot_func.TA.__make_standard_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.</p>
-<dl class="field-list">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl>
-<dt><strong>log_scale</strong><span class="classifier">bool, optional</span></dt><dd><blockquote>
-<div><p>If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale.
+<blockquote>
+<div><dl>
+<dt>log_scale<span class="classifier">bool, optional</span></dt><dd><p>If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale.
 This usually does not give good results unless the intensity scale is symmetric</p>
-</div></blockquote>
-<dl>
+</dd>
 <dt>self.cmap<span class="classifier">matplotlib.cm</span></dt><dd><p>(Default)  standard_map - global parameter
 cmap is a powerfull variable that chooses the colour map applied for all plots. If set to
 None (Default) then the self.cmap is used.
@@ -1371,8 +1368,9 @@ intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</p>
 <dt>self.data_type: str (optional)</dt><dd><p>self.data_type=’diff. Absorption</p>
 </dd>
 </dl>
-</dd>
-<dt><strong>in $mathregular{Delta OD}$’</strong></dt><dd><dl class="simple">
+</div></blockquote>
+<dl>
+<dt>in $mathregular{Delta OD}$’</dt><dd><dl class="simple">
 <dt>self.fitcoeff<span class="classifier">list (5 floats)</span></dt><dd><p>chirp correction polynom</p>
 </dd>
 <dt>self.chirp_file<span class="classifier">str</span></dt><dd><p>if there is a file withthe right name write it here, otherwise None</p>
@@ -1382,11 +1380,6 @@ intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</p>
 <dt>self.save_figures_to_folder<span class="classifier">bool</span></dt><dd><p>if True all figures are automatically saved when any plotfunction is called</p>
 </dd>
 </dl>
-</dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">bordercut</span><span class="o">=</span><span class="p">[</span><span class="mi">350</span><span class="p">,</span><span class="mi">1200</span><span class="p">]</span>  <span class="c1">#remove all data outside this limit</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">scattercut</span><span class="o">=</span><span class="p">[</span><span class="mi">522</span><span class="p">,</span><span class="mi">605</span><span class="p">]</span>  <span class="c1">#set data inside this limit to zero</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">timelimits</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span><span class="mi">5000</span><span class="p">]</span>  <span class="c1">#remove all data outside this limit</span>
@@ -1397,6 +1390,8 @@ intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span> <span class="c1">#ignore -0.1ps to 0.1ps</span>
 </pre></div>
 </div>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
