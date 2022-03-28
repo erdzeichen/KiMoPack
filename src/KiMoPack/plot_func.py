@@ -3339,12 +3339,13 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 		This dataframe must contain the parameter that are used for creating the dynamics
 		the parameter must be named with the index.
 		For the internal functions this must contain these keys:
+		
 			* 't0' = zero time, mandatory
 			* 'resolution' = instrument response function, mandatory
 			* 'background',optional = if this keyword is present a flat constant background is created (=1 over the whole time)
 			* 'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
 			* 'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
-			
+
 	Examples
 	---------
 
@@ -4130,7 +4131,7 @@ class TA():	# object wrapper for the whole
 		
 		Parameters
 		-------------
-		
+
 		log_scale : bool, optional
 			If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. 
 			This usually does not give good results unless the intensity scale is symmetric 
