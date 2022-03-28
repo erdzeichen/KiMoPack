@@ -5,4 +5,4 @@ code_folder
    :maxdepth: 4
 
    plot_func
-   KiMoPack.plot_func
+   plot_func

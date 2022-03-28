@@ -1,40 +1,43 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>plot_func &mdash; KiMoPack 6.4.4 documentation</title>
+  <title>plot_func &mdash; KiMoPack 6.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
 
   
   
-  
+
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -73,6 +76,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -98,6 +102,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,11 +137,13 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -157,7 +164,7 @@
             
   <h1>Source code for plot_func</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.4.4&quot;</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.0&quot;</span>
 <span class="n">Copyright</span> <span class="o">=</span> <span class="s1">&#39;@Jens Uhlig&#39;</span>
 <span class="k">if</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#Hide imports	</span>
 	<span class="kn">import</span> <span class="nn">os</span>
@@ -558,7 +565,7 @@
 	<span class="k">return</span> <span class="n">savgol_filter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="n">window_size</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="n">deriv</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">Frame_golay</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Frame_golay"><a class="viewcode-back" href="../plot_func.html#plot_func.Frame_golay">[docs]</a><span class="k">def</span> <span class="nf">Frame_golay</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;Convenience method that returns the Golay smoothed data for each column (DataFrame) or the series</span>
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -573,7 +580,7 @@
 	<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
 		<span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">savitzky_golay</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">order</span><span class="p">),</span><span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 	<span class="k">else</span><span class="p">:</span>
-		<span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;must be series or DataFrame&#39;</span><span class="p">)</span>
+		<span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;must be series or DataFrame&#39;</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">find_nearest</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">con_str</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -606,9 +613,9 @@
 	<span class="k">return</span> <span class="n">y</span>
 
 
-<span class="k">def</span> <span class="nf">norm</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="norm"><a class="viewcode-back" href="../plot_func.html#plot_func.norm">[docs]</a><span class="k">def</span> <span class="nf">norm</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;Min max norming of a dataframe&#39;&#39;&#39;</span>
-	<span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+	<span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span></div>
 
 
 <span class="k">def</span> <span class="nf">shift</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">shift</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -3175,6 +3182,52 @@
 	<span class="k">else</span><span class="p">:</span>
 		<span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">V2</span><span class="p">,</span><span class="n">ds</span></div>
 
+<div class="viewcode-block" id="Species_Spectra"><a class="viewcode-back" href="../plot_func.html#plot_func.Species_Spectra">[docs]</a><span class="k">def</span> <span class="nf">Species_Spectra</span><span class="p">(</span><span class="n">ta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">conc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">das</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;useful help function that returns a dictionary that has DataFrame as entries and the names of the </span>
+<span class="sd">	components as keys</span>
+<span class="sd">	</span>
+<span class="sd">	Parameters</span>
+<span class="sd">	-----------</span>
+<span class="sd">	</span>
+<span class="sd">	ta : plot_func.TA object, optional </span>
+<span class="sd">		This object should contain a successful fit. The function will cycle through the fitted species </span>
+<span class="sd">		and return the matrix that is formed from the dynamics and the species associated spectrum</span>
+<span class="sd">		If this given, then &quot;conc&quot; and &quot;das&quot; are ignored. We cycle through the columns of the concentration </span>
+<span class="sd">		and take the same column from the das Frame. </span>
+<span class="sd">	</span>
+<span class="sd">	conc : DataFrame, optional</span>
+<span class="sd">		Is read only if ta_object is None. This should contain the concentration matrix with the species as</span>
+<span class="sd">		as columns</span>
+<span class="sd">		</span>
+<span class="sd">	das : DataFrame, optional</span>
+<span class="sd">		This should contain the spectra of the species with one column per spectrum. The position of the columns </span>
+<span class="sd">		must match the columns in the conc (at least this is what is assumed)</span>
+<span class="sd">		</span>
+<span class="sd">	Examples</span>
+<span class="sd">	---------</span>
+<span class="sd">	dicten=Species_Spectra(ta)</span>
+<span class="sd">	</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">ta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">time</span><span class="o">=</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+			<span class="n">WL</span><span class="o">=</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;DAC&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+			<span class="n">conc</span><span class="o">=</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+			<span class="n">das</span><span class="o">=</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;DAC&#39;</span><span class="p">]</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;the TA object must contain a successful fit&#39;</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">)</span>
+			<span class="k">return</span> <span class="kc">False</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">conc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">das</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;If the ta object is None, then we need both the conc and the das&#39;</span><span class="p">)</span>
+			<span class="k">return</span> <span class="kc">False</span>			
+	<span class="n">results</span><span class="o">=</span><span class="p">{}</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">conc</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+		<span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">conc</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">das</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+		<span class="n">C</span><span class="o">=</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">((</span><span class="n">A</span><span class="o">*</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">time</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">WL</span><span class="p">)</span>
+		<span class="n">results</span><span class="p">[</span><span class="n">conc</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">=</span><span class="n">C</span>
+	<span class="k">return</span> <span class="n">results</span></div>
 
 <span class="k">def</span> <span class="nf">Fix_Chirp</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">save_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scattercut</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">intensity_range</span> <span class="o">=</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
 			<span class="n">shown_window</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fitcoeff</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_points</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> 
@@ -3430,12 +3483,11 @@
 <span class="sd">	evaluate the progression at a number of substeps defined bu sub_samples (10 by default) </span>
 <span class="sd">	</span>
 <span class="sd">	Parameters</span>
-<span class="sd">	----------</span>
+<span class="sd">	-----------</span>
 <span class="sd">	</span>
 <span class="sd">	times : np.array</span>
 <span class="sd">		array with the times at which the dataframe should be generated. In general the </span>
 <span class="sd">		experimental times</span>
-<span class="sd">	</span>
 <span class="sd">	mod : str, optional</span>
 <span class="sd">		this selects the model that is used to generate the concentrations.</span>
 <span class="sd">			1. &#39;paral&#39; (Default) or &#39;exponential&#39; both are equivalent</span>
@@ -3445,23 +3497,22 @@
 <span class="sd">		and then only in the last (final) iteration the &#39;full consecutive&#39; differential</span>
 <span class="sd">		equation is used. This has significant speed advantages, but can lead to errors particularly</span>
 <span class="sd">		for the very fast times.</span>
-<span class="sd">		</span>
 <span class="sd">	sub_step : int, optional</span>
 <span class="sd">		defines how many times the iterative loop (used in consecutive only) is sampling the concentrations </span>
 <span class="sd">		between the times given in &quot;times&quot;</span>
-<span class="sd">	</span>
 <span class="sd">	pardf : pd.DataFrame</span>
 <span class="sd">		This dataframe must contain the parameter that are used for creating the dynamics</span>
 <span class="sd">		the parameter must be named with the index.</span>
-<span class="sd">		</span>
 <span class="sd">		For the internal functions this must contain these keys:</span>
-<span class="sd">		</span>
 <span class="sd">			* &#39;t0&#39; = zero time, mandatory</span>
 <span class="sd">			* &#39;resolution&#39; = instrument response function, mandatory</span>
 <span class="sd">			* &#39;background&#39;,optional = if this keyword is present a flat constant background is created (=1 over the whole time)</span>
 <span class="sd">			* &#39;infinite&#39;,optional = if this keyword is present a new non decaying component is formed with the last decay time.</span>
 <span class="sd">			* &#39;k0,k1,...&#39; = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.</span>
-<span class="sd">		</span>
+<span class="sd">			</span>
+<span class="sd">	Examples</span>
+<span class="sd">	---------</span>
+
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="n">choices</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;paral&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;exponential&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;consecutive&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;full_consecutive&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
 	<span class="n">model</span><span class="o">=</span><span class="n">choices</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span>
@@ -3562,7 +3613,7 @@
 	<span class="k">return</span> <span class="n">re</span></div>
 
 
-<span class="k">def</span> <span class="nf">err_func</span><span class="p">(</span><span class="n">paras</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">mod</span> <span class="o">=</span> <span class="s1">&#39;paral&#39;</span><span class="p">,</span> <span class="n">final</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">log_fit</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">dump_paras</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext_spectra</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="err_func"><a class="viewcode-back" href="../plot_func.html#plot_func.err_func">[docs]</a><span class="k">def</span> <span class="nf">err_func</span><span class="p">(</span><span class="n">paras</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">mod</span> <span class="o">=</span> <span class="s1">&#39;paral&#39;</span><span class="p">,</span> <span class="n">final</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">log_fit</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">dump_paras</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext_spectra</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;function that calculates and returns the error for the global fit. This function is intended for</span>
 <span class="sd">	fitting a single dataset.</span>
 <span class="sd">	</span>
@@ -3732,10 +3783,10 @@
 					<span class="k">pass</span>
 				<span class="n">pardf</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;dump_paras.par&#39;</span><span class="p">)</span>
 			<span class="nb">print</span><span class="p">(</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">])</span>
-			<span class="k">return</span> <span class="n">re</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+			<span class="k">return</span> <span class="n">re</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span></div>
 
 
-<span class="k">def</span> <span class="nf">err_func_multi</span><span class="p">(</span><span class="n">paras</span><span class="p">,</span> <span class="n">mod</span> <span class="o">=</span> <span class="s1">&#39;paral&#39;</span><span class="p">,</span> <span class="n">final</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">log_fit</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">multi_project</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+<div class="viewcode-block" id="err_func_multi"><a class="viewcode-back" href="../plot_func.html#plot_func.err_func_multi">[docs]</a><span class="k">def</span> <span class="nf">err_func_multi</span><span class="p">(</span><span class="n">paras</span><span class="p">,</span> <span class="n">mod</span> <span class="o">=</span> <span class="s1">&#39;paral&#39;</span><span class="p">,</span> <span class="n">final</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">log_fit</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">multi_project</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
 					<span class="n">unique_parameter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dump_paras</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext_spectra</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;function that calculates and returns the error for the global fit. This function is intended for</span>
 <span class="sd">	fitting of multiple datasets</span>
@@ -3937,7 +3988,7 @@
 	<span class="k">if</span> <span class="n">final</span><span class="p">:</span>
 		<span class="k">return</span> <span class="n">re_final</span>
 	<span class="k">else</span><span class="p">:</span>
-		<span class="k">return</span> <span class="n">combined_error</span>
+		<span class="k">return</span> <span class="n">combined_error</span></div>
 
 
 <span class="k">def</span> <span class="nf">par_to_pardf</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
@@ -4130,48 +4181,40 @@
 							<span class="n">external_time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">external_wave</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">correct_ascii_errors</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 							<span class="n">data_type</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;Fancy function that handles the import of pure ascii files.</span>
+<span class="sd">		</span>
 <span class="sd">		Parameters</span>
 <span class="sd">		----------</span>
 <span class="sd">		</span>
 <span class="sd">		sep : str (optional)</span>
 <span class="sd">			is the separator between different numbers, typical are tap (Backslash t) (Default) ,one or </span>
 <span class="sd">			multiple white spaces &#39;backslash s+&#39; or comma &#39;,&#39;.</span>
-<span class="sd">		</span>
 <span class="sd">		decimal : str (optional) </span>
 <span class="sd">			sets the ascii symbol that is used for the decimal sign. In most countries this is &#39;.&#39;(Default) </span>
 <span class="sd">			but it can be &#39;,&#39; in countries like Sweden or Germany</span>
-<span class="sd">		</span>
 <span class="sd">		index_is_energy : bool (optional)</span>
 <span class="sd">			switches if the wavelength is given in nm (Default) or in eV (if True), currently everything </span>
 <span class="sd">			is handled as wavelength in nm internally</span>
-<span class="sd">		</span>
 <span class="sd">		data_type: str (optional)</span>
 <span class="sd">			data_type is the string that represents the intensity measurements. Usually this contains if absolute </span>
 <span class="sd">			of differential data. This is used for the color intensity in the 2d plots and the y-axis for the 1d plots</span>
-<span class="sd">			</span>
 <span class="sd">		units: str (optional)</span>
 <span class="sd">			this is used to identify the units on the energy axis and to label the slices, recognized is &#39;nm&#39;, &#39;eV&#39; and &#39;keV&#39; </span>
 <span class="sd">			but if another unit like &#39;cm^-1&#39; is used it will state energy in &#39;cm^-1&#39;. Pleas observe that if you use the index_is_energy</span>
 <span class="sd">			switch the program tries to convert this energy into wavelength. </span>
-<span class="sd">		</span>
 <span class="sd">		transpose : bool (optional)</span>
 <span class="sd">			if this switch is False (Default) the wavelength are the columns and the rows the times.</span>
-<span class="sd">		</span>
 <span class="sd">		sort_indexes : bool (optional)</span>
 <span class="sd">			For False (Default) I assume that the times and energies are already in a rising order. </span>
 <span class="sd">			with this switch, both are sorted again. </span>
-<span class="sd">		</span>
 <span class="sd">		divide_times_by : bool or float (optional) </span>
 <span class="sd">			here a number can be given that scales the time by an arbitary factor. This is actually dividing</span>
 <span class="sd">			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects </span>
 <span class="sd">			what is written on the axis, while this value is actually used to scale the times. False (Default) </span>
 <span class="sd">			ignores this</span>
-<span class="sd">		</span>
 <span class="sd">		shift_times_by : None, float (optional)</span>
 <span class="sd">			This a value by which the time axis is shifted during import. This is a useful option of e.g. </span>
 <span class="sd">			the recording software does not compensate for t0 and the data is always shifted. </span>
 <span class="sd">			None (Default) ignores this setting</span>
-<span class="sd">		</span>
 <span class="sd">		external_time : None or str (optional)</span>
 <span class="sd">			Here a filename extension (string) can be given that contains the time vector. </span>
 <span class="sd">			The file is assumed to be at the same path as the data and to contain a single </span>
@@ -4180,7 +4223,6 @@
 <span class="sd">			e.g. if samp1.txt is the filename and external_time=&#39;.tid&#39; the program searches </span>
 <span class="sd">			samp1.tid for the times. The transpose setting is applied and sets where the times are </span>
 <span class="sd">			to be inserted (row or column indexes)</span>
-<span class="sd">		</span>
 <span class="sd">		external_wave : None or str (optional) </span>
 <span class="sd">			Here a filename extension (string) can be given that contains the wavelength vector. </span>
 <span class="sd">			The file is assumed to be at the same path as the data and to contain a single type </span>
@@ -4188,7 +4230,6 @@
 <span class="sd">			is taken from the filename. e.g. if samp1.txt is the filename and external_wave=&#39;.wav&#39; </span>
 <span class="sd">			then the program searches samp1.wav for the wavelength. The transpose setting is applied </span>
 <span class="sd">			and sets where the wavelength are to be inserted (columns or row indexes)</span>
-<span class="sd">			</span>
 <span class="sd">		correct_ascii_errors :  bool (optional)</span>
 <span class="sd">			If True (Default) then the code tries to catch some stuff like double minus signs and double dots</span>
 <span class="sd">			</span>
@@ -4253,12 +4294,12 @@
 		<span class="sd">&#39;&#39;&#39;function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.</span>
 <span class="sd">		</span>
 <span class="sd">		Parameters</span>
-<span class="sd">		-----------</span>
+<span class="sd">		-------------</span>
 <span class="sd">		</span>
 <span class="sd">		log_scale : bool, optional</span>
 <span class="sd">			If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. </span>
 <span class="sd">			This usually does not give good results unless the intensity scale is symmetric </span>
-<span class="sd">		self.cmap  : </span>
+<span class="sd">		self.cmap  : matplotlib.cm</span>
 <span class="sd">			(Default)  standard_map - global parameter</span>
 <span class="sd">			cmap is a powerfull variable that chooses the colour map applied for all plots. If set to </span>
 <span class="sd">			None (Default) then the self.cmap is used.</span>
@@ -4377,7 +4418,6 @@
 <span class="sd">			Standard &#39;Time in %s&#39; % self.baseunit </span>
 <span class="sd">		self.data_type: str (optional)</span>
 <span class="sd">			self.data_type=&#39;diff. Absorption \nin $\mathregular{\Delta OD}$&#39;	</span>
-<span class="sd">			</span>
 <span class="sd">		self.fitcoeff : list (5 floats)</span>
 <span class="sd">			chirp correction polynom</span>
 <span class="sd">		self.chirp_file : str</span>
@@ -4386,22 +4426,20 @@
 <span class="sd">			Path for saving figures, if set</span>
 <span class="sd">		self.save_figures_to_folder : bool</span>
 <span class="sd">			if True all figures are automatically saved when any plotfunction is called</span>
-<span class="sd">			</span>
+
 <span class="sd">		Examples</span>
 <span class="sd">		-----------</span>
+
 <span class="sd">		&gt;&gt;&gt; ta.bordercut=[350,1200]  #remove all data outside this limit</span>
 <span class="sd">		&gt;&gt;&gt; ta.scattercut=[522,605]  #set data inside this limit to zero</span>
 <span class="sd">		&gt;&gt;&gt; ta.timelimits=[0.2,5000]  #remove all data outside this limit</span>
-<span class="sd">		&gt;&gt;&gt; ta.wave_nm_bin=5</span>
+<span class="sd">		&gt;&gt;&gt; ta.wave_nm_bin=5  #rebin the data to this width</span>
 <span class="sd">		&gt;&gt;&gt; ta.intensity_range=3e-3  #equivalent to [-3e-3,3e-3]</span>
-<span class="sd">		&gt;&gt;&gt; ta.intensity_range=[-1e-3,3e-3]</span>
+<span class="sd">		&gt;&gt;&gt; ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots</span>
 <span class="sd">		&gt;&gt;&gt; import matplotlib.cm as cm</span>
 <span class="sd">		&gt;&gt;&gt; ta.cmap=cm.prism  #choose different colour map</span>
-<span class="sd">		&gt;&gt;&gt; #less often used</span>
-<span class="sd">		&gt;&gt;&gt; ta.ignore_time_region=[-0.1,0.1]</span>
-<span class="sd">		&gt;&gt;&gt; ta.ignore_time_region=[[-0.1,0.1],[1,2]]  #ignore -0.1ps to 0.1ps and 1ps to 2ps</span>
-<span class="sd">		&gt;&gt;&gt; ta.time_bin=3</span>
-<span class="sd">		</span>
+<span class="sd">		&gt;&gt;&gt; ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps</span>
+
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;log_scale&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">cmap</span> <span class="o">=</span> <span class="n">standard_map</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;cmap&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmap</span>
@@ -5115,7 +5153,7 @@
 <span class="sd">				based upon the starting parameter. (see below for a description of the models). </span>
 <span class="sd">				This model formation can by done by using a build in or a user supplied function. </span>
 <span class="sd">				(handled in the function &quot;pf.build_c&quot;)</span>
-<span class="sd">			2.a. If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)</span>
+<span class="sd">				-&gt; If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)</span>
 <span class="sd">			3. 	Then the process/species associated spectra for each of the species is calculated </span>
 <span class="sd">				using the linalg.lstsq algorithm from numpy </span>
 <span class="sd">				(https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html)</span>
@@ -7144,20 +7182,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2022, Jens Uhlig
+        &#169; Copyright 2022, Jens Uhlig.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -7165,7 +7208,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -16,8 +16,16 @@ New is that the compare functions take "other" as a parameter, which can
 be either a single or multiple projects (TA - objects). These projects
 need to be loaded into the program. Loading a project can be done by 
 having them open from prior import or analysis (e.g. when comparing different fits)
-and then using :meth:`plot_func.TA.Copy` More usual other (saved) projects will be
-opened with the function :meth:`plot_func.GUI_open` . See :ref:`Opening multiple files`
+and then using 
+
+:meth:`self.Copy()<plot_func.TA.Copy>` 
+
+More usual other (saved) projects will be
+opened with the function 
+
+:meth:`pf.GUI_open()<plot_func.GUI_open>` 
+
+. See :ref:`Opening multiple files`
 for more information on that.
 
 As this comparision very often contains a lot of files the images are
@@ -84,7 +92,8 @@ function can also be used to plot e.g. the measured spectra vs. an
 external spectrum without giving any "other" Projects. 
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_at_time()<KiMoPack.plot_func.TA.Compare_at_time>`
+
+:meth:`self.Compare_at_time()<plot_func.TA.Compare_at_time>`
 
 Compare_at_wave
 --------------------
@@ -103,7 +112,8 @@ many projects go into the same plot, things tend to get messy. As the
 files are saved separately this approach proofed to be useful.
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_at_wave()<KiMoPack.plot_func.TA.Compare_at_wave>`
+
+:meth:`self.Compare_at_wave()<plot_func.TA.Compare_at_wave>`
 
 Compare_DAC
 ----------------
@@ -120,4 +130,5 @@ spectrum. Others is optional and I use this function often to compare
 species associated spectra with one or multiple steady state spectra.
 
 For more information, details on the parameter and examples see:
-:meth:`self.Compare_DAC()<KiMoPack.plot_func.TA.Compare_DAC>`
+
+:meth:`self.Compare_DAC()<plot_func.TA.Compare_DAC>`

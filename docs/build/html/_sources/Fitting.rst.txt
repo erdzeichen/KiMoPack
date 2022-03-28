@@ -1,7 +1,7 @@
 Fitting, Parameter optimization and Error estimation
 =======================================================
 
-Fitting data:				:meth:`self.Fit_Global()<KiMoPack.plot_func.TA.Fit_Global>`
+Fitting data:				:meth:`self.Fit_Global()<plot_func.TA.Fit_Global>`
 
 One of the main functions of this program is to perform Global analysis
 of one or multiple datasets. The fitting function is in its current
@@ -378,7 +378,7 @@ achieved fitting parameter. This is intended for long and slow
 optimizations to keep a record of the fits even if the fitting process
 did not finish.
 
-:meth:`self.Fit_Global()<KiMoPack.plot_func.TA.Fit_Global>`
+:meth:`self.Fit_Global()<plot_func.TA.Fit_Global>`
 
 Fitting multiple measured files at once
 -----------------------------------------
@@ -440,3 +440,13 @@ global fit after the chirp optimization. e.g. a 5 times iterative improvement ca
 		if not ta.re['error'] < start_error:break 
 
 
+Species Spectral Development
+-----------------------------
+
+A small but often useful function is :meth:`pf.Species_Spectra()<plot_func.Species_Spectra>` It takes either a TA-Object or a concentration and spectral DataFrame and combines the concentration with the species associated spectrum. This leads to the matrix that is contributed by this specific species. As the concentration and the spectrum are combined, this represents the indeed measured signal. Here the ds-parameter of the Plot_RAW function offers a useful combination. assuming that we fitted: species 0,1,2, (or more) then::
+	
+	#extract the spectra
+	dicten=pf.Species_Spectra(ta) 
+	#plot the measured spectrum and substract the 
+	#contribution of "1" and "2"
+	ta.Plot_RAW(ds=ta.re['A']-dicten[1]-dicten[2])  

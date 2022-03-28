@@ -3318,12 +3318,11 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 	evaluate the progression at a number of substeps defined bu sub_samples (10 by default) 
 	
 	Parameters
-	----------
+	-----------
 	
 	times : np.array
 		array with the times at which the dataframe should be generated. In general the 
 		experimental times
-	
 	mod : str, optional
 		this selects the model that is used to generate the concentrations.
 			1. 'paral' (Default) or 'exponential' both are equivalent
@@ -3333,23 +3332,22 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 		and then only in the last (final) iteration the 'full consecutive' differential
 		equation is used. This has significant speed advantages, but can lead to errors particularly
 		for the very fast times.
-		
 	sub_step : int, optional
 		defines how many times the iterative loop (used in consecutive only) is sampling the concentrations 
 		between the times given in "times"
-	
 	pardf : pd.DataFrame
 		This dataframe must contain the parameter that are used for creating the dynamics
 		the parameter must be named with the index.
-		
 		For the internal functions this must contain these keys:
-		
 			* 't0' = zero time, mandatory
 			* 'resolution' = instrument response function, mandatory
 			* 'background',optional = if this keyword is present a flat constant background is created (=1 over the whole time)
 			* 'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
 			* 'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
-		
+			
+	Examples
+	---------
+
 	'''
 	choices = {'paral':0,'exponential':0,'consecutive':1,'full_consecutive':1}
 	model=choices[mod]
@@ -4018,48 +4016,40 @@ class TA():	# object wrapper for the whole
 							external_time = None, external_wave = None, correct_ascii_errors = True,
 							data_type = None, units = None):
 		'''Fancy function that handles the import of pure ascii files.
+		
 		Parameters
 		----------
 		
 		sep : str (optional)
 			is the separator between different numbers, typical are tap (Backslash t) (Default) ,one or 
 			multiple white spaces 'backslash s+' or comma ','.
-		
 		decimal : str (optional) 
 			sets the ascii symbol that is used for the decimal sign. In most countries this is '.'(Default) 
 			but it can be ',' in countries like Sweden or Germany
-		
 		index_is_energy : bool (optional)
 			switches if the wavelength is given in nm (Default) or in eV (if True), currently everything 
 			is handled as wavelength in nm internally
-		
 		data_type: str (optional)
 			data_type is the string that represents the intensity measurements. Usually this contains if absolute 
 			of differential data. This is used for the color intensity in the 2d plots and the y-axis for the 1d plots
-			
 		units: str (optional)
 			this is used to identify the units on the energy axis and to label the slices, recognized is 'nm', 'eV' and 'keV' 
 			but if another unit like 'cm^-1' is used it will state energy in 'cm^-1'. Pleas observe that if you use the index_is_energy
 			switch the program tries to convert this energy into wavelength. 
-		
 		transpose : bool (optional)
 			if this switch is False (Default) the wavelength are the columns and the rows the times.
-		
 		sort_indexes : bool (optional)
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
-		
 		divide_times_by : bool or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
 			what is written on the axis, while this value is actually used to scale the times. False (Default) 
 			ignores this
-		
 		shift_times_by : None, float (optional)
 			This a value by which the time axis is shifted during import. This is a useful option of e.g. 
 			the recording software does not compensate for t0 and the data is always shifted. 
 			None (Default) ignores this setting
-		
 		external_time : None or str (optional)
 			Here a filename extension (string) can be given that contains the time vector. 
 			The file is assumed to be at the same path as the data and to contain a single 
@@ -4068,7 +4058,6 @@ class TA():	# object wrapper for the whole
 			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
 			samp1.tid for the times. The transpose setting is applied and sets where the times are 
 			to be inserted (row or column indexes)
-		
 		external_wave : None or str (optional) 
 			Here a filename extension (string) can be given that contains the wavelength vector. 
 			The file is assumed to be at the same path as the data and to contain a single type 
@@ -4076,7 +4065,6 @@ class TA():	# object wrapper for the whole
 			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
 			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
 			and sets where the wavelength are to be inserted (columns or row indexes)
-			
 		correct_ascii_errors :  bool (optional)
 			If True (Default) then the code tries to catch some stuff like double minus signs and double dots
 			
@@ -4139,13 +4127,14 @@ class TA():	# object wrapper for the whole
 		
 	def __make_standard_parameter(self):
 		'''function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.
+		
 		Parameters
 		-------------
 		
 		log_scale : bool, optional
 			If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. 
 			This usually does not give good results unless the intensity scale is symmetric 
-		self.cmap  : 
+		self.cmap  : matplotlib.cm
 			(Default)  standard_map - global parameter
 			cmap is a powerfull variable that chooses the colour map applied for all plots. If set to 
 			None (Default) then the self.cmap is used.
@@ -4264,7 +4253,6 @@ class TA():	# object wrapper for the whole
 			Standard 'Time in %s' % self.baseunit 
 		self.data_type: str (optional)
 			self.data_type='diff. Absorption \nin $\mathregular{\Delta OD}$'	
-			
 		self.fitcoeff : list (5 floats)
 			chirp correction polynom
 		self.chirp_file : str
@@ -4273,22 +4261,20 @@ class TA():	# object wrapper for the whole
 			Path for saving figures, if set
 		self.save_figures_to_folder : bool
 			if True all figures are automatically saved when any plotfunction is called
-			
+
 		Examples
 		-----------
+
 		>>> ta.bordercut=[350,1200]  #remove all data outside this limit
 		>>> ta.scattercut=[522,605]  #set data inside this limit to zero
 		>>> ta.timelimits=[0.2,5000]  #remove all data outside this limit
-		>>> ta.wave_nm_bin=5
+		>>> ta.wave_nm_bin=5  #rebin the data to this width
 		>>> ta.intensity_range=3e-3  #equivalent to [-3e-3,3e-3]
-		>>> ta.intensity_range=[-1e-3,3e-3]
+		>>> ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots
 		>>> import matplotlib.cm as cm
 		>>> ta.cmap=cm.prism  #choose different colour map
-		>>> #less often used
-		>>> ta.ignore_time_region=[-0.1,0.1]
-		>>> ta.ignore_time_region=[[-0.1,0.1],[1,2]]  #ignore -0.1ps to 0.1ps and 1ps to 2ps
-		>>> ta.time_bin=3
-		
+		>>> ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps
+
 		'''
 		self.log_scale = False if not hasattr(self, 'log_scale') else self.log_scale
 		self.cmap = standard_map if not hasattr(self, 'cmap') else self.cmap
@@ -5002,7 +4988,7 @@ class TA():	# object wrapper for the whole
 				based upon the starting parameter. (see below for a description of the models). 
 				This model formation can by done by using a build in or a user supplied function. 
 				(handled in the function "pf.build_c")
-			2.a. If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)
+				-> If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)
 			3. 	Then the process/species associated spectra for each of the species is calculated 
 				using the linalg.lstsq algorithm from numpy 
 				(https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html)
