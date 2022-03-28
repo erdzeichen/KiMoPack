@@ -202,7 +202,7 @@ the same numbers of columns (spectral points) as the used ds</p></li>
 </ul>
 </dd>
 </dl>
-<p class="rubric">Example</p>
+<p class="rubric">Examples</p>
 <p>if the object self has the name “ta”</p>
 <p>typical useage:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">Background</span><span class="p">()</span>
@@ -506,7 +506,7 @@ wavelength. The normalization window stays fixed.</p>
 <dt id="plot_func.TA.Copy">
 <code class="sig-name descname">Copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_func.html#TA.Copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_func.TA.Copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a deep copy of the object.</p>
-<p class="rubric">Example</p>
+<p class="rubric">Examples</p>
 <p>&gt;&gt;&gt;ta=plot_func.TA(‘testfile.hdf5’) #open a project
 &gt;&gt;&gt;ta1=ta.Copy() #make a copy for some tests or a differnet fit</p>
 </dd></dl>
@@ -1136,7 +1136,7 @@ of the data (self.path)</p></li>
 </ul>
 </dd>
 </dl>
-<p class="rubric">Example</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">Save_Data</span>
 </pre></div>
 </div>
@@ -1243,11 +1243,14 @@ file “fite1.txt” and a file with the time information “file1.tid”</p>
 <dt id="plot_func.TA.__make_standard_parameter">
 <code class="sig-name descname">__make_standard_parameter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot_func.TA.__make_standard_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.</p>
-<blockquote>
-<div><dl>
-<dt>log_scale<span class="classifier">bool, optional</span></dt><dd><p>If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale.
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>log_scale</strong><span class="classifier">bool, optional</span></dt><dd><blockquote>
+<div><p>If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale.
 This usually does not give good results unless the intensity scale is symmetric</p>
-</dd>
+</div></blockquote>
+<dl>
 <dt>self.cmap<span class="classifier">matplotlib.cm</span></dt><dd><p>(Default)  standard_map - global parameter
 cmap is a powerfull variable that chooses the colour map applied for all plots. If set to
 None (Default) then the self.cmap is used.
@@ -1269,7 +1272,7 @@ the numbers of lines that will be plotted. So I recommend to provide at least 10
 (with the last A beeing the Alpha=transparency. All numbers are between 0 and 1.
 If a list/vector/DataFrame is given for the colours they will be used in the order provided.</p>
 </dd>
-<dt>lintresh<span class="classifier">float</span></dt><dd><p>The pseudo logratihmic range “symlog” is used for most time axis. Symlog plots a range around
+<dt>self.lintresh<span class="classifier">float</span></dt><dd><p>The pseudo logratihmic range “symlog” is used for most time axis. Symlog plots a range around
 time zero linear and beyond this linear treshold ‘lintresh’ on a logarithmic scale. (Default) 0.3</p>
 </dd>
 <dt>self.log_fit  :</dt><dd><p>(Default)  False</p>
@@ -1368,9 +1371,8 @@ intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</p>
 <dt>self.data_type: str (optional)</dt><dd><p>self.data_type=’diff. Absorption</p>
 </dd>
 </dl>
-</div></blockquote>
-<dl>
-<dt>in $mathregular{Delta OD}$’</dt><dd><dl class="simple">
+</dd>
+<dt><strong>in $mathregular{Delta OD}$’</strong></dt><dd><dl class="simple">
 <dt>self.fitcoeff<span class="classifier">list (5 floats)</span></dt><dd><p>chirp correction polynom</p>
 </dd>
 <dt>self.chirp_file<span class="classifier">str</span></dt><dd><p>if there is a file withthe right name write it here, otherwise None</p>
@@ -1380,19 +1382,21 @@ intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</p>
 <dt>self.save_figures_to_folder<span class="classifier">bool</span></dt><dd><p>if True all figures are automatically saved when any plotfunction is called</p>
 </dd>
 </dl>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">bordercut</span><span class="o">=</span><span class="p">[</span><span class="mi">350</span><span class="p">,</span><span class="mi">1200</span><span class="p">]</span>  <span class="c1">#remove all data outside this limit</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">scattercut</span><span class="o">=</span><span class="p">[</span><span class="mi">522</span><span class="p">,</span><span class="mi">605</span><span class="p">]</span>  <span class="c1">#set data inside this limit to zero</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">timelimits</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span><span class="mi">5000</span><span class="p">]</span>  <span class="c1">#remove all data outside this limit</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="o">=</span><span class="mi">5</span>  <span class="c1">#rebin the data to this width</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">intensity_range</span><span class="o">=</span><span class="mf">3e-3</span>  <span class="c1">#equivalent to [-3e-3,3e-3]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">intensity_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1e-3</span><span class="p">,</span><span class="mf">3e-3</span><span class="p">]</span>  <span class="c1">#intensity that is plotted in 2d plot and y-axis in 1d plots</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">prism</span>  <span class="c1">#choose different colour map</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">cmap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">prism</span>  <span class="c1">#choose different colour map</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ta</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span> <span class="c1">#ignore -0.1ps to 0.1ps</span>
 </pre></div>
 </div>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1448,6 +1452,23 @@ and sets where the wavelength are to be inserted (columns or row indexes)</p></l
 <dt id="plot_func.Frame_golay">
 <code class="sig-prename descclassname">plot_func.</code><code class="sig-name descname">Frame_golay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">window</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">order</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">transpose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_func.html#Frame_golay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_func.Frame_golay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience method that returns the Golay smoothed data for each column (DataFrame) or the series</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em>,</em><em>pandas.Series</em>) – the DataFrame that has to be interpolated</p></li>
+<li><p><strong>window_size</strong> (<em>int</em><em>,</em><em>optional</em>) – 5(Default) an integer that indicates how many units are to be interpolated</p></li>
+<li><p><strong>order</strong> (<em>int</em><em>, </em><em>optional</em>) – 2 (Default) an integer that indicates what orderpolynoninal is to be used to interpolate the points.
+order=1 effectively turns this into a floating average</p></li>
+<li><p><strong>transpose</strong> (<em>bool</em><em>,</em><em>optional</em>) – in which orientation is the interpolation to be done. Default is in within the column (usually timepoints)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DataFrame or Series with the interpolation applied</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame or pandas.Series</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1749,13 +1770,13 @@ evaluate the progression at a number of substeps defined bu sub_samples (10 by d
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>times</strong> (<em>np.array</em>) – array with the times at which the dataframe should be generated. In general the
 experimental times</p></li>
-<li><p><strong>mod</strong> (<em>str</em><em>, </em><em>optional</em>) – <dl class="simple">
-<dt>this selects the model that is used to generate the concentrations.</dt><dd><ol class="arabic simple">
+<li><p><strong>mod</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>this selects the model that is used to generate the concentrations.</p>
+<blockquote>
+<div><ol class="arabic simple">
 <li><p>’paral’ (Default) or ‘exponential’ both are equivalent</p></li>
 <li><p>’consecutive’ or ‘full_consecutive’</p></li>
 </ol>
-</dd>
-</dl>
+</div></blockquote>
 <p>In 2 the ‘consecutive’ and ‘full_consecutive’ are different in that for consecutive
 the optimization is done using ‘exponential’ (as it shoudl give the same times)
 and then only in the last (final) iteration the ‘full consecutive’ differential
@@ -1959,7 +1980,47 @@ be interpolated to the spectral points of the model ds before the substraction.<
 <dl class="py function">
 <dt id="plot_func.fill_int">
 <code class="sig-prename descclassname">plot_func.</code><code class="sig-name descname">fill_int</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ds</span></em>, <em class="sig-param"><span class="n">c</span></em>, <em class="sig-param"><span class="n">final</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">baseunit</span><span class="o">=</span><span class="default_value">'ps'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot_func.html#fill_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot_func.fill_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>solving_equation_way,</p>
+<dd><p>solving the intensity an equation_way, takes the target dataframe and the concentration frame
+prepares the matrixes(c) the tries to solve this equation system using
+eps=np.linalg.lstsq(AA,Af,rcond=-1)[0]
+if failes it returns a dictionary with 1000 as error (only entry) if successful
+it returns a dictionary that contains the
+fit_error = (AE**2).sum() with AE beeing the difference of measured and calcuated matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds</strong> (<em>DataFrame</em>) – DataFrame to be fitted</p></li>
+<li><p><strong>c</strong> (<em>DataFrame</em>) – DataFrame oontaining the concentration matrix (the concentrations as with the times as index.
+Each different species has a column with the species name as column name</p></li>
+<li><p><strong>final</strong> (<em>bool</em><em>,</em><em>optional</em>) – if True (Default) the complete solutions will be attached otherwise only the error is attached</p></li>
+<li><p><strong>baseunit</strong> (<em>str</em><em>,</em><em>optional</em>) – this string is used as unit for the time axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><strong>re</strong> – the dictionary “re” attached to the object containing all the matrixes and parameter.</p>
+<p>if “final” is True:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>”A” Shaped measured Matrix</p></li>
+<li><p>”AC” Shaped calculated Matrix</p></li>
+<li><p>”AE” Difference between A and AC = linear error</p></li>
+<li><p>”DAC” DAS or SAS, labeled after the names given in the function (the columns of c) Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized</p></li>
+<li><p>”c” The Concentrations (meaning the evolution of the concentrations over time. Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized</p></li>
+<li><p>”error” is the S2, meaning AE**2.sum().sum()</p></li>
+</ul>
+</div></blockquote>
+<p>else:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>”error” is the S2, meaning AE**2.sum()</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

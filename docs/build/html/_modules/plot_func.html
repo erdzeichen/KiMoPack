@@ -567,6 +567,29 @@
 
 <div class="viewcode-block" id="Frame_golay"><a class="viewcode-back" href="../plot_func.html#plot_func.Frame_golay">[docs]</a><span class="k">def</span> <span class="nf">Frame_golay</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;Convenience method that returns the Golay smoothed data for each column (DataFrame) or the series</span>
+<span class="sd">	</span>
+<span class="sd">	Parameters</span>
+<span class="sd">	-----------</span>
+<span class="sd">	</span>
+<span class="sd">	df : pandas.DataFrame,pandas.Series</span>
+<span class="sd">		the DataFrame that has to be interpolated</span>
+<span class="sd">	</span>
+<span class="sd">	window_size : int,optional</span>
+<span class="sd">		5(Default) an integer that indicates how many units are to be interpolated</span>
+<span class="sd">		</span>
+<span class="sd">	order : int, optional</span>
+<span class="sd">		2 (Default) an integer that indicates what orderpolynoninal is to be used to interpolate the points. </span>
+<span class="sd">		order=1 effectively turns this into a floating average</span>
+<span class="sd">		</span>
+<span class="sd">	transpose : bool,optional </span>
+<span class="sd">		in which orientation is the interpolation to be done. Default is in within the column (usually timepoints)</span>
+<span class="sd">	</span>
+<span class="sd">	Returns</span>
+<span class="sd">	---------</span>
+<span class="sd">	</span>
+<span class="sd">	pandas.DataFrame or pandas.Series</span>
+<span class="sd">		DataFrame or Series with the interpolation applied</span>
+<span class="sd">	</span>
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 	<span class="k">if</span> <span class="n">transpose</span><span class="p">:</span>
@@ -3490,8 +3513,10 @@
 <span class="sd">		experimental times</span>
 <span class="sd">	mod : str, optional</span>
 <span class="sd">		this selects the model that is used to generate the concentrations.</span>
+<span class="sd">		</span>
 <span class="sd">			1. &#39;paral&#39; (Default) or &#39;exponential&#39; both are equivalent</span>
 <span class="sd">			2. &#39;consecutive&#39; or &#39;full_consecutive&#39;</span>
+<span class="sd">		</span>
 <span class="sd">		In 2 the &#39;consecutive&#39; and &#39;full_consecutive&#39; are different in that for consecutive </span>
 <span class="sd">		the optimization is done using &#39;exponential&#39; (as it shoudl give the same times)</span>
 <span class="sd">		and then only in the last (final) iteration the &#39;full consecutive&#39; differential</span>
@@ -3510,7 +3535,7 @@
 <span class="sd">			* &#39;background&#39;,optional = if this keyword is present a flat constant background is created (=1 over the whole time)</span>
 <span class="sd">			* &#39;infinite&#39;,optional = if this keyword is present a new non decaying component is formed with the last decay time.</span>
 <span class="sd">			* &#39;k0,k1,...&#39; = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.</span>
-<span class="sd">			</span>
+
 <span class="sd">	Examples</span>
 <span class="sd">	---------</span>
 
@@ -3576,7 +3601,50 @@
 
 
 <div class="viewcode-block" id="fill_int"><a class="viewcode-back" href="../plot_func.html#plot_func.fill_int">[docs]</a><span class="k">def</span> <span class="nf">fill_int</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">final</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">baseunit</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">):</span>
-	<span class="sd">&#39;&#39;&#39;solving_equation_way,&#39;&#39;&#39;</span>
+	<span class="sd">&#39;&#39;&#39;solving the intensity an equation_way, takes the target dataframe and the concentration frame </span>
+<span class="sd">	prepares the matrixes(c) the tries to solve this equation system using </span>
+<span class="sd">	eps=np.linalg.lstsq(AA,Af,rcond=-1)[0]</span>
+<span class="sd">	if failes it returns a dictionary with 1000 as error (only entry) if successful</span>
+<span class="sd">	it returns a dictionary that contains the </span>
+<span class="sd">	fit_error = (AE**2).sum() with AE beeing the difference of measured and calcuated matrix</span>
+<span class="sd">	</span>
+<span class="sd">	Parameters</span>
+<span class="sd">	-----------</span>
+<span class="sd">	</span>
+<span class="sd">	ds : DataFrame</span>
+<span class="sd">		DataFrame to be fitted</span>
+<span class="sd">		</span>
+<span class="sd">	c: DataFrame</span>
+<span class="sd">		DataFrame oontaining the concentration matrix (the concentrations as with the times as index. </span>
+<span class="sd">		Each different species has a column with the species name as column name</span>
+<span class="sd">		</span>
+<span class="sd">	final : bool,optional</span>
+<span class="sd">		if True (Default) the complete solutions will be attached otherwise only the error is attached</span>
+<span class="sd">		</span>
+<span class="sd">	baseunit : str,optional</span>
+<span class="sd">		this string is used as unit for the time axis</span>
+
+<span class="sd">	Returns</span>
+<span class="sd">	------------------</span>
+<span class="sd">	</span>
+<span class="sd">	re : dict</span>
+<span class="sd">		the dictionary &quot;re&quot; attached to the object containing all the matrixes and parameter. </span>
+<span class="sd">		</span>
+<span class="sd">		if &quot;final&quot; is True:</span>
+<span class="sd">		</span>
+<span class="sd">			* &quot;A&quot; Shaped measured Matrix</span>
+<span class="sd">			* &quot;AC&quot; Shaped calculated Matrix </span>
+<span class="sd">			* &quot;AE&quot; Difference between A and AC = linear error </span>
+<span class="sd">			* &quot;DAC&quot; DAS or SAS, labeled after the names given in the function (the columns of c) Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized</span>
+<span class="sd">			* &quot;c&quot; The Concentrations (meaning the evolution of the concentrations over time. Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized</span>
+<span class="sd">			* &quot;error&quot; is the S2, meaning AE**2.sum().sum()</span>
+<span class="sd">			</span>
+<span class="sd">		else:</span>
+<span class="sd">		</span>
+<span class="sd">			* &quot;error&quot; is the S2, meaning AE**2.sum()</span>
+<span class="sd">			</span>
+
+<span class="sd">	&#39;&#39;&#39;</span>
 	<span class="n">time</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
 	<span class="n">wl</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
 	<span class="n">time_label</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
@@ -4296,7 +4364,7 @@
 <span class="sd">		</span>
 <span class="sd">		Parameters</span>
 <span class="sd">		-------------</span>
-<span class="sd">		</span>
+
 <span class="sd">		log_scale : bool, optional</span>
 <span class="sd">			If False (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. </span>
 <span class="sd">			This usually does not give good results unless the intensity scale is symmetric </span>
@@ -4321,7 +4389,7 @@
 <span class="sd">			(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA</span>
 <span class="sd">			(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. </span>
 <span class="sd">			If a list/vector/DataFrame is given for the colours they will be used in the order provided.</span>
-<span class="sd">		lintresh : float</span>
+<span class="sd">		self.lintresh : float</span>
 <span class="sd">			The pseudo logratihmic range &quot;symlog&quot; is used for most time axis. Symlog plots a range around</span>
 <span class="sd">			time zero linear and beyond this linear treshold &#39;lintresh&#39; on a logarithmic scale. (Default) 0.3 </span>
 <span class="sd">		self.log_fit  : </span>
@@ -4437,8 +4505,7 @@
 <span class="sd">		&gt;&gt;&gt; ta.wave_nm_bin=5  #rebin the data to this width</span>
 <span class="sd">		&gt;&gt;&gt; ta.intensity_range=3e-3  #equivalent to [-3e-3,3e-3]</span>
 <span class="sd">		&gt;&gt;&gt; ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots</span>
-<span class="sd">		&gt;&gt;&gt; import matplotlib.cm as cm</span>
-<span class="sd">		&gt;&gt;&gt; ta.cmap=cm.prism  #choose different colour map</span>
+<span class="sd">		&gt;&gt;&gt; ta.cmap=matplotlib.cm.prism  #choose different colour map</span>
 <span class="sd">		&gt;&gt;&gt; ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps</span>
 
 <span class="sd">		&#39;&#39;&#39;</span>
@@ -4592,7 +4659,7 @@
 <span class="sd">			this is the correction applied. It must be a DataFrame with </span>
 <span class="sd">			the same numbers of columns (spectral points) as the used ds</span>
 <span class="sd">		</span>
-<span class="sd">		Example</span>
+<span class="sd">		Examples</span>
 <span class="sd">		--------</span>
 <span class="sd">		if the object self has the name &quot;ta&quot;</span>
 <span class="sd">		</span>
@@ -5813,7 +5880,7 @@
 <span class="sd">		filename : str, optional</span>
 <span class="sd">			(Default) None, Base name for all plots. If None, then self.filename will be used</span>
 <span class="sd">			</span>
-<span class="sd">		Example</span>
+<span class="sd">		Examples</span>
 <span class="sd">		---------</span>
 <span class="sd">		&gt;&gt;&gt; ta.Save_Data</span>
 <span class="sd">		</span>
@@ -6379,7 +6446,7 @@
 <div class="viewcode-block" id="TA.Copy"><a class="viewcode-back" href="../plot_func.html#plot_func.TA.Copy">[docs]</a>	<span class="k">def</span> <span class="nf">Copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;returns a deep copy of the object.</span>
 <span class="sd">		</span>
-<span class="sd">		Example</span>
+<span class="sd">		Examples</span>
 <span class="sd">		--------</span>
 <span class="sd">		&gt;&gt;&gt;ta=plot_func.TA(&#39;testfile.hdf5&#39;) #open a project</span>
 <span class="sd">		&gt;&gt;&gt;ta1=ta.Copy() #make a copy for some tests or a differnet fit</span>

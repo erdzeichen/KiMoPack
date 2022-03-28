@@ -402,6 +402,29 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
 def Frame_golay(df, window=5, order=2,transpose=False):
 	'''Convenience method that returns the Golay smoothed data for each column (DataFrame) or the series
+	
+	Parameters
+	-----------
+	
+	df : pandas.DataFrame,pandas.Series
+		the DataFrame that has to be interpolated
+	
+	window_size : int,optional
+		5(Default) an integer that indicates how many units are to be interpolated
+		
+	order : int, optional
+		2 (Default) an integer that indicates what orderpolynoninal is to be used to interpolate the points. 
+		order=1 effectively turns this into a floating average
+		
+	transpose : bool,optional 
+		in which orientation is the interpolation to be done. Default is in within the column (usually timepoints)
+	
+	Returns
+	---------
+	
+	pandas.DataFrame or pandas.Series
+		DataFrame or Series with the interpolation applied
+	
 	'''
 	df=df.fillna(0)
 	if transpose:
@@ -3325,8 +3348,10 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 		experimental times
 	mod : str, optional
 		this selects the model that is used to generate the concentrations.
+		
 			1. 'paral' (Default) or 'exponential' both are equivalent
 			2. 'consecutive' or 'full_consecutive'
+		
 		In 2 the 'consecutive' and 'full_consecutive' are different in that for consecutive 
 		the optimization is done using 'exponential' (as it shoudl give the same times)
 		and then only in the last (final) iteration the 'full consecutive' differential
@@ -3411,7 +3436,50 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 
 
 def fill_int(ds,c,final=True,baseunit='ps'):
-	'''solving_equation_way,'''
+	'''solving the intensity an equation_way, takes the target dataframe and the concentration frame 
+	prepares the matrixes(c) the tries to solve this equation system using 
+	eps=np.linalg.lstsq(AA,Af,rcond=-1)[0]
+	if failes it returns a dictionary with 1000 as error (only entry) if successful
+	it returns a dictionary that contains the 
+	fit_error = (AE**2).sum() with AE beeing the difference of measured and calcuated matrix
+	
+	Parameters
+	-----------
+	
+	ds : DataFrame
+		DataFrame to be fitted
+		
+	c: DataFrame
+		DataFrame oontaining the concentration matrix (the concentrations as with the times as index. 
+		Each different species has a column with the species name as column name
+		
+	final : bool,optional
+		if True (Default) the complete solutions will be attached otherwise only the error is attached
+		
+	baseunit : str,optional
+		this string is used as unit for the time axis
+
+	Returns
+	------------------
+	
+	re : dict
+		the dictionary "re" attached to the object containing all the matrixes and parameter. 
+		
+		if "final" is True:
+		
+			* "A" Shaped measured Matrix
+			* "AC" Shaped calculated Matrix 
+			* "AE" Difference between A and AC = linear error 
+			* "DAC" DAS or SAS, labeled after the names given in the function (the columns of c) Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized
+			* "c" The Concentrations (meaning the evolution of the concentrations over time. Care must be taken that this mesured intensity is C * DAS, the product. For exponential model the concentrations are normalized
+			* "error" is the S2, meaning AE**2.sum().sum()
+			
+		else:
+		
+			* "error" is the S2, meaning AE**2.sum()
+			
+
+	'''
 	time=ds.index.values.astype('float')
 	wl=ds.columns.values.astype('float')
 	time_label=ds.index.name
@@ -4156,7 +4224,7 @@ class TA():	# object wrapper for the whole
 			(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA
 			(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. 
 			If a list/vector/DataFrame is given for the colours they will be used in the order provided.
-		lintresh : float
+		self.lintresh : float
 			The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 			time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
 		self.log_fit  : 
@@ -4272,8 +4340,7 @@ class TA():	# object wrapper for the whole
 		>>> ta.wave_nm_bin=5  #rebin the data to this width
 		>>> ta.intensity_range=3e-3  #equivalent to [-3e-3,3e-3]
 		>>> ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots
-		>>> import matplotlib.cm as cm
-		>>> ta.cmap=cm.prism  #choose different colour map
+		>>> ta.cmap=matplotlib.cm.prism  #choose different colour map
 		>>> ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps
 
 		'''
@@ -4427,7 +4494,7 @@ class TA():	# object wrapper for the whole
 			this is the correction applied. It must be a DataFrame with 
 			the same numbers of columns (spectral points) as the used ds
 		
-		Example
+		Examples
 		--------
 		if the object self has the name "ta"
 		
@@ -5648,7 +5715,7 @@ class TA():	# object wrapper for the whole
 		filename : str, optional
 			(Default) None, Base name for all plots. If None, then self.filename will be used
 			
-		Example
+		Examples
 		---------
 		>>> ta.Save_Data
 		
@@ -6214,7 +6281,7 @@ class TA():	# object wrapper for the whole
 	def Copy(self):
 		'''returns a deep copy of the object.
 		
-		Example
+		Examples
 		--------
 		>>>ta=plot_func.TA('testfile.hdf5') #open a project
 		>>>ta1=ta.Copy() #make a copy for some tests or a differnet fit
