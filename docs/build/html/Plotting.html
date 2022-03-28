@@ -1,43 +1,41 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Plotting functions &mdash; KiMoPack 6.5.1 documentation</title>
   
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
+  
   
   
 
   
-  
-
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Fitting, Parameter optimization and Error estimation" href="Fitting.html" />
@@ -78,7 +76,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -110,7 +107,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -145,20 +141,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Plotting functions</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/Plotting.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -172,7 +166,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="plotting-functions">
+  <section id="plotting-functions">
 <h1>Plotting functions<a class="headerlink" href="#plotting-functions" title="Permalink to this headline">¶</a></h1>
 <blockquote>
 <div><ul class="simple">
@@ -194,7 +188,7 @@ e.g. “range(3)”.</p>
 <p>Most of the plot defining parameter (like, what for which wavelength the kinetic
 is plotted or at what times the kinetics are extracted are defined by the
 :ref:´Plot shaping options without influence on the fitting´.</p>
-<div class="section" id="plot-raw">
+<section id="plot-raw">
 <h2>Plot_RAW<a class="headerlink" href="#plot-raw" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Plot_RAW" title="plot_func.TA.Plot_RAW"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Plot_RAW()</span></code></a> plots all raw figures. The different figures can be called
 separately or with a list of plots (standard) e.g. plotting=range(4)
@@ -202,8 +196,8 @@ call plots 0-3, plotting=1 a single plot. The plots have the following
 numbers: 0 - Matrix, 1 - Kinetics, 2 - Spectra, 3 - SVD. The plotting
 can take all parameter from the “ta” object. See:
 <a class="reference internal" href="plot_func.html#plot_func.TA.Plot_RAW" title="plot_func.TA.Plot_RAW"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Plot_RAW()</span></code></a></p>
-</div>
-<div class="section" id="plot-fit-output">
+</section>
+<section id="plot-fit-output">
 <h2>Plot_fit_output<a class="headerlink" href="#plot-fit-output" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Plot_fit_output" title="plot_func.TA.Plot_fit_output"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Plot_fit_output()</span></code></a> plots the fit results. For this is uses the data
 contained in the shaped and cut datasets that were used for the fit,
@@ -241,8 +235,8 @@ use of qt as backend allows the easy customization of the plots via the
 GUI. If the plots are saved as “svg” they can easily be adjusted in
 inkscape or similar afterwards.
 For more details see: <a class="reference internal" href="plot_func.html#plot_func.TA.Plot_fit_output" title="plot_func.TA.Plot_fit_output"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Plot_fit_output()</span></code></a></p>
-</div>
-<div class="section" id="plot-shaping-options-without-influence-on-the-fitting">
+</section>
+<section id="plot-shaping-options-without-influence-on-the-fitting">
 <h2>Plot shaping options without influence on the fitting<a class="headerlink" href="#plot-shaping-options-without-influence-on-the-fitting" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the general shaping parameter from section <a class="reference internal" href="Shaping.html#data-shaping-settings-that-affect-the-fits"><span class="std std-ref">Data shaping settings that affect the fits</span></a>
 a number of parameter only affect one or multiple of the plots but not the fitting of the data.</p>
@@ -264,8 +258,8 @@ Which is useful for fast surveys, otherwise the method <a class="reference inter
 stores all plots (see <a class="reference internal" href="Saving.html#data-export-and-project-saving"><span class="std std-ref">Data Export and Project Saving</span></a>). The axis labels are accessible via the <strong>baseunit</strong>
 and the Fonts are accessible via the function <a class="reference internal" href="plot_func.html#plot_func.changefonts" title="plot_func.changefonts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.changefonts()</span></code></a></p></li>
 </ul>
-</div>
-<div class="section" id="extended-raw-plotting">
+</section>
+<section id="extended-raw-plotting">
 <h2>extended Raw plotting<a class="headerlink" href="#extended-raw-plotting" title="Permalink to this headline">¶</a></h2>
 <p><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Plot_raw()</span></code> is an extended function. All the parameters are
 accessible (and need then to be set manually). This function also plots a single
@@ -282,37 +276,37 @@ separate plot functions:</p>
 </ul>
 </div></blockquote>
 <p>Each of the functions allows to hand in an axis and thus plot multiple things</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Fitting.html" class="btn btn-neutral float-right" title="Fitting, Parameter optimization and Error estimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Shaping.html" class="btn btn-neutral float-left" title="Shaping of Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="Fitting.html" class="btn btn-neutral float-right" title="Fitting, Parameter optimization and Error estimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Shaping.html" class="btn btn-neutral float-left" title="Shaping of Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -320,6 +314,7 @@ separate plot functions:</p>
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,43 +1,40 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>plot_func &mdash; KiMoPack 6.5.1 documentation</title>
   
 
   
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
+  
   
   
 
   
-  
-
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -76,7 +73,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -102,7 +98,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -137,13 +132,11 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -164,7 +157,7 @@
             
   <h1>Source code for plot_func</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.1&quot;</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.2&quot;</span>
 <span class="n">Copyright</span> <span class="o">=</span> <span class="s1">&#39;@Jens Uhlig&#39;</span>
 <span class="k">if</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#Hide imports	</span>
 	<span class="kn">import</span> <span class="nn">os</span>
@@ -4696,11 +4689,35 @@
 
 
 <div class="viewcode-block" id="TA.Man_Chirp"><a class="viewcode-back" href="../plot_func.html#plot_func.TA.Man_Chirp">[docs]</a>	<span class="k">def</span> <span class="nf">Man_Chirp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shown_window</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">max_points</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">prism</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run aleady. </span>
-<span class="sd">		Alternatively delete the chirp file.</span>
+		<span class="sd">&#39;&#39;&#39;Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run already. </span>
+<span class="sd">		Alternatively delete the chirp file. This Function opens a plot in which the user manually selects a number of points</span>
+<span class="sd">		These points will then be interpolated with a 4th order polynomial</span>
+<span class="sd">		The user can then select a new t=0 point. </span>
+<span class="sd">		The first option allows to fine select an intensity setting for this chirp correction.</span>
+<span class="sd">		However sometimes spikes are making this things difficult. In this case set a guessed intensity with self.intensity_range=1e-3</span>
+<span class="sd">		</span>
+<span class="sd">		Parameters</span>
+<span class="sd">		-------------</span>
+<span class="sd">		   </span>
+<span class="sd">		path : str or path object (optional)</span>
+<span class="sd">			if path is a string without the operation system dependent separator, it is treated as a relative path, </span>
+<span class="sd">			e.g. data will look from the working directory in the sub director data. Otherwise this has to be a </span>
+<span class="sd">			full path in either strong or path object form.</span>
+<span class="sd">		</span>
+<span class="sd">		shown_window : list (with two floats), optional</span>
+<span class="sd">			Defines the window that is shown during chirp correction. If the t=0 is not visible, adjust this parameter</span>
+<span class="sd">			to suit the experiment. If problems arise, I recomment to use Plot_Raw to check where t=0 is located</span>
+
+<span class="sd">		max_points : int, optional</span>
+<span class="sd">			Default = 40 max numbers of points to use in Gui selection. Useful option in case no middle mouse button</span>
+<span class="sd">			is available. (e.g. touchpad)</span>
+<span class="sd">		</span>
+<span class="sd">		cmap : matplotlib colourmap, optional</span>
+<span class="sd">			Colourmap to be used for the chirp correction. While there is a large selection here I recommend to choose</span>
+<span class="sd">			a different map than is used for the normal 2d plotting.\n</span>
+<span class="sd">			cm.prism (Default) has proofen to be very usefull</span>
 <span class="sd">		</span>
 <span class="sd">		&#39;&#39;&#39;</span>
-		
 		
 		<span class="n">temp_ds</span> <span class="o">=</span> <span class="n">Fix_Chirp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds_ori</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">save_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">intensity_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_range</span><span class="p">,</span> 
 							<span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">shown_window</span> <span class="o">=</span> <span class="n">shown_window</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
@@ -4726,6 +4743,9 @@
 <span class="sd">		a middle click (sometime appreviated by clicking left and right together) </span>
 <span class="sd">		finishes the selection. If no middle click exists, the process</span>
 <span class="sd">		automatically ends after max_points (40 preset).</span>
+<span class="sd">		</span>
+<span class="sd">		The first option allows to fine select an intensity setting for this chirp correction.</span>
+<span class="sd">		However sometimes spikes are making this things difficult. In this case set a guessed intensity with self.intensity_range=1e-3</span>
 
 <span class="sd">		After the first run the polynom is stored in self.fitcoeff, a new matrix </span>
 <span class="sd">		calculated from self.ds_ori that is stored as self.ds and a file stored in the </span>
@@ -7250,25 +7270,20 @@
            
           </div>
           <footer>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -7276,6 +7291,7 @@
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {
