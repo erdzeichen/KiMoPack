@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.5.2"
+version = "6.5.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3967,8 +3967,10 @@ class TA():	# object wrapper for the whole
 		----------
 		
 		filename : str
-			expects a filename in string form for opening a single file. alternatively 'gui' can be set as 
-			filename, then a TKinter gui is opened for select.
+			
+			* expects a filename in string form for opening a single file. 
+			* alternatively 'gui' can be set as filename, then a TKinter gui is opened for select.
+			* alternatively 'recent' can given as key word. in this case it tries to find a text file named "recent.dat" that should contain the path to the last file opened with the GUI. this file is then opened. if this file is not found the GUI is opened instead
 		
 		path : str or path object (optional)
 			if path is a string without the operation system dependent separator, it is treated as a relative path, 
@@ -4064,7 +4066,26 @@ class TA():	# object wrapper for the whole
 			complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 			listen=os.path.split(complete_path)
 			path=os.path.normpath(listen[0])
-			filename=listen[1]		
+			filename=listen[1]
+			with open('recent.dat','w') as f:
+				f.write(complete_path)
+		elif filename == 'recent':
+			try:
+				with open('recent.dat','r') as f:
+					complete_path = f.readline()
+					listen=os.path.split(complete_path)
+					path=os.path.normpath(listen[0])
+					filename=listen[1]
+			except:
+				root_window = tkinter.Tk()
+				root_window.withdraw()
+				root_window.after(1000, lambda: root_window.focus_force())
+				complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
+				listen=os.path.split(complete_path)
+				path=os.path.normpath(listen[0])
+				filename=listen[1]
+				with open('recent.dat','w') as f:
+					f.write(complete_path)
 		self.path=check_folder(path=path,current_path=os.getcwd())
 		self.filename=filename
 		if 'hdf5' in filename:#we read in data from previous run
@@ -4196,7 +4217,7 @@ class TA():	# object wrapper for the whole
 		
 	def __make_standard_parameter(self):
 		'''function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.
-		
+
 		Parameters
 		-------------
 
@@ -4315,13 +4336,13 @@ class TA():	# object wrapper for the whole
 			maximum of the data. A single value like in the example below and the intended use is the symmetric
 			scale while a list with two entries an assymmetric scale e.g. 
 			intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]
-		self.ds_ori.columns.name  : 
+		self.ds_ori.columns.name : str, optional 
 			(Default)  'Wavelength in nm'\n
 			This is the general energy axis. here we define it with the unit. Change this to energy for use in e.g x-ray science
-		self.ds_ori.index.name : 
+		self.ds_ori.index.name : str, optional
 			Standard 'Time in %s' % self.baseunit 
 		self.data_type: str (optional)
-			self.data_type='diff. Absorption \nin $\mathregular{\Delta OD}$'	
+			self.data_type='diff. Absorption in $\mathregular{\Delta OD}$'
 		self.fitcoeff : list (5 floats)
 			chirp correction polynom
 		self.chirp_file : str
@@ -4342,6 +4363,7 @@ class TA():	# object wrapper for the whole
 		>>> ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots
 		>>> ta.cmap=matplotlib.cm.prism  #choose different colour map
 		>>> ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps
+
 
 		'''
 		self.log_scale = False if not hasattr(self, 'log_scale') else self.log_scale

@@ -1,40 +1,43 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>plot_func &mdash; KiMoPack 6.5.1 documentation</title>
+  <title>plot_func &mdash; KiMoPack 6.5.3 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
 
   
   
-  
+
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -73,6 +76,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -98,6 +102,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,11 +137,13 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -157,7 +164,7 @@
             
   <h1>Source code for plot_func</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.2&quot;</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.3&quot;</span>
 <span class="n">Copyright</span> <span class="o">=</span> <span class="s1">&#39;@Jens Uhlig&#39;</span>
 <span class="k">if</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#Hide imports	</span>
 	<span class="kn">import</span> <span class="nn">os</span>
@@ -4125,8 +4132,10 @@
 <span class="sd">		----------</span>
 <span class="sd">		</span>
 <span class="sd">		filename : str</span>
-<span class="sd">			expects a filename in string form for opening a single file. alternatively &#39;gui&#39; can be set as </span>
-<span class="sd">			filename, then a TKinter gui is opened for select.</span>
+<span class="sd">			</span>
+<span class="sd">			* expects a filename in string form for opening a single file. </span>
+<span class="sd">			* alternatively &#39;gui&#39; can be set as filename, then a TKinter gui is opened for select.</span>
+<span class="sd">			* alternatively &#39;recent&#39; can given as key word. in this case it tries to find a text file named &quot;recent.dat&quot; that should contain the path to the last file opened with the GUI. this file is then opened. if this file is not found the GUI is opened instead</span>
 <span class="sd">		</span>
 <span class="sd">		path : str or path object (optional)</span>
 <span class="sd">			if path is a string without the operation system dependent separator, it is treated as a relative path, </span>
@@ -4222,7 +4231,26 @@
 			<span class="n">complete_path</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">(</span><span class="n">initialdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
 			<span class="n">listen</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">complete_path</span><span class="p">)</span>
 			<span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">listen</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-			<span class="n">filename</span><span class="o">=</span><span class="n">listen</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>		
+			<span class="n">filename</span><span class="o">=</span><span class="n">listen</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+			<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;recent.dat&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+				<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">complete_path</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">filename</span> <span class="o">==</span> <span class="s1">&#39;recent&#39;</span><span class="p">:</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;recent.dat&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+					<span class="n">complete_path</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+					<span class="n">listen</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">complete_path</span><span class="p">)</span>
+					<span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">listen</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+					<span class="n">filename</span><span class="o">=</span><span class="n">listen</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+			<span class="k">except</span><span class="p">:</span>
+				<span class="n">root_window</span> <span class="o">=</span> <span class="n">tkinter</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
+				<span class="n">root_window</span><span class="o">.</span><span class="n">withdraw</span><span class="p">()</span>
+				<span class="n">root_window</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">root_window</span><span class="o">.</span><span class="n">focus_force</span><span class="p">())</span>
+				<span class="n">complete_path</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">(</span><span class="n">initialdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+				<span class="n">listen</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">complete_path</span><span class="p">)</span>
+				<span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">listen</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+				<span class="n">filename</span><span class="o">=</span><span class="n">listen</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+				<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;recent.dat&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+					<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">complete_path</span><span class="p">)</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">=</span><span class="n">check_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span><span class="n">current_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span>
 		<span class="k">if</span> <span class="s1">&#39;hdf5&#39;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span><span class="c1">#we read in data from previous run</span>
@@ -4354,7 +4382,7 @@
 		
 	<span class="k">def</span> <span class="nf">__make_standard_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;function that sets the standard parameter. The function takes no input, but we use this docstring to explain the parameter.</span>
-<span class="sd">		</span>
+
 <span class="sd">		Parameters</span>
 <span class="sd">		-------------</span>
 
@@ -4473,13 +4501,13 @@
 <span class="sd">			maximum of the data. A single value like in the example below and the intended use is the symmetric</span>
 <span class="sd">			scale while a list with two entries an assymmetric scale e.g. </span>
 <span class="sd">			intensity_range=3e-3 is converted into intensity_range=[-3e-3,3e-3]</span>
-<span class="sd">		self.ds_ori.columns.name  : </span>
+<span class="sd">		self.ds_ori.columns.name : str, optional </span>
 <span class="sd">			(Default)  &#39;Wavelength in nm&#39;\n</span>
 <span class="sd">			This is the general energy axis. here we define it with the unit. Change this to energy for use in e.g x-ray science</span>
-<span class="sd">		self.ds_ori.index.name : </span>
+<span class="sd">		self.ds_ori.index.name : str, optional</span>
 <span class="sd">			Standard &#39;Time in %s&#39; % self.baseunit </span>
 <span class="sd">		self.data_type: str (optional)</span>
-<span class="sd">			self.data_type=&#39;diff. Absorption \nin $\mathregular{\Delta OD}$&#39;	</span>
+<span class="sd">			self.data_type=&#39;diff. Absorption in $\mathregular{\Delta OD}$&#39;</span>
 <span class="sd">		self.fitcoeff : list (5 floats)</span>
 <span class="sd">			chirp correction polynom</span>
 <span class="sd">		self.chirp_file : str</span>
@@ -4500,6 +4528,7 @@
 <span class="sd">		&gt;&gt;&gt; ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots</span>
 <span class="sd">		&gt;&gt;&gt; ta.cmap=matplotlib.cm.prism  #choose different colour map</span>
 <span class="sd">		&gt;&gt;&gt; ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps</span>
+
 
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;log_scale&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span>
@@ -7270,20 +7299,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2022, Jens Uhlig
+        &#169; Copyright 2022, Jens Uhlig.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
@@ -7291,7 +7325,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
