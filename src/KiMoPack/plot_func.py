@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.5.3"
+version = "6.5.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -279,6 +279,7 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 	if project_list is None:
 		root_window = tkinter.Tk()
 		root_window.withdraw()
+		root_window.attributes('-topmost',True)
 		root_window.after(1000, lambda: root_window.focus_force())
 		path_list = filedialog.askopenfilename(initialdir=os.getcwd(),multiple=True,filetypes=[('TA project files','*.%s'%fileending)])									 
 		if project_list is None:
@@ -676,6 +677,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	elif list_of_scans == 'gui':
 		root_window = tkinter.Tk()
 		root_window.withdraw()
+		root_window.attributes('-topmost',True)
 		root_window.after(1000, lambda: root_window.focus_force())
 		path_list = filedialog.askopenfilename(initialdir = os.getcwd(),multiple = True,filetypes = [('Raw scan files',"*.%s"%fileending)])
 		list_of_scans = path_list
@@ -2535,7 +2537,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		else:#handling multiple scattercuts
 			try:
 				scattercut=flatten(scattercut)
-				for i in range(len(scattercut)/2+1):
+				for i in range(len(scattercut)):
 					if i==0:
 						smoothed=Frame_golay(ds.loc[:scattercut[0],:], window = 5, order = 3,transpose=False)
 						smoothed.plot(ax = ax1, style = '-', color = colors, legend = False, lw = linewidth)
@@ -2566,7 +2568,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		else:
 			try:
 				scattercut=flatten(scattercut)
-				for i in range(len(scattercut)/2+1):
+				for i in range(len(scattercut)):
 					if i==0:
 						ds.loc[:scattercut[0],:].plot(ax = ax1, legend = False, style = '-', color = colors, alpha = 0.7, lw = linewidth)
 					elif i<(len(scattercut)/2):
@@ -4060,8 +4062,9 @@ class TA():	# object wrapper for the whole
 		'''
 		
 		if filename == 'gui':
-			root_window = tkinter.Tk()
+			root_window = tkinter.Tk()			
 			root_window.withdraw()
+			root_window.attributes('-topmost',True)
 			root_window.after(1000, lambda: root_window.focus_force())
 			complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 			listen=os.path.split(complete_path)
@@ -4079,6 +4082,7 @@ class TA():	# object wrapper for the whole
 			except:
 				root_window = tkinter.Tk()
 				root_window.withdraw()
+				root_window.attributes('-topmost',True)
 				root_window.after(1000, lambda: root_window.focus_force())
 				complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 				listen=os.path.split(complete_path)
@@ -4692,6 +4696,7 @@ class TA():	# object wrapper for the whole
 		elif 'gui' in chirp_file:
 			root_window = tkinter.Tk()
 			root_window.withdraw()
+			root_window.attributes('-topmost',True)
 			root_window.after(1000, lambda: root_window.focus_force())
 			complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 			listen=os.path.split(complete_path)
