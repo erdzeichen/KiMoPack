@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Opening of data &mdash; KiMoPack 6.5.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Shaping of Data" href="Shaping.html" />
+    <link rel="prev" title="Main Tasks overview" href="Main_tasks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> KiMoPack
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Main_tasks.html">Main Tasks overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Opening of data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#opening-single-file-and-creating-ta-object">Opening single file and creating TA object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#opening-multiple-files">Opening multiple files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#opening-and-handling-single-scans">Opening and handling single scans</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Shaping.html">Shaping of Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Plotting.html">Plotting functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Fitting.html">Fitting, Parameter optimization and Error estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Comparing.html">Comparative plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Saving.html">Data Export and Project Saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Function Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot_func.html">KiMoPack - Functions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">KiMoPack</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Opening of data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/Opening.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="opening-of-data">
+<h1>Opening of data<a class="headerlink" href="#opening-of-data" title="Permalink to this headline">¶</a></h1>
+<p>A key challenge in using a non graphical programming software is to locate files.
+This tool provides a mixed interface to solve this challenge.
+Each of the following function has a “Gui” keyword that can trigger a standard file
+opening dialogue. Alternatively the filenames can be written together with an (optional)
+path argument.
+If the analysis uses the from us provided workflow notebooks, then we suggest that a fresh notebook
+is used for each particular analysis and that the notebook is copied close to the data.</p>
+<p>All import functions provide a wide variety of options to adapt for data formats. If a particular option is missing,
+please contact the developers via email or raise an issue on github for it to be added.
+The formats of the example file have the spectral information as the first row,
+the time vector as first entrance of each of the following rows and are separated by tab.
+Files of this type can be read without any further adaption (using the standard parameter).</p>
+<div class="section" id="opening-single-file-and-creating-ta-object">
+<h2>Opening single file and creating TA object<a class="headerlink" href="#opening-single-file-and-creating-ta-object" title="Permalink to this headline">¶</a></h2>
+<p>Open single file:                       <a class="reference internal" href="plot_func.html#plot_func.TA.__init__" title="plot_func.TA.__init__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.TA()</span></code></a></p>
+<p>Typical use of the tool is based upon an object containing all
+parameter, functions and the data. This object is created by importing a
+data file using this function.</p>
+<p>The filename can be either provided as a string, with the (optional) path to other folders given.
+Using the keyword “gui” instead of a filename opens the graphical file selection interface.
+The function can either open a text style format (using any file ending) or the internally used “hdf5” file format.
+The latter is exclusively used as internal storage formate that stores the complete project including the RAW data.</p>
+<p>After import of either filetype the missing parameter in the “TA” object are set with the
+<a class="reference internal" href="plot_func.html#plot_func.TA.__make_standard_parameter" title="plot_func.TA.__make_standard_parameter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.__make_standard_parameter()</span></code></a> function.</p>
+</div>
+<div class="section" id="opening-multiple-files">
+<h2>Opening multiple files<a class="headerlink" href="#opening-multiple-files" title="Permalink to this headline">¶</a></h2>
+<p>Open many files:                        <a class="reference internal" href="plot_func.html#plot_func.GUI_open" title="plot_func.GUI_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.GUI_open()</span></code></a></p>
+<p>Sometimes multiple files are to be opened. Typical use examples are the options to compare different
+measurements or analysis runs. This function provides a convenient way to create a list of opened projects.
+One can</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>open a gui and select multiple saved projects, which are returned as a list</p></li>
+<li><p>given a list of project names to open them</p></li>
+<li><p>open all files in a given folder</p></li>
+</ul>
+</div></blockquote>
+<p>The general behavior is selected by the first parameter (project_list)
+For more details see the examples in <a class="reference internal" href="plot_func.html#plot_func.GUI_open" title="plot_func.GUI_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.GUI_open()</span></code></a></p>
+</div>
+<div class="section" id="opening-and-handling-single-scans">
+<h2>Opening and handling single scans<a class="headerlink" href="#opening-and-handling-single-scans" title="Permalink to this headline">¶</a></h2>
+<p>Combine many scans:                     <a class="reference internal" href="plot_func.html#plot_func.Summarize_scans" title="plot_func.Summarize_scans"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.Summarize_scans()</span></code></a></p>
+<p>Typically the experiments consists of a larger number of scans that are combined into a single experimental file.
+The function “Summarize_scans” reads, selects and eventually combines a
+series of single scans with a bunch of useful options. The essential idea is
+that for each scan one or two numbers are generated through integration of the intensity
+in a temporal and spectral window. This single number is plotted as function against the scan number.
+Then either a list of numbers or a GUI is used to select the scans that are
+removed from the average. A number of opening and selection options are given.</p>
+<p>This function could also be used to combine a number of different experiments.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="Shaping.html" class="btn btn-neutral float-right" title="Shaping of Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="Main_tasks.html" class="btn btn-neutral float-left" title="Main Tasks overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2022, Jens Uhlig.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

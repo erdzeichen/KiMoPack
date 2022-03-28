@@ -75,8 +75,3 @@ Links
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
 	* Zenodo: https://zenodo.org/badge/latestdoi/400527965
-<<<<<<< HEAD
-5
-=======
-
->>>>>>> 411a47776668c1867e1d34176a403d02fbec1c41
