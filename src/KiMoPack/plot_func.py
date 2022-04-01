@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.5.5"
+version = "6.5.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -1216,7 +1216,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		for a in bounds1:
 			bounds0.append(a)
 		norm = colors.BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
-		mid_color=colm(k=range(levels),cmap=cmap)[(levels-levels%2)/2]
+		mid_color=colm(k=range(levels),cmap=cmap)[int((levels-levels%2)/2)]
 		#norm=colors.SymLogNorm(levels,linthresh=1e-5, linscale=1e-5,vmin=intensity_range[0], vmax=intensity_range[1])
 	else:
 		nbins=levels
@@ -2591,7 +2591,9 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	else:
 		ax1.set_xlim(bordercut)	
 	if (not subplot) and plot_second_as_energy:
+		ax1.set_zorder(5)
 		ax2=ax1.twiny()
+		ax2.set_zorder(0)
 		ax2.set_xlim(ax1.get_xlim())
 		ax2.set_xticks(ax1.get_xticks())
 		labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
@@ -3081,7 +3083,10 @@ def Species_Spectra(ta=None,conc=None,das=None):
 	else:
 		if (conc is None) or (das is None):
 			print('If the ta object is None, then we need both the conc and the das')
-			return False			
+			return False
+		else:
+			time=conc.index.values
+			WL=das.index.values			
 	results={}
 	for i in range(len(conc.columns)):
 		A,B=np.meshgrid(conc.iloc[:,i].values,das.iloc[:,i].values)
