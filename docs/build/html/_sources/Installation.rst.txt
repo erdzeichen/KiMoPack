@@ -9,11 +9,15 @@ Alternatively we recommend the usage of the usual python install commands "pip" 
 package manager, The conda type installation. For both please open a command line (e.g. using "cmd" in windows) and execute the following commands. 
 The Jupyter notebooks are copied during the install process. The notebooks can also be downloaded from the github server https://github.com/erdzeichen/KiMoPack.
 
-Install and update using "pip":
+Install using "pip":
 
 .. code-block:: text
 
-    $ pip install KiMoPack
+    $ pip install KiMoPack 
+
+Upgrade if already installed:
+
+    $ pip install KiMoPack -U
 
 Install and update using "conda" from the channel erdzeichen:
 

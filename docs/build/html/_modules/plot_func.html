@@ -1,43 +1,40 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>plot_func &mdash; KiMoPack 6.5.5 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
+  <title>plot_func &mdash; KiMoPack 6.6.0 documentation</title>
   
 
   
   
-
+  
   
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
 </head>
@@ -76,7 +73,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -102,7 +98,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -137,13 +132,11 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
         
           <li><a href="index.html">Module code</a> &raquo;</li>
         
@@ -164,7 +157,7 @@
             
   <h1>Source code for plot_func</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.5.5&quot;</span>
+<span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;6.6.0&quot;</span>
 <span class="n">Copyright</span> <span class="o">=</span> <span class="s1">&#39;@Jens Uhlig&#39;</span>
 <span class="k">if</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#Hide imports	</span>
 	<span class="kn">import</span> <span class="nn">os</span>
@@ -187,6 +180,7 @@
 	<span class="kn">from</span> <span class="nn">matplotlib.offsetbox</span> <span class="kn">import</span> <span class="n">AnchoredText</span>	
 	<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">AutoMinorLocator</span>
 	<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Rectangle</span>
+	<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">transforms</span>
 	<span class="kn">import</span> <span class="nn">re</span>
 	<span class="kn">import</span> <span class="nn">scipy</span>
 	<span class="kn">import</span> <span class="nn">scipy.constants</span>
@@ -2290,7 +2284,7 @@
 			<span class="n">log_scale</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="s1">&#39;symlog&#39;</span><span class="p">,</span> <span class="n">lintresh</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
 			<span class="n">save_figures_to_folder</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">savetype</span> <span class="o">=</span> <span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
 			<span class="n">print_click_position</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">=</span> <span class="s1">&#39;differential Absorption in $\mathregular{\Delta OD}$&#39;</span><span class="p">,</span>
-			<span class="n">plot_second_as_energy</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;nm&#39;</span><span class="p">):</span>
+			<span class="n">plot_second_as_energy</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;nm&#39;</span><span class="p">,</span> <span class="n">return_plots</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;This is the extended plot function, for convenient object based plotting see TA.Plot_RAW </span>
 <span class="sd">	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of </span>
 <span class="sd">	cuts are created using the shaping parameters explained below.</span>
@@ -2469,6 +2463,9 @@
 <span class="sd">	print_click_position : bool, optional</span>
 <span class="sd">		if True then the click position is printed for the spectral plots </span>
 <span class="sd">		</span>
+<span class="sd">	return_plots : bool, optional </span>
+<span class="sd">		(Default) False, return is ignoriert. For True a dictionary with the handles to the figures is returned  </span>
+<span class="sd">		</span>
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="k">if</span> <span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span><span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;We need something to plot!!!&#39;</span><span class="p">)</span>
 															
@@ -2543,8 +2540,26 @@
 			<span class="n">fig4</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">check_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_RAW_SVD.</span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span><span class="n">savetype</span><span class="p">)),</span><span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 			   
 		<span class="k">except</span><span class="p">:</span>
-			<span class="k">pass</span></div>
-
+			<span class="k">pass</span>
+	<span class="k">if</span> <span class="n">return_plots</span><span class="p">:</span>
+		<span class="n">return_dicten</span><span class="o">=</span><span class="p">{}</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">return_dicten</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">fig1</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">return_dicten</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">fig2</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">return_dicten</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">fig3</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">return_dicten</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="n">fig4</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">return</span> <span class="n">return_dicten</span></div>
 
 <div class="viewcode-block" id="plot_time"><a class="viewcode-back" href="../plot_func.html#plot_func.plot_time">[docs]</a><span class="k">def</span> <span class="nf">plot_time</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rel_time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_width_percent</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">ignore_time_region</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
 			<span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">text_in_legend</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">baseunit</span> <span class="o">=</span> <span class="s1">&#39;ps&#39;</span><span class="p">,</span> 
@@ -3207,6 +3222,7 @@
 	<span class="k">else</span><span class="p">:</span>
 		<span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">V2</span><span class="p">,</span><span class="n">ds</span></div>
 
+
 <div class="viewcode-block" id="Species_Spectra"><a class="viewcode-back" href="../plot_func.html#plot_func.Species_Spectra">[docs]</a><span class="k">def</span> <span class="nf">Species_Spectra</span><span class="p">(</span><span class="n">ta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">conc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">das</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;useful help function that returns a dictionary that has DataFrame as entries and the names of the </span>
 <span class="sd">	components as keys</span>
@@ -3253,6 +3269,7 @@
 		<span class="n">C</span><span class="o">=</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">((</span><span class="n">A</span><span class="o">*</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">time</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">WL</span><span class="p">)</span>
 		<span class="n">results</span><span class="p">[</span><span class="n">conc</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">=</span><span class="n">C</span>
 	<span class="k">return</span> <span class="n">results</span></div>
+
 
 <span class="k">def</span> <span class="nf">Fix_Chirp</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">save_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scattercut</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">intensity_range</span> <span class="o">=</span> <span class="mf">5e-3</span><span class="p">,</span> <span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
 			<span class="n">shown_window</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fitcoeff</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_points</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> 
@@ -4904,6 +4921,168 @@
 						<span class="bp">self</span><span class="o">.</span><span class="n">fitcoeff</span><span class="o">=</span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ds_ori</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ds_ori</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span></div>
+
+	<span class="k">def</span> <span class="nf">Plot_Interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fitted</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ds</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;interactive plotting function. it plots the matrix in the middle and two slices that are selected by the mouse (click) </span>
+<span class="sd">		</span>
+<span class="sd">		Parameters</span>
+<span class="sd">		---------------</span>
+<span class="sd">		fitted : bool, optional</span>
+<span class="sd">			this switch decides if the fitted or the RAW data is plotted with this widget to </span>
+<span class="sd">			inspect the data data. If fitted is False (Default) then the raw data and an interpolation </span>
+<span class="sd">			is used to plot. </span>
+<span class="sd">		</span>
+<span class="sd">		cmap : None or matplotlib color map, optional</span>
+<span class="sd">			is a powerfull variable that chooses the colour map applied for all plots. If set to </span>
+<span class="sd">			None (Default) then the self.cmap is used.</span>
+<span class="sd">			As standard I use the color map &quot;jet&quot; from matplotlib. There are a variety of colormaps </span>
+<span class="sd">			available that are very usefull. Beside &quot;jet&quot;, &quot;viridis&quot; is a good choice as it is well </span>
+<span class="sd">			visible under red-green blindness. Other useful maps are &quot;prism&quot; for high fluctuations </span>
+<span class="sd">			or diverging color maps like &quot;seismic&quot;. </span>
+<span class="sd">			See https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html for a comprehensive </span>
+<span class="sd">			selection. In the code the colormaps are imported so if plot_func is imported as pf then </span>
+<span class="sd">			self.cmap=pf.cm.viridis sets viridis as the map to use. Internally the colors are chosen </span>
+<span class="sd">			with the &quot;colm&quot; function. The 2d plots require a continuous color map so if something </span>
+<span class="sd">			else is give 2d plots are shown automatically with &quot;jet&quot;. For all of the 1d plots however </span>
+<span class="sd">			I first select a number of colors before each plot. If cmap is a continous map then these</span>
+<span class="sd">			are sampled evenly over the colourmap. Manual iterables of colours </span>
+<span class="sd">			cmap=[(1,0,0),(0,1,0),(0,0,1),...] are also accepted, as are vectors or dataframes that </span>
+<span class="sd">			contain as rows the colors. There must be of course sufficient colors present for </span>
+<span class="sd">			the numbers of lines that will be plotted. So I recommend to provide at least 10 colours </span>
+<span class="sd">			(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA</span>
+<span class="sd">			(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. </span>
+<span class="sd">			If a list/vector/DataFrame is given for the colours they will be used in the order provided.		</span>
+<span class="sd">		</span>
+<span class="sd">		ds : DataFrame, optional</span>
+<span class="sd">			if None (Default), the program first tests self.ds and if this is not there then self.ds_ori.</span>
+<span class="sd">			This option was introduced to allow plotting of other matrixes with the same parameter</span>
+<span class="sd">			</span>
+<span class="sd">		 &#39;&#39;&#39;</span>
+		<span class="kn">from</span> <span class="nn">matplotlib.widgets</span> <span class="kn">import</span> <span class="n">Cursor</span>
+		<span class="k">if</span> <span class="n">cmap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span><span class="n">cmap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cmap</span>
+		<span class="k">if</span> <span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span><span class="p">:</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+					<span class="n">ds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ds_ori</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">ds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">ds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+				<span class="n">modelled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;AC&#39;</span><span class="p">]</span>
+		<span class="n">intensity_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_range</span>
+		<span class="k">if</span> <span class="n">intensity_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">maxim</span><span class="o">=</span><span class="nb">max</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span><span class="nb">abs</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+				<span class="n">intensity_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">maxim</span><span class="p">,</span><span class="n">maxim</span><span class="p">]</span>
+			<span class="k">except</span><span class="p">:</span>
+				<span class="n">intensity_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1e-2</span><span class="p">,</span><span class="mf">1e-2</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">intensity_range</span><span class="p">,</span><span class="s1">&#39;__iter__&#39;</span><span class="p">):</span><span class="c1">#lets have an lazy option</span>
+				<span class="n">intensity_range</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">intensity_range</span><span class="p">,</span><span class="n">intensity_range</span><span class="p">]</span>
+		<span class="k">class</span> <span class="nc">MouseMove</span><span class="p">:</span>
+			<span class="c1"># initialization</span>
+			<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">intensity_range</span><span class="p">,</span> <span class="n">log_scale</span><span class="p">,</span> <span class="n">baseunit</span><span class="p">,</span> 
+							<span class="n">timelimits</span><span class="p">,</span> <span class="n">scattercut</span><span class="p">,</span> <span class="n">bordercut</span><span class="p">,</span> <span class="n">wave_nm_bin</span><span class="p">,</span> <span class="n">ignore_time_region</span><span class="p">,</span>
+							<span class="n">time_bin</span><span class="p">,</span> <span class="n">lintresh</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">time_width_percent</span><span class="p">):</span>
+				<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">tight_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+				<span class="n">gs</span> <span class="o">=</span> <span class="n">GridSpec</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">=</span><span class="n">ds</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">intensity_range</span><span class="o">=</span><span class="n">intensity_range</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span><span class="o">=</span><span class="n">log_scale</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">baseunit</span><span class="o">=</span><span class="n">baseunit</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">timelimits</span><span class="o">=</span><span class="n">timelimits</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="o">=</span><span class="n">scattercut</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="o">=</span><span class="n">bordercut</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="o">=</span><span class="n">wave_nm_bin</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="o">=</span><span class="n">ignore_time_region</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">time_bin</span><span class="o">=</span><span class="n">time_bin</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="n">width</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">lintresh</span><span class="o">=</span><span class="n">lintresh</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">time_width_percent</span><span class="o">=</span><span class="n">time_width_percent</span>
+				
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plot2d</span><span class="p">(</span><span class="n">ds</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">intensity_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_range</span><span class="p">,</span> 
+					<span class="n">log_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span><span class="p">,</span> <span class="n">baseunit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baseunit</span><span class="p">,</span> <span class="n">timelimits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timelimits</span><span class="p">,</span> 
+					<span class="n">scattercut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">bordercut</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> <span class="n">wave_nm_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> 
+					<span class="n">ignore_time_region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> <span class="n">time_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_bin</span><span class="p">,</span> 
+					<span class="n">lintresh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lintresh</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span> <span class="n">use_colorbar</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span><span class="n">sharex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">sharey</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">)</span>
+				<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+				<span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;button_press_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">)</span>
+				
+			<span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+				<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span>
+				<span class="k">try</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+				<span class="k">except</span><span class="p">:</span>
+					<span class="k">pass</span>
+					
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span><span class="p">:</span>	
+					<span class="n">ds_temp1</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">Frame_golay</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">times</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">time_width_percent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_width_percent</span><span class="p">,</span> 
+									<span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> 
+									<span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> <span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> 
+									<span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+					<span class="n">ds_temp1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">ds_temp1</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">modelled</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">time_width_percent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_width_percent</span><span class="p">,</span> 
+									<span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> 
+									<span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> <span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> 
+									<span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+					<span class="n">ds_temp1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+					
+				<span class="n">ds_temp</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">time_width_percent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_width_percent</span><span class="p">,</span> 
+									<span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> 
+									<span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> <span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> 
+									<span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+				<span class="n">ds_temp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">(),[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%.3g</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> smoothed&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baseunit</span><span class="p">)])</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%.3g</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> fitted&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baseunit</span><span class="p">)])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax_time</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()])</span>
+				
+				<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="k">pass</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">10</span>
+				
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">fitted</span><span class="p">:</span>
+					<span class="n">ds_temp1</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">Frame_golay</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">wavelength</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+								<span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> <span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> 
+								<span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> <span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds_temp1</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">ds_temp1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.0f</span><span class="s1"> smoothed&#39;</span><span class="o">%</span><span class="n">x</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">ds_temp1</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">modelled</span><span class="p">,</span> <span class="n">wavelength</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+								<span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> <span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> 
+								<span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> <span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds_temp1</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">ds_temp1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.0f</span><span class="s1"> fitted&#39;</span><span class="o">%</span><span class="n">x</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+				
+				<span class="n">ds_temp</span> <span class="o">=</span> <span class="n">sub_ds</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="p">,</span> <span class="n">wavelength</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">scattercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="n">drop_scatter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+								<span class="n">bordercut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> <span class="n">ignore_time_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span> 
+								<span class="n">wave_nm_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> <span class="n">wavelength_bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+				
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="nb">min</span><span class="p">(</span><span class="n">ds_temp</span><span class="o">.</span><span class="n">values</span><span class="p">)]),</span><span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">ds_temp</span><span class="o">.</span><span class="n">values</span><span class="p">),</span><span class="mi">0</span><span class="p">]))</span>
+
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ds_temp</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="n">ds_temp</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.0f</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">(),</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%.0f</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">x</span><span class="p">])</span>				
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax_kinetic</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()])</span>
+				
+		<span class="n">eve</span><span class="o">=</span><span class="n">MouseMove</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">cmap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity_range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">baseunit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timelimits</span><span class="p">,</span> 
+						<span class="bp">self</span><span class="o">.</span><span class="n">scattercut</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bordercut</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave_nm_bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_time_region</span><span class="p">,</span>
+						<span class="bp">self</span><span class="o">.</span><span class="n">time_bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lintresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength_bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_width_percent</span><span class="p">)</span>
+		<span class="n">cursor</span> <span class="o">=</span> <span class="n">Cursor</span><span class="p">(</span><span class="n">eve</span><span class="o">.</span><span class="n">ax</span><span class="p">,</span> <span class="n">useblit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">eve</span><span class="p">,</span><span class="n">cursor</span>
+		
 
 
 <div class="viewcode-block" id="TA.Plot_RAW"><a class="viewcode-back" href="../plot_func.html#plot_func.TA.Plot_RAW">[docs]</a>	<span class="k">def</span> <span class="nf">Plot_RAW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotting</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scale_type</span> <span class="o">=</span> <span class="s1">&#39;symlog&#39;</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7304,25 +7483,20 @@
            
           </div>
           <footer>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -7330,6 +7504,7 @@
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

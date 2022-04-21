@@ -1,43 +1,42 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Fitting, Parameter optimization and Error estimation &mdash; KiMoPack 6.5.5 documentation</title>
-  
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
+  <title>Fitting, Parameter optimization and Error estimation &mdash; KiMoPack 6.6.0 documentation</title>
   
 
   
   
-
+  
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Comparative plotting" href="Comparing.html" />
@@ -78,7 +77,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -118,7 +116,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -153,20 +150,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Fitting, Parameter optimization and Error estimation</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/Fitting.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -180,7 +175,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="fitting-parameter-optimization-and-error-estimation">
+  <section id="fitting-parameter-optimization-and-error-estimation">
 <h1>Fitting, Parameter optimization and Error estimation<a class="headerlink" href="#fitting-parameter-optimization-and-error-estimation" title="Permalink to this headline">¶</a></h1>
 <p>Fitting data:                           <a class="reference internal" href="plot_func.html#plot_func.TA.Fit_Global" title="plot_func.TA.Fit_Global"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Fit_Global()</span></code></a></p>
 <p>One of the main functions of this program is to perform Global analysis
@@ -263,9 +258,9 @@ constraints and freezing/releasing of parameter. (see below). Additional
 fitting options include the fitting of the parameter of the arrival time
 correction, the use of advanced optimization algorithms, and the
 possibility to fit multiple datasets together.</p>
-<div class="section" id="description-of-models">
+<section id="description-of-models">
 <h2>Description of models<a class="headerlink" href="#description-of-models" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="internal-kinetic-models">
+<section id="internal-kinetic-models">
 <h3>internal kinetic models<a class="headerlink" href="#internal-kinetic-models" title="Permalink to this headline">¶</a></h3>
 <p>The internal kinetic models are created to be highly flexible. The
 program recognizes all parameter that are “rates” by recognizing the
@@ -318,8 +313,8 @@ state. Arbitrary pulse/response shapes can be sampled in the advanced
 functions. Additional parameter that can be set are “background”
 (assuming a species that is constantly “1”) and “infinite” a species
 that is with the last decay constant to a constant “1” and not decaying.</p>
-</div>
-<div class="section" id="external-kinetic-models-as-defined-in-example-file-plot-func-function-library-py">
+</section>
+<section id="external-kinetic-models-as-defined-in-example-file-plot-func-function-library-py">
 <h3>external kinetic models as defined in example file “plot_func_function_library.py”<a class="headerlink" href="#external-kinetic-models-as-defined-in-example-file-plot-func-function-library-py" title="Permalink to this headline">¶</a></h3>
 <p>External model functions can be written and used to create the matrix of
 populations. The external function will receive a vector named “times”
@@ -400,9 +395,9 @@ should be reloaded. I recommend to use the function “reload” from the
 “importlib” for this purpose (see the example below) This should happen
 before the function is handed to ta.mod (as shown in the workflow
 notebook).</p>
-</div>
-</div>
-<div class="section" id="setting-of-fit-parameter">
+</section>
+</section>
+<section id="setting-of-fit-parameter">
 <h2>Setting of Fit parameter<a class="headerlink" href="#setting-of-fit-parameter" title="Permalink to this headline">¶</a></h2>
 <p>The fit parameter are a crucial point for achieving meaningful results
 from an optimization. In general three different types need to be
@@ -488,8 +483,8 @@ test e.g. starting conditions and then enable the optimization of a
 single parameter. As here the “set” is used, the parameter can be
 initially added with a different value. (see workflow notebook for
 further examples).</p>
-</div>
-<div class="section" id="storing-of-fit-results">
+</section>
+<section id="storing-of-fit-results">
 <h2>storing of fit results<a class="headerlink" href="#storing-of-fit-results" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
@@ -511,8 +506,8 @@ conditions and a lot more. This object is stored after a fit but is
 NOT saved by ta.Save_Project!</p></li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="trigger-the-fit">
+</section>
+<section id="trigger-the-fit">
 <h2>Trigger the Fit<a class="headerlink" href="#trigger-the-fit" title="Permalink to this headline">¶</a></h2>
 <p>The Fitting process is triggered by calling the function “Fit_Global”.
 if the parameter were set as part of the object that contains this Fit
@@ -546,8 +541,8 @@ achieved fitting parameter. This is intended for long and slow
 optimizations to keep a record of the fits even if the fitting process
 did not finish.</p>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Fit_Global" title="plot_func.TA.Fit_Global"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Fit_Global()</span></code></a></p>
-</div>
-<div class="section" id="fitting-multiple-measured-files-at-once">
+</section>
+<section id="fitting-multiple-measured-files-at-once">
 <h2>Fitting multiple measured files at once<a class="headerlink" href="#fitting-multiple-measured-files-at-once" title="Permalink to this headline">¶</a></h2>
 <p>To fit multiple projects the fit function needs to get a number of
 projects. These can of course be opened with a hand written loop. A
@@ -580,8 +575,8 @@ c_con=ta_list[0].re[‘c’]</p>
 </div>
 <p>Alternatively one could give this concatenated Matrix to the Fit_Global and construct
 an assembled external function.</p>
-</div>
-<div class="section" id="error-estimation">
+</section>
+<section id="error-estimation">
 <h2>Error Estimation<a class="headerlink" href="#error-estimation" title="Permalink to this headline">¶</a></h2>
 <p>Estimating errors correctly is based on estimating the validity of the full set of optimized parameter for this we use the F-statistics of the single or combined datasets to define a cutoff value. At the cutoff value the combined Chi^2 is so much larger than the minimum Chi^2 that this can not be explained statistically anymore. Practically this corresponds to making the “Null hypothesis” that all parameters are zero and if the difference of Chi^2 is statistically significant, the coefficients improve the fit
 the f-statistics compares the number of
@@ -589,8 +584,8 @@ the f-statistics compares the number of
 “free points”=number of datasets*number of spectral points*number of time points - fitted parameter
 within the target quality, meaning, what fraction do my variances need to have, so that I’m 100% * target_quality sure that they are different from zero
 This is done in the function <a class="reference internal" href="plot_func.html#plot_func.s2_vs_smin2" title="plot_func.s2_vs_smin2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_func.s2_vs_smin2()</span></code></a>. The confidence level then defines the cutoff value. For each (varied) parameter a separate optimization is performed, that attempts to find the upper and lower bound at which the total error of the re-optimized globally fitted results reaches the by F-statistics defined confidence bound. Careful, this option might run for very long time. Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200) The confidence level is to be understood that it defines the e.g. 0.65 * 100% area that the parameter with this set of values is within this bounds.</p>
-</div>
-<div class="section" id="iterative-fitting">
+</section>
+<section id="iterative-fitting">
 <h2>Iterative Fitting<a class="headerlink" href="#iterative-fitting" title="Permalink to this headline">¶</a></h2>
 <p>as the fit results are written into the parameter ta.par_fit the fit can be very conveniently
 triggered in an iterative fashion. This is particularly useful for refining the chirp.
@@ -603,8 +598,8 @@ global fit after the chirp optimization. e.g. a 5 times iterative improvement ca
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">start_error</span><span class="p">:</span><span class="k">break</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="species-spectral-development">
+</section>
+<section id="species-spectral-development">
 <h2>Species Spectral Development<a class="headerlink" href="#species-spectral-development" title="Permalink to this headline">¶</a></h2>
 <p>A small but often useful function is <a class="reference internal" href="plot_func.html#plot_func.Species_Spectra" title="plot_func.Species_Spectra"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.Species_Spectra()</span></code></a> It takes either a TA-Object or a concentration and spectral DataFrame and combines the concentration with the species associated spectrum. This leads to the matrix that is contributed by this specific species. As the concentration and the spectrum are combined, this represents the indeed measured signal. Here the ds-parameter of the Plot_RAW function offers a useful combination. assuming that we fitted: species 0,1,2, (or more) then:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#extract the spectra</span>
@@ -614,37 +609,37 @@ global fit after the chirp optimization. e.g. a 5 times iterative improvement ca
 <span class="n">ta</span><span class="o">.</span><span class="n">Plot_RAW</span><span class="p">(</span><span class="n">ds</span><span class="o">=</span><span class="n">ta</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">dicten</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">dicten</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Comparing.html" class="btn btn-neutral float-right" title="Comparative plotting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Plotting.html" class="btn btn-neutral float-left" title="Plotting functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="Comparing.html" class="btn btn-neutral float-right" title="Comparative plotting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Plotting.html" class="btn btn-neutral float-left" title="Plotting functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -652,6 +647,7 @@ global fit after the chirp optimization. e.g. a 5 times iterative improvement ca
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

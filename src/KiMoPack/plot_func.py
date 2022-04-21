@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.5.6"
+version = "6.6.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -22,6 +22,7 @@ if 1: #Hide imports
 	from matplotlib.offsetbox import AnchoredText	
 	from matplotlib.ticker import AutoMinorLocator
 	from matplotlib.patches import Rectangle
+	from matplotlib import transforms
 	import re
 	import scipy
 	import scipy.constants
@@ -1216,7 +1217,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		for a in bounds1:
 			bounds0.append(a)
 		norm = colors.BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
-		mid_color=colm(k=range(levels),cmap=cmap)[int((levels-levels%2)/2)]
+		mid_color=colm(k=range(levels),cmap=cmap)[(levels-levels%2)/2]
 		#norm=colors.SymLogNorm(levels,linthresh=1e-5, linscale=1e-5,vmin=intensity_range[0], vmax=intensity_range[1])
 	else:
 		nbins=levels
@@ -2125,7 +2126,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			log_scale = True, plot_type = 'symlog', lintresh = 0.3, times = None, 
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\mathregular{\Delta OD}$',
-			plot_second_as_energy = True, units = 'nm'):
+			plot_second_as_energy = True, units = 'nm', return_plots = False):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
 	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of 
 	cuts are created using the shaping parameters explained below.
@@ -2304,6 +2305,9 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 	print_click_position : bool, optional
 		if True then the click position is printed for the spectral plots 
 		
+	return_plots : bool, optional 
+		(Default) False, return is ignoriert. For True a dictionary with the handles to the figures is returned  
+		
 	'''
 	if ds is None:raise ValueError('We need something to plot!!!')
 															
@@ -2379,7 +2383,25 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			   
 		except:
 			pass
-
+	if return_plots:
+		return_dicten={}
+		try:
+			return_dicten[0]=fig1
+		except:
+			pass
+		try:
+			return_dicten[1]=fig2
+		except:
+			pass
+		try:
+			return_dicten[2]=fig3
+		except:
+			pass
+		try:
+			return_dicten[3]=fig4
+		except:
+			pass
+		return return_dicten
 
 def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_time_region = None, 
 			wave_nm_bin = None, title = None, text_in_legend = None, baseunit = 'ps', 
@@ -2591,9 +2613,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	else:
 		ax1.set_xlim(bordercut)	
 	if (not subplot) and plot_second_as_energy:
-		ax1.set_zorder(5)
 		ax2=ax1.twiny()
-		ax2.set_zorder(0)
 		ax2.set_xlim(ax1.get_xlim())
 		ax2.set_xticks(ax1.get_xticks())
 		labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
@@ -3044,6 +3064,7 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 	else:
 		return U, s, V2,ds
 
+
 def Species_Spectra(ta=None,conc=None,das=None):
 	'''useful help function that returns a dictionary that has DataFrame as entries and the names of the 
 	components as keys
@@ -3083,16 +3104,14 @@ def Species_Spectra(ta=None,conc=None,das=None):
 	else:
 		if (conc is None) or (das is None):
 			print('If the ta object is None, then we need both the conc and the das')
-			return False
-		else:
-			time=conc.index.values
-			WL=das.index.values			
+			return False			
 	results={}
 	for i in range(len(conc.columns)):
 		A,B=np.meshgrid(conc.iloc[:,i].values,das.iloc[:,i].values)
 		C=pandas.DataFrame((A*B).T,index=time,columns=WL)
 		results[conc.columns[i]]=C
 	return results
+
 
 def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, 
 			shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
@@ -4744,6 +4763,168 @@ class TA():	# object wrapper for the whole
 						self.fitcoeff=[float(a) for a in f.readline().split(',')]
 		self.ds.columns.name=self.ds_ori.columns.name
 		self.ds.index.name=self.ds_ori.index.name
+
+	def Plot_Interactive(self, fitted = False, ds = None, cmap = None):
+		'''interactive plotting function. it plots the matrix in the middle and two slices that are selected by the mouse (click) 
+		
+		Parameters
+		---------------
+		fitted : bool, optional
+			this switch decides if the fitted or the RAW data is plotted with this widget to 
+			inspect the data data. If fitted is False (Default) then the raw data and an interpolation 
+			is used to plot. 
+		
+		cmap : None or matplotlib color map, optional
+			is a powerfull variable that chooses the colour map applied for all plots. If set to 
+			None (Default) then the self.cmap is used.
+			As standard I use the color map "jet" from matplotlib. There are a variety of colormaps 
+			available that are very usefull. Beside "jet", "viridis" is a good choice as it is well 
+			visible under red-green blindness. Other useful maps are "prism" for high fluctuations 
+			or diverging color maps like "seismic". 
+			See https://matplotlib.org/3.1.0/tutorials/colors/colormaps.html for a comprehensive 
+			selection. In the code the colormaps are imported so if plot_func is imported as pf then 
+			self.cmap=pf.cm.viridis sets viridis as the map to use. Internally the colors are chosen 
+			with the "colm" function. The 2d plots require a continuous color map so if something 
+			else is give 2d plots are shown automatically with "jet". For all of the 1d plots however 
+			I first select a number of colors before each plot. If cmap is a continous map then these
+			are sampled evenly over the colourmap. Manual iterables of colours 
+			cmap=[(1,0,0),(0,1,0),(0,0,1),...] are also accepted, as are vectors or dataframes that 
+			contain as rows the colors. There must be of course sufficient colors present for 
+			the numbers of lines that will be plotted. So I recommend to provide at least 10 colours 
+			(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA
+			(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. 
+			If a list/vector/DataFrame is given for the colours they will be used in the order provided.		
+		
+		ds : DataFrame, optional
+			if None (Default), the program first tests self.ds and if this is not there then self.ds_ori.
+			This option was introduced to allow plotting of other matrixes with the same parameter
+			
+		 '''
+		from matplotlib.widgets import Cursor
+		if cmap is None:cmap=self.cmap
+		if ds is None:
+			if not fitted:
+				if self.ds is None:
+					ds=self.ds_ori.copy()
+				else:
+					ds=self.ds.copy()
+			else:
+				ds=self.re['A']
+				modelled=self.re['AC']
+		intensity_range=self.intensity_range
+		if intensity_range is None:
+			try:
+				maxim=max([abs(ds.values.min()),abs(ds.values.max())])
+				intensity_range=[-maxim,maxim]
+			except:
+				intensity_range=[-1e-2,1e-2]
+		else:
+			if not hasattr(intensity_range,'__iter__'):#lets have an lazy option
+				intensity_range=[-intensity_range,intensity_range]
+		class MouseMove:
+			# initialization
+			def __init__(self, ds, cmap, intensity_range, log_scale, baseunit, 
+							timelimits, scattercut, bordercut, wave_nm_bin, ignore_time_region,
+							time_bin, lintresh, data_type, width, time_width_percent):
+				fig = plt.figure(tight_layout=True,figsize=(14,8))
+				gs = GridSpec(5, 4)
+				self.ax= fig.add_subplot(gs[1:, :3])
+				self.ds=ds
+				self.cmap=cmap
+				self.intensity_range=intensity_range
+				self.log_scale=log_scale
+				self.baseunit=baseunit
+				self.timelimits=timelimits
+				self.scattercut=scattercut
+				self.bordercut=bordercut
+				self.wave_nm_bin=wave_nm_bin
+				self.ignore_time_region=ignore_time_region
+				self.time_bin=time_bin
+				self.data_type=data_type
+				self.width=width
+				self.lintresh=lintresh
+				self.time_width_percent=time_width_percent
+				
+				self.ax = plot2d(ds=ds, ax=self.ax, cmap=cmap, intensity_range=self.intensity_range, 
+					log_scale=self.log_scale, baseunit=self.baseunit, timelimits=self.timelimits, 
+					scattercut=self.scattercut, bordercut=self.bordercut, wave_nm_bin=self.wave_nm_bin, 
+					ignore_time_region=self.ignore_time_region, time_bin=self.time_bin, 
+					lintresh=self.lintresh, data_type = self.data_type, use_colorbar = False)
+				self.ax_time= fig.add_subplot(gs[0, :3],sharex=self.ax)
+				self.ax_kinetic= fig.add_subplot(gs[1:, -1],sharey=self.ax)
+				plt.subplots_adjust(wspace=0,hspace=0)
+				fig.canvas.mpl_connect('button_press_event', self.move)
+				
+			def move(self, event):
+				x, y = event.xdata, event.ydata
+				try:
+					self.ax_time.cla()
+				except:
+					pass
+					
+				if not fitted:	
+					ds_temp1 = sub_ds(ds = Frame_golay(ds,5,3), times = y, time_width_percent = self.time_width_percent, 
+									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									wavelength_bin = self.width)
+					ds_temp1.plot(ax=self.ax_time,style='-',color='red')
+				else:
+					ds_temp1 = sub_ds(ds = modelled, times = y, time_width_percent = self.time_width_percent, 
+									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									wavelength_bin = self.width)
+					ds_temp1.plot(ax=self.ax_time,style='-',color='red')
+					
+				ds_temp = sub_ds(ds = ds, times = y, time_width_percent = self.time_width_percent, 
+									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									wavelength_bin = self.width)
+				ds_temp.plot(ax=self.ax_time,style='*',color='black')
+				self.ax_time.plot(self.ax_time.get_xlim(),[0,0],'gray')
+				if not fitted:
+					self.ax_time.legend(['%.3g %s smoothed'%(y,self.baseunit)])
+				else:
+					self.ax_time.legend(['%.3g %s fitted'%(y,self.baseunit)])
+				self.ax_time.set_yticks(self.ax_time.get_ylim())
+				self.ax_time.set_yticklabels(['%.1e'%f for f in self.ax_time.get_ylim()])
+				
+				for i in range(3):
+					try:
+						self.ax_kinetic.lines.pop(0)
+					except:
+						pass
+				if self.width is None:
+					self.width = 10
+				
+				if not fitted:
+					ds_temp1 = sub_ds(ds = Frame_golay(ds), wavelength = x, scattercut = self.scattercut, drop_scatter=True, 
+								bordercut = self.bordercut, ignore_time_region = self.ignore_time_region, 
+								wave_nm_bin = self.wave_nm_bin, wavelength_bin = self.width)
+					self.ax_kinetic.plot(ds_temp1.values,ds_temp1.index.values,'-',label='%.0f smoothed'%x,color='red')
+				else:
+					ds_temp1 = sub_ds(ds = modelled, wavelength = x, scattercut = self.scattercut, drop_scatter=True, 
+								bordercut = self.bordercut, ignore_time_region = self.ignore_time_region, 
+								wave_nm_bin = self.wave_nm_bin, wavelength_bin = self.width)
+					self.ax_kinetic.plot(ds_temp1.values,ds_temp1.index.values,'-',label='%.0f fitted'%x,color='red')
+				
+				ds_temp = sub_ds(ds = ds, wavelength = x, scattercut = self.scattercut, drop_scatter=True, 
+								bordercut = self.bordercut, ignore_time_region = self.ignore_time_region, 
+								wave_nm_bin = self.wave_nm_bin, wavelength_bin = self.width)
+				
+				self.ax_kinetic.set_xlim(min([0,min(ds_temp.values)]),max([max(ds_temp.values),0]))
+
+				self.ax_kinetic.plot(ds_temp.values,ds_temp.index.values,'*',label='%.0f'%x, color='black')
+				self.ax_kinetic.plot([0,0],self.ax_kinetic.get_ylim(),'gray')
+				self.ax_kinetic.legend(['%.0f'%x])				
+				self.ax_kinetic.set_xticks(self.ax_kinetic.get_xlim())
+				self.ax_kinetic.set_xticklabels(['%.1e'%f for f in self.ax_kinetic.get_xlim()])
+				
+		eve=MouseMove(ds, cmap, self.intensity_range, self.log_scale, self.baseunit, self.timelimits, 
+						self.scattercut, self.bordercut, self.wave_nm_bin, self.ignore_time_region,
+						self.time_bin, self.lintresh, self.data_type, self.wavelength_bin, self.time_width_percent)
+		cursor = Cursor(eve.ax, useblit=True, color='red', linewidth=2)
+		return eve,cursor
+		
 
 
 	def Plot_RAW(self, plotting = range(4), title = None, scale_type = 'symlog', times = None,
