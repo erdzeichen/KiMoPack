@@ -391,12 +391,18 @@ As each file needs a chirp correction and these things I
 recommend to use saved projects (hdf5 files) for this purpose. Please see
 the function documentation for further details. In general this function is 
 fitting each of the projects separately, but using the same parameter. This means 
-that in general a new (different) DAS is calculated for each of the measurements. 
+that in general a new (different) DAS is calculated for each of the measurements.::
+
+# Global fitting with multiple files, using a unique parameter (that differs for the models)::
+	
+	ta.Fit_Global(multi_project = ta_list, unique_parameter = 'pump_power')
+	ta.Fit_Global(multi_project = ta_list, unique_parameter = 'pump_power', weights = [1/power1,1/power2])
+
 
 To work with the same DAS for the measured and calculated matrices need to be
 concatenated before the fitting. A convenient way to do this is to use the 
 shaped matrices (potentially with different scattercuts) and the concentrations 
-that are created after an individual fit::
+that are created after an individual fit.::
 	
 # without scaling::
 

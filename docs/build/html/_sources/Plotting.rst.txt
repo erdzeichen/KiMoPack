@@ -3,6 +3,7 @@ Plotting functions
 
 	* Plotting non Fitted data:	:meth:`self.Plot_RAW()<plot_func.TA.Plot_RAW>`
 	* Plotting Fitted data:		:meth:`self.Plot_fit_output()<plot_func.TA.Plot_fit_output>`
+	* Interative Plotting RAW and Fitted:	:meth:`self.Plot_Interactive()<plot_func.TA.Plot_Interactive>`
 	* Adjust fonts in plots:		:meth:`pf.changefonts()<plot_func.changefonts>`
 
 One core function of this tool is to create plots for evaluation and
@@ -91,6 +92,13 @@ a number of parameter only affect one or multiple of the plots but not the fitti
 	Which is useful for fast surveys, otherwise the method :meth:`self.Save_Plots()<plot_func.TA.Save_Plots>` 
 	stores all plots (see :ref:`Data Export and Project Saving`). The axis labels are accessible via the **baseunit** 
 	and the Fonts are accessible via the function :meth:`pf.changefonts()<plot_func.changefonts>`
+
+interactive Plotting
+---------------------
+
+Interactive plot function that allows the interactive slicing of both time and wavelength. The main parameter of the object apply
+
+
 
 extended Raw plotting
 ---------------------

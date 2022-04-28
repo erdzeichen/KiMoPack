@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.0"
+version = "6.6.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7218,6 +7218,7 @@ class TA():	# object wrapper for the whole
 			if self.scattercut is None:	
 				ax = DAC.plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
 									legend = False, color = col, sharex = False)
+				a=ax.ravel()
 			elif isinstance(self.scattercut[0],  numbers.Number):
 				ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
 													legend = False, color = col, sharex = False)
@@ -7253,7 +7254,6 @@ class TA():	# object wrapper for the whole
 						ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
 					else:
 						ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
- 
 		if other is not None:
 			for i,o in enumerate(other):
 				try:
