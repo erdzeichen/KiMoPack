@@ -20,7 +20,7 @@ sphinx:
 formats: all
 
 submodules:
-  include: plot_func
+  include: all
 
 python:
   install:
