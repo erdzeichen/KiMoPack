@@ -11,6 +11,10 @@ build:
   tools:
     python: "3.8"
 
+install:
+    - method: pip
+      path: .
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
    configuration: docs/source/conf.py
@@ -20,7 +24,6 @@ formats: all
 
 submodules:
   include: all
-
 
 python:
   install:
