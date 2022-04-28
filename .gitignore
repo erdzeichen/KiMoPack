@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+create_and_upload_pypi.bat
+conda/create_build_Anaconda.bat
+conda/Untitled.ipynb
