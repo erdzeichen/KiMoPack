@@ -28,3 +28,5 @@ parameter that are typically set.
 In addition a series of tutorial notebooks are provided that guide the user through the different functions. These Tutorials can either be downloaded or executed on a "mybinder" server via this badge.
  .. image:: https://mybinder.org/badge_logo.svg		  
 	:target: https://mybinder.org/v2/gh/erdzeichen/KiMoPack/HEAD
+	
+In addition a small series of videos were produced to introduce the features and usage of KiMoPack: https://www.youtube.com/channel/UCmhiK0P9wXXjs_PJaitx8BQ

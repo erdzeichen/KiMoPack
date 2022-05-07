@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.1"
+version = "6.6.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6206,17 +6206,21 @@ class TA():	# object wrapper for the whole
 				except:
 					pass
 			if save_Fit:
-				slide2 = prs.slides.add_slide(blank_slide_layout)
-				left = top = Inches(0.1)
-				pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(5.5), top=top, height=Inches(3.5))#Matrix
-				pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
-				pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
-				pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
-				pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
+				try:
+					slide2 = prs.slides.add_slide(blank_slide_layout)
+					left = top = Inches(0.1)
+					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(5.5), top=top, height=Inches(3.5))#Matrix
+					pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
+					pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
+					pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
+					pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
+					
+					text1 = slide2.shapes.add_textbox(left=left+Inches(5.5), top=top+Inches(3.5), width=Inches(4.5), height=Inches(4))
+					text1.text = Result_string
+					text1.text_frame.fit_text(font_family=u'Arial', max_size=8, bold=False, italic=False)
+				except:
+					print('exited when saving the fit plots')
 				
-				text1 = slide2.shapes.add_textbox(left=left+Inches(5.5), top=top+Inches(3.5), width=Inches(4.5), height=Inches(4))
-				text1.text = Result_string
-				text1.text_frame.fit_text(font_family=u'Arial', max_size=8, bold=False, italic=False)
 
 			plt.close('all')
 			self.save_figures_to_folder=origin

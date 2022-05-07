@@ -1,43 +1,42 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Comparative plotting &mdash; KiMoPack 6.6.1 documentation</title>
-  
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
+  <title>Comparative plotting &mdash; KiMoPack 6.6.2 documentation</title>
   
 
   
   
-
+  
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Data Export and Project Saving" href="Saving.html" />
@@ -51,7 +50,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: white" >
           
 
           
@@ -78,7 +77,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -110,7 +108,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -145,20 +142,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Comparative plotting</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/Comparing.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -172,7 +167,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="comparative-plotting">
+  <section id="comparative-plotting">
 <h1>Comparative plotting<a class="headerlink" href="#comparative-plotting" title="Permalink to this headline">¶</a></h1>
 <p>The comparative plotting is an important tool to compare different
 measurements (e.g. different conditions), different fits or steady state
@@ -204,7 +199,7 @@ achieved by changing the axis in the QT GUI.</p>
 <p>A very important function provided by this set of tools is the comparision against
 other spectra. So can for examples be reference spectra (e.g. UV-vis) be added to
 the plots.</p>
-<div class="section" id="normalization-and-scaling">
+<section id="normalization-and-scaling">
 <h2>Normalization and Scaling<a class="headerlink" href="#normalization-and-scaling" title="Permalink to this headline">¶</a></h2>
 <p>An important option is the normalization in a certain window that
 applies for both Compare_at_time and Compare_at_wave. Very often data
@@ -234,8 +229,8 @@ projects ta.ds is the matrix that contains the data. With:</p>
 that with this action you are changing the data in the object. The original
 data ta.ds_ori remains unchanged. If you save and reload the data, the intensity
 will revert to the originally measured value.</p>
-</div>
-<div class="section" id="compare-at-time">
+</section>
+<section id="compare-at-time">
 <h2>Compare_at_time<a class="headerlink" href="#compare-at-time" title="Permalink to this headline">¶</a></h2>
 <p>This function plots multiple spectra into the same figure at one or multiple given timepoints (rel_time) and
 allows for <a class="reference internal" href="#normalization-and-scaling"><span class="std std-ref">Normalization and Scaling</span></a></p>
@@ -252,8 +247,8 @@ function can also be used to plot e.g. the measured spectra vs. an
 external spectrum without giving any “other” Projects.</p>
 <p>For more information, details on the parameter and examples see:</p>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Compare_at_time" title="plot_func.TA.Compare_at_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Compare_at_time()</span></code></a></p>
-</div>
-<div class="section" id="compare-at-wave">
+</section>
+<section id="compare-at-wave">
 <h2>Compare_at_wave<a class="headerlink" href="#compare-at-wave" title="Permalink to this headline">¶</a></h2>
 <p>This function plots multiple kinetics into the same figure at one or
 multiple given wavelength (rel_wave) and  allows for <a class="reference internal" href="#normalization-and-scaling"><span class="std std-ref">Normalization and Scaling</span></a>
@@ -267,8 +262,8 @@ many projects go into the same plot, things tend to get messy. As the
 files are saved separately this approach proofed to be useful.</p>
 <p>For more information, details on the parameter and examples see:</p>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Compare_at_wave" title="plot_func.TA.Compare_at_wave"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Compare_at_wave()</span></code></a></p>
-</div>
-<div class="section" id="compare-dac">
+</section>
+<section id="compare-dac">
 <h2>Compare_DAC<a class="headerlink" href="#compare-dac" title="Permalink to this headline">¶</a></h2>
 <p>This is a convenience function to plot multiple extracted spectra (DAS
 or species associated) into the same figure or into a separate figure
@@ -281,37 +276,37 @@ spectrum. Others is optional and I use this function often to compare
 species associated spectra with one or multiple steady state spectra.</p>
 <p>For more information, details on the parameter and examples see:</p>
 <p><a class="reference internal" href="plot_func.html#plot_func.TA.Compare_DAC" title="plot_func.TA.Compare_DAC"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Compare_DAC()</span></code></a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Saving.html" class="btn btn-neutral float-right" title="Data Export and Project Saving" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Fitting.html" class="btn btn-neutral float-left" title="Fitting, Parameter optimization and Error estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="Saving.html" class="btn btn-neutral float-right" title="Data Export and Project Saving" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Fitting.html" class="btn btn-neutral float-left" title="Fitting, Parameter optimization and Error estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -319,6 +314,7 @@ species associated spectra with one or multiple steady state spectra.</p>
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

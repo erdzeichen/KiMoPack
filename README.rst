@@ -79,3 +79,4 @@ Links
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
 	* Zenodo: https://zenodo.org/badge/latestdoi/400527965
+	* Tutorial videos: https://www.youtube.com/channel/UCmhiK0P9wXXjs_PJaitx8BQ

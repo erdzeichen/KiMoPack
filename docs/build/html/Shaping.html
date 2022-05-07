@@ -1,43 +1,42 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Shaping of Data &mdash; KiMoPack 6.6.1 documentation</title>
-  
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
+  <title>Shaping of Data &mdash; KiMoPack 6.6.2 documentation</title>
   
 
   
   
-
+  
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Plotting functions" href="Plotting.html" />
@@ -51,7 +50,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: white" >
           
 
           
@@ -78,7 +77,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -110,7 +108,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -145,20 +142,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Shaping of Data</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/Shaping.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -172,7 +167,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="shaping-of-data">
+  <section id="shaping-of-data">
 <h1>Shaping of Data<a class="headerlink" href="#shaping-of-data" title="Permalink to this headline">¶</a></h1>
 <p>In the Following sections we discuss the parameter and values that are used to
 filter and shape measured data. In general all loaded data read is
@@ -211,7 +206,7 @@ to be set explicitly to:</p>
 </div>
 <p>Often it is faster to reload the object by choosing “run all above” in the
 Notebook.</p>
-<div class="section" id="bad-data-filter">
+<section id="bad-data-filter">
 <h2>Bad data Filter<a class="headerlink" href="#bad-data-filter" title="Permalink to this headline">¶</a></h2>
 <p>Filter bad data:                                <a class="reference internal" href="plot_func.html#plot_func.TA.Filter_data" title="plot_func.TA.Filter_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Filter_data()</span></code></a></p>
 <p>In some cases there are bad data points or other strange things. NA
@@ -225,8 +220,8 @@ bad values with a specific value. There is the option to put a uppervalue, lower
 or a single value that is then used for upper and (as negative) for the lower value.</p>
 <p>If the filtering does not work, a manual way of filtering is
 ta.ds (the chirp corrected data) or ta.ds_ori[ta.ds_ori&gt;20]=0 is the classical way to filter</p>
-</div>
-<div class="section" id="arrival-time-correction">
+</section>
+<section id="arrival-time-correction">
 <h2>Arrival time correction<a class="headerlink" href="#arrival-time-correction" title="Permalink to this headline">¶</a></h2>
 <p>Correct arrival time (Chirp)    <a class="reference internal" href="plot_func.html#plot_func.TA.Cor_Chirp" title="plot_func.TA.Cor_Chirp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Cor_Chirp()</span></code></a></p>
 <p><em>Cor_Chirp</em> is a powerful Function to correct for a different arrival times of
@@ -260,8 +255,8 @@ The function <em>Cor_Chirp</em> selects in the order:</p>
 </div></blockquote>
 <p>Correct arrival time (Chirp)    <a class="reference internal" href="plot_func.html#plot_func.TA.Cor_Chirp" title="plot_func.TA.Cor_Chirp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Cor_Chirp()</span></code></a>
 Manual overwrite arrival time correction        <a class="reference internal" href="plot_func.html#plot_func.TA.Man_Chirp" title="plot_func.TA.Man_Chirp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Man_Chirp()</span></code></a></p>
-</div>
-<div class="section" id="background-subtraction">
+</section>
+<section id="background-subtraction">
 <h2>Background subtraction<a class="headerlink" href="#background-subtraction" title="Permalink to this headline">¶</a></h2>
 <p>Background correction:                  <a class="reference internal" href="plot_func.html#plot_func.TA.Background" title="plot_func.TA.Background"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.Background()</span></code></a></p>
 <p>This tool is one of two ways to remove a flat background from the data (typically seen before t=0).
@@ -274,8 +269,8 @@ plot without background correction and only after this inspection
 apply the background correction.
 The fit function has its own way to calculcate and apply a background
 That could be used instead (but making the fit less stable)</p>
-</div>
-<div class="section" id="data-shaping-settings-that-affect-the-fits">
+</section>
+<section id="data-shaping-settings-that-affect-the-fits">
 <h2>Data shaping settings that affect the fits<a class="headerlink" href="#data-shaping-settings-that-affect-the-fits" title="Permalink to this headline">¶</a></h2>
 <p>in general the data is handled in each of the plotting/fitting functions
 separately. In each function a copy of the matrix with the limitation
@@ -294,37 +289,37 @@ RAW plotted fits as a feedback.</p>
 <p>For further details and examples see: <a class="reference internal" href="plot_func.html#plot_func.TA.__make_standard_parameter" title="plot_func.TA.__make_standard_parameter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.__make_standard_parameter()</span></code></a>
 or e.g. the general plotting function <a class="reference internal" href="plot_func.html#plot_func.plot_raw" title="plot_func.plot_raw"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.plot_raw()</span></code></a>.</p>
 <p>The parameter that only change the plots are discussed in <a class="reference internal" href="Plotting.html#plot-shaping-options-without-influence-on-the-fitting"><span class="std std-ref">Plot shaping options without influence on the fitting</span></a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Plotting.html" class="btn btn-neutral float-right" title="Plotting functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Opening.html" class="btn btn-neutral float-left" title="Opening of data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="Plotting.html" class="btn btn-neutral float-right" title="Plotting functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Opening.html" class="btn btn-neutral float-left" title="Opening of data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -332,6 +327,7 @@ or e.g. the general plotting function <a class="reference internal" href="plot_f
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

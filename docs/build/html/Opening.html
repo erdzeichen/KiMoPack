@@ -1,43 +1,42 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Opening of data &mdash; KiMoPack 6.6.1 documentation</title>
-  
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
+  <title>Opening of data &mdash; KiMoPack 6.6.2 documentation</title>
   
 
   
   
-
+  
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Shaping of Data" href="Shaping.html" />
@@ -51,7 +50,7 @@
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: white" >
           
 
           
@@ -78,7 +77,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -109,7 +107,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -144,20 +141,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Opening of data</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/Opening.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -171,7 +166,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="opening-of-data">
+  <section id="opening-of-data">
 <h1>Opening of data<a class="headerlink" href="#opening-of-data" title="Permalink to this headline">¶</a></h1>
 <p>A key challenge in using a non graphical programming software is to locate files.
 This tool provides a mixed interface to solve this challenge.
@@ -185,7 +180,7 @@ please contact the developers via email or raise an issue on github for it to be
 The formats of the example file have the spectral information as the first row,
 the time vector as first entrance of each of the following rows and are separated by tab.
 Files of this type can be read without any further adaption (using the standard parameter).</p>
-<div class="section" id="opening-single-file-and-creating-ta-object">
+<section id="opening-single-file-and-creating-ta-object">
 <h2>Opening single file and creating TA object<a class="headerlink" href="#opening-single-file-and-creating-ta-object" title="Permalink to this headline">¶</a></h2>
 <p>Open single file:                       <a class="reference internal" href="plot_func.html#plot_func.TA.__init__" title="plot_func.TA.__init__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.TA()</span></code></a></p>
 <p>Typical use of the tool is based upon an object containing all
@@ -197,8 +192,8 @@ The function can either open a text style format (using any file ending) or the 
 The latter is exclusively used as internal storage formate that stores the complete project including the RAW data.</p>
 <p>After import of either filetype the missing parameter in the “TA” object are set with the
 <a class="reference internal" href="plot_func.html#plot_func.TA.__make_standard_parameter" title="plot_func.TA.__make_standard_parameter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">self.__make_standard_parameter()</span></code></a> function.</p>
-</div>
-<div class="section" id="opening-multiple-files">
+</section>
+<section id="opening-multiple-files">
 <h2>Opening multiple files<a class="headerlink" href="#opening-multiple-files" title="Permalink to this headline">¶</a></h2>
 <p>Open many files:                        <a class="reference internal" href="plot_func.html#plot_func.GUI_open" title="plot_func.GUI_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.GUI_open()</span></code></a></p>
 <p>Sometimes multiple files are to be opened. Typical use examples are the options to compare different
@@ -213,8 +208,8 @@ One can</p>
 </div></blockquote>
 <p>The general behavior is selected by the first parameter (project_list)
 For more details see the examples in <a class="reference internal" href="plot_func.html#plot_func.GUI_open" title="plot_func.GUI_open"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.GUI_open()</span></code></a></p>
-</div>
-<div class="section" id="opening-and-handling-single-scans">
+</section>
+<section id="opening-and-handling-single-scans">
 <h2>Opening and handling single scans<a class="headerlink" href="#opening-and-handling-single-scans" title="Permalink to this headline">¶</a></h2>
 <p>Combine many scans:                     <a class="reference internal" href="plot_func.html#plot_func.Summarize_scans" title="plot_func.Summarize_scans"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pf.Summarize_scans()</span></code></a></p>
 <p>Typically the experiments consists of a larger number of scans that are combined into a single experimental file.
@@ -225,37 +220,37 @@ in a temporal and spectral window. This single number is plotted as function aga
 Then either a list of numbers or a GUI is used to select the scans that are
 removed from the average. A number of opening and selection options are given.</p>
 <p>This function could also be used to combine a number of different experiments.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Shaping.html" class="btn btn-neutral float-right" title="Shaping of Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Main_tasks.html" class="btn btn-neutral float-left" title="Main Tasks overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="Shaping.html" class="btn btn-neutral float-right" title="Shaping of Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Main_tasks.html" class="btn btn-neutral float-left" title="Main Tasks overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Jens Uhlig.
+        &copy; Copyright 2022, Jens Uhlig
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -263,6 +258,7 @@ removed from the average. A number of opening and selection options are given.</
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {
