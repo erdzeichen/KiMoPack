@@ -61,28 +61,32 @@ def gaussian_distribution(times,pardf):
 		#first attempt, we have one decay, then the gauss, then f0 is the spread of the gauss in rate
 		#so G - with pulse to A to gauss B to intermediate C and back to G
 		decays=3
-		spread_shape=gauss(np.linspace(-1,1,91),sigma=1/3.,mu=0)
-		rate_spread=pardf['k1']+np.linspace(-3*pardf['rate_spread']/FWHM,3*pardf['rate_spread']/FWHM,91)
-		spread=np.zeros(spread_shape.shape)
-		c=np.zeros((len(times),decays),dtype='float') #here I define number of concentrations
-		g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0'])#this is my pump
-		sub_steps=10
+		spread_shape=gauss(np.linspace(-1,1,91),sigma=1/3.,mu=0)					#this vector holds the fresh distribution
+		rate_spread=pardf['k1']+np.linspace(-3*pardf['rate_spread']/FWHM,3*pardf['rate_spread']/FWHM,91) #this vector has the same shape as the distribution and 
+																										#holds one rate entry in the spread_shape
+		spread=np.zeros(spread_shape.shape) 															#initially there is nothing in the spread matrix
+		c=np.zeros((len(times),decays),dtype='float') 													#here I define number of concentrations
+		g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0'])									#this is my pump
+		sub_steps=10																					#We sample with 10 steps per measured timestep
 		for i in range(1,len(times)):
-			dc=np.zeros((c.shape[1],1),dtype='float')
-			c_temp=c[i-1,:]
-			dt=(times[i]-times[i-1])/(sub_steps)
+			dc=np.zeros((c.shape[1],1),dtype='float')													# this contains the usual concentration differences
+			c_temp=c[i-1,:]																				#load the previous concentrations (absolute)
+			dt=(times[i]-times[i-1])/(sub_steps)														#create the momentary timestep	
 			for j in range(int(sub_steps)):
-				dc[0]=-pardf['k0']*dt*c_temp[0]+g[i]*dt #c[0] MLCT hot
-				spread+=spread_shape*pardf['k0']*dt*c_temp[0]-spread_shape*rate_spread*dt
-				dc[1]=0
-				dc[2]=(spread_shape*rate_spread*dt).sum()
+				dc[0]=-pardf['k0']*dt*c_temp[0]+g[i]*dt 												#C0 is filled by the pump and decays with k0				
+				spread+=spread_shape*pardf['k0']*dt*c_temp[0]-spread_shape*rate_spread*dt				#whatever decays from C0 flows into the distribution, 
+																										#important on the new stuff is distributed with the gaussian, 
+																										#each unit has its own flowing out rate
+				dc[1]=0																					#set to 0 because we do use the matrix later to record the change
+				dc[2]=(spread_shape*rate_spread*dt).sum()												#whatever flows out of the C1 (the distrubution) is collected into 
 				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])
+					c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])										#check that nothing will be below 0 (concentrations)
 			c[i,:] =c_temp
-			c[i,1] =spread.sum()
+			c[i,1] =spread.sum()																		#here we fill the record matrix with the sum of the units
 		c=pandas.DataFrame(c,index=times)
 		c.index.name='time'
-		if 'background' in list(pardf.index.values):
+		if 'background' in list(pardf.index.values):													#we still might want to have a backgraound
 			c['background']=1
-		c.columns=['initial','gauss_populated','final']
+		c.columns=['initial','gauss_populated','final']													#this is optional but very useful. The species get names that represent 
+																										#some particular states
 		return c
