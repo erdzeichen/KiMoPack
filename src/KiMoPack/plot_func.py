@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.2"
+version = "6.6.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3694,9 +3694,15 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			else:
 				re['DAC'].columns=c_temp.columns.values
 				re['c'].columns=c_temp.columns.values
+				c_temp=c.copy()
 				for col in ext_spectra.columns:
 					re['DAC'][col]=ext_spectra.loc[:,col].values
 					re['c'][col]=c.loc[:,col].values
+					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+					re['A']=re['A']+C
+					re['AC']=re['AC']+C
+				c_temp.drop(col,axis=1,inplace=True)
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
 			return re
 		else:
