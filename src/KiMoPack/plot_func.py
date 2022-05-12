@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.3"
+version = "6.6.4"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3623,7 +3623,17 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		else:#here we "bypass" the full consecutive and optimize the rates with the decays
 			c=build_c(times=ds.index.values.astype('float'),mod='paral',pardf=pardf)
 		c.index.name=time_label
-		re=fill_int(ds=ds,c=c)
+		if ext_spectra is None:
+			re=fill_int(ds=ds,c=c)
+		else:
+			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			c_temp=c.copy()
+			for col in ext_spectra.columns:
+				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+				ds=ds-C
+				c_temp.drop(col,axis=1,inplace=True)
+			re=fill_int(ds=ds,c=c_temp)
 		if final:
 			labels=list(re['DAC'].columns.values)
 			changed=True
@@ -3641,6 +3651,14 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			if changed:
 				re['DAC'].columns=labels
 				re['c'].columns=labels
+			if not ext_spectra is None:
+				for col in ext_spectra.columns:
+					re['DAC'][col]=ext_spectra.loc[:,col].values
+					re['c'][col]=c.loc[:,col].values
+					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+					re['A']=re['A']+C
+					re['AC']=re['AC']+C
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
 			return re
 		else:
@@ -3694,7 +3712,6 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			else:
 				re['DAC'].columns=c_temp.columns.values
 				re['c'].columns=c_temp.columns.values
-				c_temp=c.copy()
 				for col in ext_spectra.columns:
 					re['DAC'][col]=ext_spectra.loc[:,col].values
 					re['c'][col]=c.loc[:,col].values
@@ -3702,7 +3719,6 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					re['A']=re['A']+C
 					re['AC']=re['AC']+C
-				c_temp.drop(col,axis=1,inplace=True)
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
 			return re
 		else:
@@ -3841,7 +3857,17 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 
 		if isinstance(mod,type('hello')):#did we use a build in model?
 			c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
-			re=fill_int(ds=ds,c=c)
+			if ext_spectra is None:
+				re=fill_int(ds=ds,c=c)
+			else:
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				c_temp=c.copy()
+				for col in ext_spectra.columns:
+					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+					ds=ds-C
+					c_temp.drop(col,axis=1,inplace=True)
+				re=fill_int(ds=ds,c=c_temp)
 			if final:
 				if i==0:
 					labels=list(re['DAC'].columns.values)
@@ -3860,6 +3886,14 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					if changed:
 						re['DAC'].columns=labels
 						re['c'].columns=labels
+					if not ext_spectra is None:
+						for col in ext_spectra.columns:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
+							A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+							C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+							re['A']=re['A']+C
+							re['AC']=re['AC']+C	
 					re_final=re.copy()
 				error_listen.append(re['error'])
 				r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
@@ -3867,11 +3901,29 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				error_listen.append(re['error'])
 		else:
 			c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
-			re=fill_int(ds=ds,c=c)
+			if ext_spectra is None:
+				re=fill_int(ds=ds,c=c)
+			else:
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				c_temp=c.copy()
+				for col in ext_spectra.columns:
+					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+					ds=ds-C
+					c_temp.drop(col,axis=1,inplace=True)
+			re=fill_int(ds=ds,c=c_temp)
 			if final:
 				if i==0:
 					re['DAC'].columns=c.columns.values
 					re['c'].columns=c.columns.values
+					if not ext_spectra is None:
+						for col in ext_spectra.columns:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
+							A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+							C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+							re['A']=re['A']+C
+							re['AC']=re['AC']+C	
 					re_final=re.copy()
 				error_listen.append(re['error'])
 				r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
