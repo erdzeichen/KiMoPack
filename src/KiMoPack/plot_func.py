@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.4"
+version = "6.6.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3660,6 +3660,30 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					re['A']=re['A']+C
 					re['AC']=re['AC']+C
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
+			if dump_paras:
+				try:
+					pardf.loc['error','value']=re['error']
+				except:
+					pass
+				try:
+					pardf.loc['r2','value']=re['r2']
+				except:
+					pass
+				try:
+					if filename is None:
+						store_name='minimal_dump_paras.par'
+					else:
+						store_name='minimal_dump_paras_%s.par'%filename
+					min_df=pandas.read_csv(store_name,sep=',',header=None,skiprows=1)
+					if float(min_df.iloc[-1,1])>float(re['error']):
+						pardf.to_csv(store_name)
+				except:
+					pass
+				if filename is None:
+					store_name='dump_paras.par'
+				else:
+					store_name='dump_paras_%s.par'%filename
+				pardf.to_csv(store_name)			
 			return re
 		else:
 			if dump_paras:
@@ -3720,6 +3744,18 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					re['A']=re['A']+C
 					re['AC']=re['AC']+C
 			re['r2']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
+			if dump_paras:
+				try:
+					pardf.loc['error','value']=re['error']
+				except:
+					pass
+				try:
+					min_df=pandas.read_csv('minimal_dump_paras.par',sep=',',header=None,skiprows=1)
+					if float(min_df.iloc[-1,1])>float(re['error']):
+						pardf.to_csv('minimal_dump_paras.par')
+				except:
+					pass
+				pardf.to_csv('dump_paras.par')
 			return re
 		else:
 			if dump_paras:
