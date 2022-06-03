@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.5"
+version = "6.6.10"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -1217,7 +1217,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		for a in bounds1:
 			bounds0.append(a)
 		norm = colors.BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
-		mid_color=colm(k=range(levels),cmap=cmap)[(levels-levels%2)/2]
+		mid_color=colm(k=range(levels),cmap=cmap)[int((levels-levels%2)/2)]
 		#norm=colors.SymLogNorm(levels,linthresh=1e-5, linscale=1e-5,vmin=intensity_range[0], vmax=intensity_range[1])
 	else:
 		nbins=levels
@@ -1533,7 +1533,8 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 					time_width_percent = 10, ignore_time_region = None, save_figures_to_folder = True, log_fit = False, mod = None, 
 					subplot = False, color_offset = 0, log_scale = True, savetype = 'png', evaluation_style = False, lintresh = 1, 
 					scale_type = 'symlog', patches = False, print_click_position = False, 
-					data_type = 'differential Absorption in $\mathregular{\Delta OD}$', plot_second_as_energy = True, units = 'nm'):
+					data_type = 'differential Absorption in $\mathregular{\Delta OD}$', plot_second_as_energy = True, units = 'nm',
+					equal_energy_bin = False):
 	'''Purly manual function that plots all the fit output figures. Quite cumbersome, 
 	but offers a lot of manual options. The figures can be called separately 
 	or with a list of plots. e.g. range(6) call plots 0-5 Manual plotting of certain type:
@@ -2126,7 +2127,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			log_scale = True, plot_type = 'symlog', lintresh = 0.3, times = None, 
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\mathregular{\Delta OD}$',
-			plot_second_as_energy = True, units = 'nm', return_plots = False):
+			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = False):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
 	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of 
 	cuts are created using the shaping parameters explained below.
@@ -2617,8 +2618,9 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		ax2.set_xlim(ax1.get_xlim())
 		ax2.set_xticks(ax1.get_xticks())
 		labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
-		dump=ax2.set_xticklabels(labels)
-		dump=ax2.set_xlabel('Energy in eV')
+		_=ax2.set_xticklabels(labels)
+		_=ax2.set_xlabel('Energy in eV')
+		ax1.set_zorder(ax2.get_zorder()+1)
 
 	if not subplot:	
 		if not len(title)==0:		
@@ -4289,14 +4291,13 @@ class TA():	# object wrapper for the whole
 			else:
 				print('some data bad, try filtering')
 				try:# try forced conversion
-					self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0, dtype = np.float64) 
-				except:
-					#try:
-					self.ds_ori=self.ds_ori.applymap(lambda x: re.sub('--', '-',x))
-					self.ds_ori=self.ds_ori.applymap(lambda x: re.sub(r'\.+', '.',x))
+					self.ds_ori=self.ds_ori.applymap(lambda x:  re.sub('--', '-',x) if type(x) is str else x)
+					self.ds_ori=self.ds_ori.applymap(lambda x: re.sub(r'\.+', '.',x) if type(x) is str else x)
 					self.ds_ori=self.ds_ori.astype(np.float64)
-					#except:
-					#	print('Attention filtering/cleaning failed check the file type')
+				except Exception as e:
+					print('force cleaning went wrong and the file %s can not be read. Error message is:'%self.filename)
+					print(e)
+					return False
 		if external_time is not None:
 			data_file_name=check_folder(path=self.path,filename=self.filename)
 			time_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_time)
@@ -5152,7 +5153,7 @@ class TA():	# object wrapper for the whole
 				time_bin=self.time_bin, rel_time=self.rel_time, save_figures_to_folder=self.save_figures_to_folder, 
 				savetype=savetype,plot_type=scale_type,lintresh=self.lintresh, times=times, 
 				print_click_position = print_click_position, data_type = self.data_type, 
-				plot_second_as_energy = plot_second_as_energy, units=self.units)
+				plot_second_as_energy = plot_second_as_energy, units=self.units, equal_energy_bin = self.equal_energy_bin)
 
 
 	def Save_Plots(self, path = 'result_figures', savetype = None, title = None, filename = None, scale_type = 'symlog', 
@@ -6009,7 +6010,8 @@ class TA():	# object wrapper for the whole
 						time_width_percent = self.time_width_percent, evaluation_style = evaluation_style, 
 						filename = self.filename, scale_type = scale_type, patches = patches, lintresh = self.lintresh,
 						print_click_position = print_click_position, ignore_time_region = self.ignore_time_region,
-						data_type = self.data_type, plot_second_as_energy = plot_second_as_energy, units= self.units)
+						data_type = self.data_type, plot_second_as_energy = plot_second_as_energy, units= self.units, 
+						equal_energy_bin = self.equal_energy_bin)
 
 
 
@@ -6631,7 +6633,7 @@ class TA():	# object wrapper for the whole
 
 	def Compare_at_time(self, rel_time = None, other = None, fitted = False, norm_window = None,
 						time_width_percent = None, spectra = None, data_and_fit = False, cmap = None , 
-						print_click_position = False, linewidth = 1, title=''):
+						print_click_position = False, linewidth = 1, title='', plot_second_as_energy = True):
 		'''This function plots multiple spectra into the same figure at a given rel_time (timepoints) and 
 		allows for normalization. Very useful to compare the spectra for different solvents or quenchers, or
 		e.g. different fits. The ta.time_width_percent parameter defines if this is a
@@ -6724,6 +6726,8 @@ class TA():	# object wrapper for the whole
 			(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA
 			(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. 
 			If a list/vector/DataFrame is given for the colours they will be used in the order provided.
+		plot_second_as_energy : bool, optional
+			For (Default) True a second x-axis is plotted  with "eV" as unit
 
 		print_click_position : bool, optional
 			if True then the click position is printed for the spectral plots 
@@ -6932,6 +6936,14 @@ class TA():	# object wrapper for the whole
 			han.append(handles[-1])
 			lab.append(labels[-1])
 			ax.legend(han, lab ,labelspacing = 0, ncol = 2, columnspacing = 1, handlelength = 1, frameon = False)
+		if plot_second_as_energy:
+			ax2=ax.twiny()
+			ax2.set_xlim(ax.get_xlim())
+			ax2.set_xticks(ax.get_xticks())
+			labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
+			_=ax2.set_xticklabels(labels)
+			_=ax2.set_xlabel('Energy in eV')
+			ax.set_zorder(ax2.get_zorder()+1)
 		fig=plt.gcf()
 		fig.tight_layout()
 		if self.save_figures_to_folder:
