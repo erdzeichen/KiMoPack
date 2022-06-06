@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.10"
+version = "6.6.11"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -60,7 +60,7 @@ if 1: #Hide imports
 	pandas.options.mode.chained_assignment = None  # I use this a lot and think I can ignore it
 	FWHM = 2.35482
 	shading = 'auto'  # gouraud
-	standard_map = cm.viridis
+	standard_map = cm.jet
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
 
@@ -4509,6 +4509,7 @@ class TA():	# object wrapper for the whole
 		self.save_figures_to_folder = False if not hasattr(self, 'save_figures_to_folder') else self.save_figures_to_folder
 		self.intensity_range = None if not hasattr(self, 'intensity_range') else self.intensity_range
 		self.ds_ori.index.name = 'Time in %s' % self.baseunit if not hasattr(self, 'ds_ori.index.name') else self.ds_ori.index.name
+		self.equal_energy_bin = False if not hasattr(self, 'equal_energy_bin') else self.equal_energy_bin
 		self.units='nm' if not hasattr(self, 'units') else self.units
 		if self.units == 'nm':
 			self.ds_ori.columns.name = 'Wavelength in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
