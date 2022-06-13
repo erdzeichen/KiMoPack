@@ -92,6 +92,8 @@ a number of parameter only affect one or multiple of the plots but not the fitti
 	Which is useful for fast surveys, otherwise the method :meth:`self.Save_Plots()<plot_func.TA.Save_Plots>` 
 	stores all plots (see :ref:`Data Export and Project Saving`). The axis labels are accessible via the **baseunit** 
 	and the Fonts are accessible via the function :meth:`pf.changefonts()<plot_func.changefonts>`
+*	The parameter **equal_energy_bin** can be set to a value which results in that the spectral plots are shown in enqual energy 
+	bins. This is useful for tracking vibrations and such. As of version 6.7.1 this is only happing for the RAW plotting. 
 
 interactive Plotting
 ---------------------

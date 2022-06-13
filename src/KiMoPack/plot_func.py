@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.6.11"
+version = "6.7.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -811,7 +811,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 
 def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, drop_ignore=False, wave_nm_bin = None, 
 			baseunit = None, scattercut = None, drop_scatter=False, bordercut = None, timelimits = None, wavelength_bin = None, 
-			wavelength = None, time_bin = None):
+			wavelength = None, time_bin = None, equal_energy_bin = None):
 	'''This is the main function that creates all the slices of the data matrix
 	
 	Parameters
@@ -905,20 +905,35 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 	if bordercut is not None:
 		ds.columns=ds.columns.astype('float')
 		ds=ds.loc[:,bordercut[0]:bordercut[1]]
-	if (wave_nm_bin is not None) and (wavelength is None):
-		#print('rebinning')
+	if (equal_energy_bin is not None) and (wavelength is None):# we work with optical data but want to bin in equal energy
+		x=ds.columns.values.astype('float')
+		y=ds.index.values.astype('float')
+		energy_label='eV'
+		x=scipy.constants.h*scipy.constants.c/(x*1e-9*scipy.constants.electron_volt)
+		if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
+		rebin_max=np.argmin((x[1:]-x[:-1])<equal_energy_bin)#find the position where the difference is larger than the wave_nm_bin
+		if rebin_max==0:rebin_max=len(x)# we get 0 when all teh values are ok
+		if rebin_max<len(x):
+			if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
+			bins=np.arange(x.min(),x[rebin_max],equal_energy_bin)
+			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
+			bins=(bin_edges[1:]+bin_edges[:-1])/2.
+			ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')   
+		else:
+			bins=np.arange(x.min(),x.max()+equal_energy_bin,equal_energy_bin)
+			bin_means,bins = binned_statistic(x, ds.values, statistic='mean',bins=bins)[:2]
+			bins=(bins[1:]+bins[:-1])/2.
+			ds=pandas.DataFrame(bin_means,index=y,columns=bins)
+	elif (wave_nm_bin is not None) and (wavelength is None):# bin in wavelength
 		x=ds.columns.values.astype('float')
 		y=ds.index.values.astype('float')
 		if (x[1:]-x[:-1]>wave_nm_bin).all():raise ValueError("wavelength_nm_bins bins are to small for the data")
-						
 		rebin_max=np.argmin((x[1:]-x[:-1])<wave_nm_bin)#find the position where the difference is larger than the wave_nm_bin
 		if rebin_max==0:rebin_max=len(x)# we get 0 when all teh values are ok
 		if rebin_max<len(x):
 			if (x[1:]-x[:-1]>wave_nm_bin).all():raise ValueError("wavelength_nm_bins bins are to small for the data")
-														
 			bins=np.arange(x.min(),x[rebin_max],wave_nm_bin)
-			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]
-						   
+			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
 			bins=(bin_edges[1:]+bin_edges[:-1])/2.
 			ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')
 					   
@@ -942,48 +957,30 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		ds=ds.loc[timelimits[0]:timelimits[1],:]	
 	if ignore_time_region is not None:
 		ds=ds.fillna(value=0)
-		if 0:#old version using find_nearest
-			y=ds.index.values.astype('float')
-			if isinstance(ignore_time_region[0], numbers.Number):
-				lower=find_nearest_index(y,ignore_time_region[0])
-				upper=find_nearest_index(y,ignore_time_region[1])
-				if drop_ignore:
-					ds.iloc[lower:upper,:]=np.nan
-				else:
-					ds.iloc[lower:upper,:]=0
+		ds.index=ds.index.astype('float')
+		if isinstance(ignore_time_region[0], numbers.Number):
+			if drop_ignore:
+				ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=np.nan
 			else:
-				try:
-					for entries in ignore_time_region:
-						lower=find_nearest_index(y,entries[0])
-						upper=find_nearest_index(y,entries[1])
-						if drop_ignore:
-							ds.iloc[lower:upper,:]=np.nan
-						else:
-							ds.iloc[lower:upper,:]=0
-				except:
-					pass
+				ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=0
 		else:
-			ds.index=ds.index.astype('float')
-			if isinstance(ignore_time_region[0], numbers.Number):
-				if drop_ignore:
-					ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=np.nan
-				else:
-					ds.loc[ignore_time_region[0]:ignore_time_region[1],:]=0
-			else:
-				try:
-					for entries in ignore_time_region:
-						if drop_ignore:
-							ds.loc[entries[0]:entries[1],:]=np.nan
-						else:
-							ds.loc[entries[0]:entries[1],:]=0
-				except:
-					pass
+			try:
+				for entries in ignore_time_region:
+					if drop_ignore:
+						ds.loc[entries[0]:entries[1],:]=np.nan
+					else:
+						ds.loc[entries[0]:entries[1],:]=0
+			except:
+				pass
 		ds=ds.dropna(axis=0)
 		
 	if scattercut is not None:
 		ds=ds.fillna(value=0)
 		x=ds.columns.values.astype('float')
 		if isinstance(scattercut[0], numbers.Number):
+			if equal_energy_bin is not None:
+				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+				scattercut=scattercut[::-1]
 			lower=find_nearest_index(x,scattercut[0])
 			upper=find_nearest_index(x,scattercut[1])
 			if drop_scatter:
@@ -993,6 +990,9 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		else:
 			try:
 				for entries in scattercut:
+					if equal_energy_bin is not None:
+						scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+						scattercut=scattercut[::-1]
 					lower=find_nearest_index(x,entries[0])
 					upper=find_nearest_index(x,entries[1])
 					if drop_scatter:
@@ -1053,7 +1053,9 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		out.index.name=energy_label
 		ds=out
 		#ds.index.name='Wavelength in nm'
-	ds.fillna(value=0,inplace=True)#lets fill nan values with zero to catch probems
+	ds.fillna(value=0,inplace=True)#lets fill nan values with zero to catch problems
+	if equal_energy_bin is not None:
+		ds.sort_index(axis=1,inplace=True,ascending=False)
 	return ds
 
 
@@ -1061,7 +1063,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			scattercut = None, bordercut = None, wave_nm_bin = None, ignore_time_region = None,
 			time_bin = None, log_scale = False, plot_type = 'symlog', lintresh = 1, 
 			wavelength_bin = None, levels = 256, use_colorbar = True, cmap = None, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$'):
+			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None):
 	'''function for plotting matrix of TA data.
 	
 	Parameters
@@ -1197,7 +1199,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		timelimits=(ds.index.min(),ds.index.max())
 	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, 
 				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region, 
-				drop_scatter = False, drop_ignore = False)		
+				drop_scatter = False, drop_ignore = False, equal_energy_bin = equal_energy_bin)		
 	if intensity_range is None:
 		try:
 			maxim=max([abs(ds.values.min()),abs(ds.values.max())])
@@ -1226,24 +1228,21 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		mid_color_index=find_nearest_index(0,levels)
 		mid_color=colm(k=range(nbins),cmap=cmap)
 		mid_color=mid_color[mid_color_index]
-		
 	x = ds.columns.values.astype('float')
 	y = ds.index.values.astype('float')
 	X, Y = np.meshgrid(x, y)
 	img=ax.pcolormesh(X,Y,ds.values,norm=norm,cmap=cmap,shading=shading)
-	
 	if ignore_time_region is None:
 		pass
 	elif isinstance(ignore_time_region[0], numbers.Number):
 		ds.index=ds.index.astype(float)
 		try:
-			#upper=find_nearest_index(y,ignore_time_region[1])
 			upper=ds.loc[ignore_time_region[1]:,:].index.values.min()
-			#if upper==0:raise
-			#lower=find_nearest_index(y[:upper],ignore_time_region[0])
 			lower=ds.loc[ignore_time_region[0]:,:].index.values.min()
-			#rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
-			rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
+			if equal_energy_bin is not None:
+				rect = plt.Rectangle((x.max(),lower), width=abs(ax.get_xlim()[0]-ax.get_xlim()[1]), height=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
+			else:
+				rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 			ax.add_patch(rect)
 		except:
 			pass
@@ -1251,13 +1250,12 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		ignore_time_region_loc=flatten(ignore_time_region)
 		for k in range(int(len(ignore_time_region_loc)/2+1)):
 			try:
-				#upper=find_nearest_index(y,ignore_time_region[k+1])
 				upper=ds.loc[ignore_time_region[k+1]:,:].index.values.min()
-				#if upper==0:raise
-				#lower=find_nearest_index(y[:upper],ignore_time_region[k])
 				lower=ds.loc[ignore_time_region[k]:,:].index.values.min()
-				#rect = plt.Rectangle((x.min(),y[lower]), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(y[upper]-y[lower]),facecolor=mid_color,alpha=1)#mid_color)
-				rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)
+				if equal_energy_bin is not None:
+					rect = plt.Rectangle((x.max(),lower), width=abs(ax.get_xlim()[0]-ax.get_xlim()[1]), height=abs(upper-lower),facecolor=mid_color,alpha=1)
+				else:
+					rect = plt.Rectangle((x.min(),lower), width=abs(ax.get_xlim()[1]-ax.get_xlim()[0]), height=abs(upper-lower),facecolor=mid_color,alpha=1)
 				ax.add_patch(rect)
 			except:
 				pass
@@ -1266,10 +1264,10 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		pass
 	elif isinstance(scattercut[0], numbers.Number):
 		try:
+			if equal_energy_bin is not None:
+				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+				scattercut=scattercut[::-1]
 			upper=ds.loc[:,scattercut[1]:].columns.values.min()
-			#upper=find_nearest_index(x,scattercut[1])
-			#if upper==0:raise
-			#lower=find_nearest_index(x[:upper],scattercut[0])
 			lower=ds.loc[:,scattercut[0]:].columns.values.min()
 			rect = plt.Rectangle((lower,y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 			ax.add_patch(rect)
@@ -1277,6 +1275,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			pass
 	else:
 		scattercut=flatten(scattercut)
+		if equal_energy_bin is not None:
+			scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+			scattercut=scattercut[::-1]
 		for k in range(int(len(scattercut)/2+1)):
 			try:
 				upper=ds.loc[:,scattercut[k][1]:].columns.values.min()
@@ -1290,7 +1291,6 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		mid=(intensity_range[1]+intensity_range[0])/2
 		if log_scale:
 			values=[intensity_range[0],mid-abs(intensity_range[0]-mid)/10,mid,mid+abs(intensity_range[1]-mid)/10,intensity_range[1]]
-																	
 		else:
 			values=[intensity_range[0],intensity_range[0]+abs(intensity_range[0]-mid)/2,mid,intensity_range[1]-abs(intensity_range[1]-mid)/2,intensity_range[1]]
 																				  
@@ -1326,8 +1326,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			ticks.sort()
 			if timelimits[1]>100:
 				ticks=np.array(ticks)
-				ticks=np.concatenate((ticks.clip(min=0.1),np.zeros(1),ticks.clip(max=-0.1,min=timelimits[0])),axis=0)
-				   
+				ticks=np.concatenate((ticks.clip(min=0.1),np.zeros(1),ticks.clip(max=-0.1,min=timelimits[0])),axis=0)  
 			ax.set_yticks(ticks)
 		else:
 			print('here2')
@@ -1340,7 +1339,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	else:
 		ax.set_yscale('linear')
 		ax.set_ylim(timelimits)
-	
+	if equal_energy_bin is not None:
+		temp=np.array(ax.get_xlim())
+		ax.set_xlim(temp.max(),temp.min())	
 	ax.set_xlabel(ds.columns.name)
 	ax.set_ylabel(ds.index.name)
 	if title:
@@ -1354,7 +1355,7 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 				scattercut = None, bordercut = None, wave_nm_bin = None, ignore_time_region = None,
 				time_bin = None, log_scale = False, scale_type = 'symlog', lintresh = 1, 
 				wavelength_bin = None, levels = 256, plot_with_colorbar = True, cmap = None, 
-				data_type = 'differential Absorption in $\mathregular{\Delta OD}$'):													   
+				data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None):													   
 	'''Plots the fit output as a single plot with meas,fitted and difference. 
 	The differnece used err_matrix_amplification as a factor. patches moves the labels from the
 	title into white patches in the top of the figure
@@ -1488,15 +1489,15 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		plot2d(re['A'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[0], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type)
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
 		plot2d(re['AC'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[1], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type)
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
 		plot2d(re['AE'], cmap = cmap, log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, ax = ax[2], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type)
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
 		for i in range(3):
 			ax[i].set_title(label='')
 			stringen=['measured','calculated','difference']
@@ -1513,15 +1514,15 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		plot2d(re['A'], cmap = cmap, title = 'Measured', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[0], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type)																					
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)																					
 		plot2d(re['AC'], cmap = cmap, title = 'Calculated', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[1], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits , data_type = data_type)
+				timelimits = timelimits , data_type = data_type, equal_energy_bin = equal_energy_bin)
 		plot2d(re['AE'], cmap = cmap, title = 'Difference', log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, 
 				ax = ax[2], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type)
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
 		#fig.subplots_adjust(left=0.15, bottom=0.067, right=0.97, top=0.97, wspace=0.0, hspace=0.398)
 	fig.tight_layout()
 	return fig
@@ -1534,7 +1535,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 					subplot = False, color_offset = 0, log_scale = True, savetype = 'png', evaluation_style = False, lintresh = 1, 
 					scale_type = 'symlog', patches = False, print_click_position = False, 
 					data_type = 'differential Absorption in $\mathregular{\Delta OD}$', plot_second_as_energy = True, units = 'nm',
-					equal_energy_bin = False):
+					equal_energy_bin = None):
 	'''Purly manual function that plots all the fit output figures. Quite cumbersome, 
 	but offers a lot of manual options. The figures can be called separately 
 	or with a list of plots. e.g. range(6) call plots 0-5 Manual plotting of certain type:
@@ -2127,7 +2128,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			log_scale = True, plot_type = 'symlog', lintresh = 0.3, times = None, 
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\mathregular{\Delta OD}$',
-			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = False):
+			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = None):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
 	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of 
 	cuts are created using the shaping parameters explained below.
@@ -2322,7 +2323,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 					baseunit = baseunit, intensity_range = intensity_range, scattercut = scattercut, 
 					bordercut = bordercut, wave_nm_bin = wave_nm_bin, levels = 200, lintresh = lintresh, 
 					timelimits = timelimits, time_bin = time_bin, title = title, log_scale = log_scale, 
-					data_type = data_type)
+					data_type = data_type, equal_energy_bin = equal_energy_bin)
 		fig1.tight_layout()
 		if debug:print('plotted Matrix')
 	if 1 in plotting:#kinetics
@@ -2344,19 +2345,19 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 						rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 						baseunit = baseunit, lines_are = 'data'	  , scattercut = scattercut, 
 						wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-						ignore_time_region = ignore_time_region, data_type = data_type, units = units)
+						ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
 		if plot_second_as_energy:
 			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = True, cmap = cmap, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-					ignore_time_region = ignore_time_region, data_type = data_type, units = units)
+					ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
 		else:
 			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = False, cmap = cmap, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-					ignore_time_region = ignore_time_region, data_type = data_type, units = units )
+					ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
 		if print_click_position:
 			plt.connect('button_press_event', mouse_move)
 		fig3.tight_layout()
@@ -2408,7 +2409,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 			wave_nm_bin = None, title = None, text_in_legend = None, baseunit = 'ps', 
 			lines_are = 'smoothed', scattercut = None, bordercut = None, subplot = False, linewidth = 1, 
 			color_offset = 0, intensity_range = None, plot_second_as_energy = True, cmap = standard_map, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm'):
+			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', equal_energy_bin = None):
 	'''Function to create plots at a certain time. In general you give under rel_time a 
 		list of times at which yu do want to plot the time width percentage means that 
 		this function integrates ewverything plus minus 10% at this time. lines_are is a 
@@ -2547,12 +2548,15 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		ax1=ax
 	ds = sub_ds(ds = ds, times = rel_time, time_width_percent = time_width_percent, 
 				scattercut = scattercut, drop_scatter=True, bordercut = bordercut, 
-				ignore_time_region = ignore_time_region, wave_nm_bin = wave_nm_bin)
+				ignore_time_region = ignore_time_region, wave_nm_bin = wave_nm_bin, equal_energy_bin = equal_energy_bin)
 	if 'smoothed' in lines_are:
 		if scattercut is None:
 			smoothed=Frame_golay(ds, window = 5, order = 3,transpose=False)
 			smoothed.plot(ax = ax1, style = '-', color = colors, legend = False, lw = linewidth)
 		elif isinstance(scattercut[0], numbers.Number):#handling single scattercut
+			if equal_energy_bin is not None:
+				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+				scattercut=scattercut[::-1]
 			smoothed=Frame_golay(ds.loc[:scattercut[0],:], window = 5, order = 3,transpose=False)
 			smoothed.plot(ax = ax1, style = '-', color = colors, legend = False, lw = linewidth)
 			smoothed=Frame_golay(ds.loc[scattercut[1]:,:], window = 5, order = 3,transpose=False)
@@ -2560,6 +2564,9 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		else:#handling multiple scattercuts
 			try:
 				scattercut=flatten(scattercut)
+				if equal_energy_bin is not None:
+					scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+					scattercut=scattercut[::-1]
 				for i in range(len(scattercut)):
 					if i==0:
 						smoothed=Frame_golay(ds.loc[:scattercut[0],:], window = 5, order = 3,transpose=False)
@@ -2586,11 +2593,15 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		if scattercut is None:
 			ds.plot(ax = ax1, style = '-', color = colors, legend = False, lw = linewidth, alpha = 0.7)
 		elif isinstance(scattercut[0], numbers.Number):
+			if equal_energy_bin is not None:
+				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
 			ds.loc[:scattercut[0],:].plot(ax = ax1, legend = False, style = '-', color = colors, alpha = 0.7, lw = linewidth)
 			ds.loc[scattercut[1]:,:].plot(ax = ax1, legend = False, style = '-', color = colors, alpha = 0.7, lw = linewidth, label='_nolegend_')
 		else:
 			try:
 				scattercut=flatten(scattercut)
+				if equal_energy_bin is not None:
+					scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
 				for i in range(len(scattercut)):
 					if i==0:
 						ds.loc[:scattercut[0],:].plot(ax = ax1, legend = False, style = '-', color = colors, alpha = 0.7, lw = linewidth)
@@ -2612,14 +2623,23 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	if bordercut is None:
 		ax1.autoscale(axis='x',tight=True)
 	else:
+		if equal_energy_bin is not None:
+			bordercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in bordercut]
+			#bordercut=bordercut[::-1]
 		ax1.set_xlim(bordercut)	
 	if (not subplot) and plot_second_as_energy:
 		ax2=ax1.twiny()
 		ax2.set_xlim(ax1.get_xlim())
 		ax2.set_xticks(ax1.get_xticks())
-		labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
+		if equal_energy_bin is not None:
+			labels=['%.1f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
+		else:
+			labels=['%.2f'%(scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt)) for a in ax2.get_xticks()]
 		_=ax2.set_xticklabels(labels)
-		_=ax2.set_xlabel('Energy in eV')
+		if equal_energy_bin is not None:
+			_=ax2.set_xlabel('Wavelength in nm')
+		else:
+			_=ax2.set_xlabel('Energy in eV')
 		ax1.set_zorder(ax2.get_zorder()+1)
 
 	if not subplot:	
@@ -4509,7 +4529,7 @@ class TA():	# object wrapper for the whole
 		self.save_figures_to_folder = False if not hasattr(self, 'save_figures_to_folder') else self.save_figures_to_folder
 		self.intensity_range = None if not hasattr(self, 'intensity_range') else self.intensity_range
 		self.ds_ori.index.name = 'Time in %s' % self.baseunit if not hasattr(self, 'ds_ori.index.name') else self.ds_ori.index.name
-		self.equal_energy_bin = False if not hasattr(self, 'equal_energy_bin') else self.equal_energy_bin
+		self.equal_energy_bin = None if not hasattr(self, 'equal_energy_bin') else self.equal_energy_bin
 		self.units='nm' if not hasattr(self, 'units') else self.units
 		if self.units == 'nm':
 			self.ds_ori.columns.name = 'Wavelength in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
@@ -5228,7 +5248,8 @@ class TA():	# object wrapper for the whole
 			for t in savetype:
 				plt.close('all')
 				self.Plot_RAW(savetype = t, path = path, cmap = cmap, title = title, 
-								scale_type = scale_type, filename = filename)
+								scale_type = scale_type, filename = filename, units=self.units, 
+								equal_energy_bin = self.equal_energy_bin)
 				plt.close('all')
 				print('saved RAW plots type %s to %s'%(t,check_folder(path=path,current_path=self.path)))
 		except:
