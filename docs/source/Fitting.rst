@@ -23,7 +23,8 @@ Model
    and in the columns an expression of the relative concentrations. The 
    external function can reload whatever data is desired. The names of the 
    columns are used in all plots and reports. (see below a description 
-   of the example functions defined in "plot_func_function_library.py")
+   of the example functions defined in "plot_func_function_library.py" 
+   and "standard_functions.py")
 
 Parameter
    For handling of Parameters I am using the lmfit Parameter objects to
@@ -207,6 +208,11 @@ variety of problems. The example functions provided are
 		linear decays step into a state that decays with a distribution of
 		rates (here assumed gaussian) into a final, non decaying state. These
 		type of complex decays are often observed in protein folding
+		
+In the file "standard_functions.py" the user can find 16 of the most used 
+functions. For their useage refer to the pdf: "Standard_function_library_image.pdf" 
+to choose the function. Each function has a unique name of type "P21" and is then 
+used as described below.
 
 **Usage of external functions:** To use an external function, this
 function needs to be handed to ta.mod. For an external function this
