@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.1"
+version = "6.7.4"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -1238,7 +1238,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		ds.index=ds.index.astype(float)
 		try:
 			upper=ds.loc[ignore_time_region[1]:,:].index.values.min()
-			lower=ds.loc[ignore_time_region[0]:,:].index.values.min()
+			lower=ds.loc[:ignore_time_region[0],:].index.values.max()
 			if equal_energy_bin is not None:
 				rect = plt.Rectangle((x.max(),lower), width=abs(ax.get_xlim()[0]-ax.get_xlim()[1]), height=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 			else:
@@ -1251,7 +1251,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		for k in range(int(len(ignore_time_region_loc)/2+1)):
 			try:
 				upper=ds.loc[ignore_time_region[k+1]:,:].index.values.min()
-				lower=ds.loc[ignore_time_region[k]:,:].index.values.min()
+				lower=ds.loc[:ignore_time_region[k],:].index.values.max()
 				if equal_energy_bin is not None:
 					rect = plt.Rectangle((x.max(),lower), width=abs(ax.get_xlim()[0]-ax.get_xlim()[1]), height=abs(upper-lower),facecolor=mid_color,alpha=1)
 				else:
@@ -1268,8 +1268,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
 				scattercut=scattercut[::-1]
 			upper=ds.loc[:,scattercut[1]:].columns.values.min()
-			lower=ds.loc[:,scattercut[0]:].columns.values.min()
-			rect = plt.Rectangle((lower,y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
+			lower=ds.loc[:,:scattercut[0]].columns.values.max()
+			width=abs(upper-lower)
+			rect = plt.Rectangle((lower,y.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=width, facecolor=mid_color,alpha=1)#mid_color)
 			ax.add_patch(rect)
 		except:
 			pass
@@ -1282,7 +1283,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			try:
 				upper=ds.loc[:,scattercut[k][1]:].columns.values.min()
 				if upper==0:raise
-				lower=ds.loc[:,scattercut[k][0]:].columns.values.min()
+				lower=ds.loc[:,:scattercut[k][0]].columns.values.max()
 				rect = plt.Rectangle((lower.min()), height=abs(ax.get_ylim()[1]-ax.get_ylim()[0]), width=abs(upper-lower),facecolor=mid_color,alpha=1)#mid_color)
 				ax.add_patch(rect)	
 			except:
@@ -1309,6 +1310,8 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			else:
 				if ax_ori:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
 				else:cbar.set_label(data_type, rotation=270,labelpad=20,fontsize=fontsize)
+
+	
 	if "symlog" in plot_type:
 
 		ax.plot(ax.get_xlim(),[lintresh,lintresh],'black',lw=0.5,alpha=0.3)
@@ -1339,9 +1342,15 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	else:
 		ax.set_yscale('linear')
 		ax.set_ylim(timelimits)
+	if bordercut is not None:
+		try:
+			ax.set_xlim(bordercut[0],bordercut[1])
+		except:
+			print('bordercut failed')
+			pass
 	if equal_energy_bin is not None:
 		temp=np.array(ax.get_xlim())
-		ax.set_xlim(temp.max(),temp.min())	
+		ax.set_xlim(temp.max(),temp.min())
 	ax.set_xlabel(ds.columns.name)
 	ax.set_ylabel(ds.index.name)
 	if title:
@@ -4028,7 +4037,10 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			store_name='dump_paras.par'
 		else:
 			store_name='dump_paras_%s.par'%filename
-		pardf.to_csv(store_name)
+		try:
+			pardf.to_csv(store_name)
+		except:
+			print('Saving of %s failed'%store_name)
 	if not mod in ['paral','exponential','consecutive']:
 		print(combined_error)
 	if final:
@@ -4880,7 +4892,7 @@ class TA():	# object wrapper for the whole
 		self.ds.columns.name=self.ds_ori.columns.name
 		self.ds.index.name=self.ds_ori.index.name
 
-	def Plot_Interactive(self, fitted = False, ds = None, cmap = None):
+	def Plot_Interactive(self, fitted = False, ds = None, cmap = None, plot_on_move = False):
 		'''interactive plotting function. it plots the matrix in the middle and two slices that are selected by the mouse (click) 
 		
 		Parameters
@@ -4914,6 +4926,10 @@ class TA():	# object wrapper for the whole
 		ds : DataFrame, optional
 			if None (Default), the program first tests self.ds and if this is not there then self.ds_ori.
 			This option was introduced to allow plotting of other matrixes with the same parameter
+			
+		plot_on_move : bool, optional
+			Default: False plots the slices after click, on True the plot constantly reslices and on click 
+			The current position is written down.
 			
 		 '''
 		from matplotlib.widgets import Cursor
@@ -4969,8 +4985,16 @@ class TA():	# object wrapper for the whole
 				self.ax_time= fig.add_subplot(gs[0, :3],sharex=self.ax)
 				self.ax_kinetic= fig.add_subplot(gs[1:, -1],sharey=self.ax)
 				plt.subplots_adjust(wspace=0,hspace=0)
-				fig.canvas.mpl_connect('button_press_event', self.move)
-				
+				if plot_on_move:
+					fig.canvas.mpl_connect('motion_notify_event', self.move)
+					fig.canvas.mpl_connect('button_press_event', self.click)
+				else:
+					fig.canvas.mpl_connect('button_press_event', self.move)
+			
+			def click(self, event):
+				x, y = event.xdata, event.ydata
+				print('x=%g, y=%g\n'%(x,y))
+			
 			def move(self, event):
 				x, y = event.xdata, event.ydata
 				try:
@@ -7334,27 +7358,35 @@ class TA():	# object wrapper for the whole
 			print("No fitted results present")
 			return False
 		if cmap is None:cmap = self.cmap
+		species=re['DAC'].columns.values
 		if other is None:
 			col = range(len(re['DAC'].columns.values))
 			colors = colm(cmap = cmap, k = col)
+			
 		else:
 			re['DAC'].columns = [self.filename + '\n' + '%s'%a for a in re['DAC'].columns]
 			if separate_plots:
 				colors = colm(cmap = cmap, k = np.arange(len(other)+1))
 			else:
-				colors = colm(cmap = cmap, k = np.arange((len(other)+1)*len(re['DAC'].columns)))
+				colors = colm(cmap = cmap, k = np.arange((len(other)+1)*len(species)))
 		DAC = re['DAC']
+		hand=[]
 		if separate_plots:
 			n_cols = int(np.ceil(len(re['DAC'].columns)/2))
 			col = [colors[0] for a in range(len(re['DAC'].columns))]
 			if self.scattercut is None:	
 				ax = DAC.plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
 									legend = False, color = col, sharex = False)
+
 				a=ax.ravel()
+				handles,labels=a[0].get_legend_handles_labels()
+				hand.append(handles[-1])
 			elif isinstance(self.scattercut[0],  numbers.Number):
 				ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
-													legend = False, color = col, sharex = False)
+													legend = False, color = col, sharex = False)								
 				a=ax.ravel()
+				handles,labels=a[0].get_legend_handles_labels()
+				hand.append(handles[-1])	
 				DAC_cut=DAC.loc[self.scattercut[1]:, :]
 				for i,am in enumerate(DAC_cut.columns):
 					DAC_cut.iloc[:,i].plot(ax = a[i], legend = False, color = col)
@@ -7364,7 +7396,10 @@ class TA():	# object wrapper for the whole
 					if i == 0:
 						ax = DAC.loc[:scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), 
 														layout = (n_cols, 2), legend = False, color = col, sharex = False)
+						
 						a=ax.ravel()
+						handles,labels=a[0].get_legend_handles_labels()
+						hand.append(handles[-1])	
 					elif i<(len(scattercut)/2):
 						for j,am in enumerate(ax):
 							DAC.loc[scattercut[2*i-1]:scattercut[2*i], :].plot(ax = a[j], legend = False, color = col, label = '_nolegend_')
@@ -7373,19 +7408,19 @@ class TA():	# object wrapper for the whole
 							DAC.loc[scattercut[-1]:, :].plot(ax = a[j], legend = False, color = col, label = '_nolegend_')
 		else:
 			if self.scattercut is None:	
-				ax  =  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
+				ax  =  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			elif isinstance(self.scattercut[0], numbers.Number):
-				ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
-				ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
+				ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+				ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			else:
 				scattercut  =  flatten(self.scattercut)
 				for i in range(len(scattercut)/2+1):
 					if i  ==  0:
-						ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
+						ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					elif i<(len(scattercut)/2):
-						ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
+						ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					else:
-						ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(re['DAC'].columns)], label = '_nolegend_')
+						ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 		if other is not None:
 			for i,o in enumerate(other):
 				try:
@@ -7399,40 +7434,49 @@ class TA():	# object wrapper for the whole
 					for j,am in enumerate(re['DAC'].columns):
 						if o.scattercut is None:	
 							re['DAC'].iloc[:,j].plot(subplots=False,ax=a[j],legend=False,color=col[i])
+							if j==0:
+								handles,labels=a[0].get_legend_handles_labels()
+								hand.append(handles[-1])	
 						elif isinstance(o.scattercut[0],  numbers.Number):
 							re['DAC'].iloc[:,j].loc[:o.scattercut[0]].plot(subplots=False,ax=a[j],legend=False,color=col[i])
+							if j==0:
+								handles,labels=a[0].get_legend_handles_labels()
+								hand.append(handles[-1])	
 							re['DAC'].iloc[:,j].loc[o.scattercut[1]:].plot(subplots=False,ax=a[j],legend=False,color=col[i],label = '_nolegend_')
 						else:
 							scattercut = flatten(o.scattercut)
-							for i in range(len(scattercut)/2+1):
-								if i == 0:
+							for m in range(len(scattercut)/2+1):
+								if m == 0:
 									re['DAC'].iloc[:,j].loc[:scattercut[0]].plot(subplots=False,ax=a[j],legend=False,color=col[i])
-								elif i<(len(scattercut)/2):
-									re['DAC'].iloc[:,j].loc[scattercut[2*i-1]:scattercut[2*i]].plot(subplots=False,ax=a[j],legend=False,color=col[i],label = '_nolegend_')
+									if j==0:
+										handles,labels=a[j].get_legend_handles_labels()
+										hand.append(handles[-1])	
+								elif m<(len(scattercut)/2):
+									re['DAC'].iloc[:,j].loc[scattercut[2*m-1]:scattercut[2*m]].plot(subplots=False,ax=a[j],legend=False,color=col[i],label = '_nolegend_')
 								else:
 									re['DAC'].iloc[:,j].loc[scattercut[-1]:].plot(subplots=False,ax=a[j],legend=False,color=col[i],label = '_nolegend_')
 						a[j].set_xlabel('Wavelength in nm')				
 						a[j].set_ylabel('Spectral strength in arb. units')
 						a[j].legend(fontsize=8,frameon=False)
-
+			
 				else:
 					dacs=len(re['DAC'].columns)
 					col=colors[(i+1)*dacs:(i+2)*dacs]	
 					DAC=re['DAC']
 					if o.scattercut is None:	
-						ax = DAC.plot(subplots=separate_plots,ax=ax,legend=False,color=col)
+						ax = DAC.plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 					elif isinstance(o.scattercut[0],  numbers.Number):
-						ax = DAC.loc[:o.scattercut[0], :].plot(subplots=separate_plots,ax=ax,legend=False,color=col)
-						DAC.loc[o.scattercut[1]:, :].plot(subplots=separate_plots,ax=ax,legend=False,color=col)
+						ax = DAC.loc[:o.scattercut[0], :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
+						DAC.loc[o.scattercut[1]:, :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 					else:
 						scattercut = flatten(o.scattercut)
 						for i in range(len(scattercut)/2+1):
 							if i == 0:
-								ax = DAC.loc[:scattercut[0], :].plot(subplots=separate_plots,ax=ax,legend=False,color=col)
+								ax = DAC.loc[:scattercut[0], :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 							elif i<(len(scattercut)/2):
-								ax = DAC.loc[scattercut[2*i-1]:scattercut[2*i], :].plot(subplots=separate_plots,ax=ax,legend=False,color=col)
+								ax = DAC.loc[scattercut[2*i-1]:scattercut[2*i], :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 							else:
-								ax = DAC.loc[scattercut[-1]:, :].plot(subplots=separate_plots,ax=ax,legend=False,color=col)
+								ax = DAC.loc[scattercut[-1]:, :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 					ax.set_xlabel('Wavelength in nm')				
 					ax.set_ylabel('Spectral strength in arb. units')
 					ax.legend(fontsize=8,frameon=False)
@@ -7443,7 +7487,32 @@ class TA():	# object wrapper for the whole
 		fig=(ax.ravel())[0].figure
 		if separate_plots:
 			fig.set_size_inches(12,10)
+			axes_number=fig.get_axes()
+			names=[self.filename]
+			if other is not None:
+				for o in other:
+					names.append(o.filename)
+			for i,ax in enumerate(axes_number):
+				try:
+					nametemp=['%s'%species[i] + ' - ' + a for a in names]
+					ax.legend(hand,nametemp)
+				except:
+					pass
 		else:
+			ax=fig.get_axes()[0]
+			names=[self.filename]
+			if other is not None:
+				for o in other:
+					names.append(o.filename)
+			handles,labels=ax.get_legend_handles_labels()
+			nametemp=[]
+			try:
+				for a in names:
+					for b in species:
+						nametemp.append('%s'%b + ' - ' + a)
+				ax.legend(handles,nametemp)
+			except:
+				pass
 			fig.set_size_inches(16,8)
 		fig.tight_layout()
 		if self.save_figures_to_folder:

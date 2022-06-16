@@ -77,6 +77,7 @@ We have written and submitted a paper introducing the toolbox under https://doi.
 Links
 -----
 
+	* Publication: https://pubs.acs.org/doi/10.1021/acs.jpca.2c00907
 	* Documentation: https://kimopack.readthedocs.io/
 	* PyPI Releases: https://pypi.org/project/KiMoPack/
 	* Source Code: https://github.com/erdzeichen/KiMoPack

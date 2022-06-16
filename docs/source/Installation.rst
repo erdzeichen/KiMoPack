@@ -37,5 +37,6 @@ Links
 	* Source Code: https://github.com/erdzeichen/KiMoPack
 	* Issue Tracker: https://github.com/erdzeichen/KiMoPack/issues
 	* Website: https://www.chemphys.lu.se/research/projects/kimopack/
+	* Publication: https://pubs.acs.org/doi/10.1021/acs.jpca.2c00907
 	* Zenodo: https://doi.org/10.5281/zenodo.5720587
 
