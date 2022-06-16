@@ -29,6 +29,17 @@ Best usage
 -----------
 While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n These notebooks can be found in the installation folder under "Workflowtools" or can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools. Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
 
+Convenient use and documentation
+------------------------------------
+The notebooks mentioned above are also excellent analysis protocolls, if they are copied for each new analysis. The recommended use is, copy you favourite notebook close to your data, rename it  and then open it for you analysis. This goes most comfortable by using the module nbopen, that can be integrated into the file manager following the instructions on this webpage: https://pypi.org/project/nbopen/
+
+Under windows this would be:
+
+.. code-block:: text
+
+    $ pip install nbopen
+	$ python -m nbopen.install_win
+
 Links
 -----
 
