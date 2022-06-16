@@ -17,6 +17,8 @@ Install using "pip":
 
 Upgrade if already installed:
 
+.. code-block:: text
+
     $ pip install KiMoPack -U
 
 Install and update using "conda" from the channel erdzeichen:
@@ -34,7 +36,7 @@ Under windows this would be:
 .. code-block:: text
 
     $ pip install nbopen
-	$ python -m nbopen.install_win 
+$ python -m nbopen.install_win 
 	
 For more information on the use of these notebooks  see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
  
