@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.4"
+version = "6.7.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4111,7 +4111,7 @@ def pardf_to_timedf(pardf):
 class TA():	# object wrapper for the whole
 	def __init__(self, filename, path = None, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
 				sort_indexes = False, divide_times_by = False, shift_times_by = None, external_time = None, external_wave = None,
-				data_type = None , units = None):		 
+				data_type = None , units = None,ds = None):		 
 		'''Function that opens and imports data into an TA object
 		it is designed to open combined files that contain both the wavelength and the time. (e.g. SIA files as recorded by Pascher instruments software) or hdf5 projects saved by this software
 		There are however a lot of additional options to open other ascii type files and adapt their format internally
@@ -4191,6 +4191,9 @@ class TA():	# object wrapper for the whole
 			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
 			and sets where the wavelength are to be inserted (columns or row indexes)
 			
+		ds: pandas.DataFrame (optional)
+			feed in an external dataframe instead of opening a file
+			
 		Returns
 		-------
 		
@@ -4248,6 +4251,10 @@ class TA():	# object wrapper for the whole
 			self.__read_project(saved_project=check_folder(path=self.path,filename=self.filename))
 			self.__make_standard_parameter()
 			self.Cor_Chirp(fitcoeff=self.fitcoeff)
+		elif filename == 'external':#use a provided dataframe (ds) instead
+			self.ds_ori=ds
+			self.ds=ds
+			self.__make_standard_parameter()
 		else:#we read in raw data from sia File
 			self.__read_ascii_data(sep = sep, decimal = decimal, index_is_energy = index_is_energy, 
 									transpose = transpose, sort_indexes = sort_indexes, 
