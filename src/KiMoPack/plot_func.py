@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.5"
+version = "6.7.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -175,8 +175,8 @@ def s2_vs_smin2(Spectral_points = 512, Time_points = 130, number_of_species = 3,
 
 
 def GUI_open(project_list = None, path = None, filename_part = None, fileending = 'hdf5', sep = "\t", decimal = '.', 
-			index_is_energy = False, transpose = False, sort_indexes = False, divide_times_by = False, 
-			shift_times_by = None, external_time = None, external_wave = None, data_type = None, units = None):
+			index_is_energy = False, transpose = False, sort_indexes = False, divide_times_by = None, 
+			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, units = None, baseunit = None):
 	'''	This Function 
 		1. opens a gui and allows the selection of multiple saved projects, which are returned as a list
 		2. if given a list of project names opens them
@@ -195,27 +195,35 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 			Give a list of filenames that will be opened and returned as a list of objects
 			if the project list is 'all' then all files in the folder specified in path. The parameter "filename_part" 
 			and "fileending" can be used to specify this selection 
+		
 		path : str or path object (optional)
 			if path is a string without the operation system dependent separator, it is treated as a relative path, 
 			e.g. data will look from the working directory in the sub director data. Otherwise this has to be a 
 			full path in either strong or path object form.
+		
 		filename_part : str, optional
 			This parameter is only used for the option 'all', the (Default) None means do nothing. if a string is given then only  
 			files that start with this string will be read. 
+		
 		fileending : str, optional
 			this string is used to select the filetype that is suppose to open. For the GUI, only these files will be shown,
 			with the option 'all' this selects the files that will be read in the folder, 'hdf5' (Default) 
+		
 		sep : str (optional)
 			is the separator between different numbers, typical are tap '\t' (Default) ,one or 
 			multiple white spaces '\s+' or comma ','.
+		
 		decimal : str (optional) 
 			sets the ascii symbol that is used for the decimal sign. In most countries this is '.'(Default) 
 			but it can be ',' in countries like Sweden or Germany
+		
 		index_is_energy : bool (optional)
 			switches if the wavelength is given in nm (Default) or in eV (if True), currently everything 
 			is handled as wavelength in nm internally
+		
 		transpose : bool (optional)
 			if this switch is False (Default) the wavelength are the columns and the rows the times.
+		
 		data_type: str (optional)
 			data_type is the string that represents the intensity measurements. Usually this contains if absolute 
 			of differential data. This is used for the color intensity in the 2d plots and the y-axis for the 1d plots
@@ -224,33 +232,50 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 			this is used to identify the units on the energy axis and to label the slices, recognized is 'nm', 'eV' and 'keV' 
 			but if another unit like 'cm^-1' is used it will state energy in 'cm^-1'. Pleas observe that if you use the index_is_energy
 			switch the program tries to convert this energy into wavelength. 
+		
+		baseunit: str (optional)
+			this is used to identify the units on the developing/time axis. This is name that is attached to the index of the dataframe. 
+			setting this during import is equivalent to ta.baseunit
+		
 		sort_indexes : bool (optional)
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
-		divide_times_by : bool or float (optional) 
+		
+		divide_times_by : None or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
-			what is written on the axis, while this value is actually used to scale the times. False (Default) 
+			what is written on the axis, while this value is actually used to scale the times. None (Default) 
 			ignores this
+		
 		shift_times_by : None, float (optional)
 			This a value by which the time axis is shifted during import. This is a useful option of e.g. 
 			the recording software does not compensate for t0 and the data is always shifted. 
 			None (Default) ignores this setting
+		
 		external_time : None or str (optional)
 			Here a filename extension (string) can be given that contains the time vector. 
 			The file is assumed to be at the same path as the data and to contain a single 
-			type of separated data without header. It also assumes that this is the ending 
-			for the file. The filename itself is taken from the filename. 
-			e.g. if samp1.txt is the filename and external\_time='.tid' the program searches 
+			type of separated data without header. 
+			If use_same_name = True (default)
+			It assumes that this is the ending for the file. The filename itself is taken from the filename. 
+			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
 			samp1.tid for the times. The transpose setting is applied and sets where the times are 
 			to be inserted (row or column indexes)
-		external_wave: None or str (optional) 
+			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+			
+		external_wave : None or str (optional) 
 			Here a filename extension (string) can be given that contains the wavelength vector. 
+			If use_same_name = True (default)
 			The file is assumed to be at the same path as the data and to contain a single type 
 			of separated data without header. This is the ending for the file. The filename itself 
-			is taken from the filename. e.g. if samp1.txt is the filename and external\_wave='.wav' 
+			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
 			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
 			and sets where the wavelength are to be inserted (columns or row indexes)
+			If use_same_name = False
+			this should be a full filename that contains the vector
+			
+		use_same_name : bool, optional
+			this switches if the external filename included the loaded filename or is a separate file True(default)
 		
 		Returns
 		--------------
@@ -311,7 +336,7 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 			ta = TA(filename = filename, path = path, sep = sep, decimal = decimal, 
 					index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
 					divide_times_by = divide_times_by, shift_times_by = shift_times_by, external_time = external_time, 
-					external_wave = external_wave, data_type = data_type, units = units)
+					external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units)
 																
 			return_list.append(ta)
 		except:
@@ -525,8 +550,8 @@ def colm(k,cmap = standard_map):
 def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump = 'range', window1 = None, window2 = None, 
 					save_name = 'combined.SIA', fileending = 'SIA', filename_part = 'Scan', return_removed_list = False, 
 					sep = "\t", decimal = '.', index_is_energy = False, transpose = False, sort_indexes = False, 
-					divide_times_by = False, shift_times_by = None, external_time = None, external_wave = None,
-					return_ds_only=False, data_type = None, units = None):
+					divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
+					return_ds_only=False, data_type = None, units = None, baseunit = None):
 	'''
 	Average single scans. Uses single scans of the data set and plots them as average after different conditions. Usually one defines one or two windows in which the intensity is integrated. This integrated number is then displayed for each scan in the list. There are different tools to select certain scans that are excluded from the summary. These are defined in the list_to_dump. This list can take either be a list with the number, or a string with the words 'single' or 'range' (see below) 
 	
@@ -588,6 +613,10 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		but if another unit like 'cm^-1' is used it will state energy in 'cm^-1'. Pleas observe that if you use the index_is_energy
 		switch the program tries to convert this energy into wavelength. 
 
+	baseunit: str (optional)
+		this is used to identify the units on the developing/time axis. This is name that is attached to the index of the dataframe. 
+		setting this during import is equivalent to ta.baseunit
+
 	save_name : str, optional
 		specify name for saving the combined scans (Default) 'combined.SIA')
 	
@@ -613,10 +642,10 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		For False (Default) I assume that the times and energies are already in a rising order. 
 		with this switch, both are sorted again. 
 	
-	divide_times_by : bool or float (optional) 
+	divide_times_by : None or float (optional) 
 		here a number can be given that scales the time by an arbitary factor. This is actually dividing
 		the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
-		what is written on the axis, while this value is actually used to scale the times. False (Default) 
+		what is written on the axis, while this value is actually used to scale the times. None (Default) 
 		ignores this
 	
 	shift_times_by : None, float (optional)
@@ -624,22 +653,30 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		the recording software does not compensate for t0 and the data is always shifted. 
 		None (Default) ignores this setting
 	
-	external_time : None or str (optional)
-		Here a filename extension (string) can be given that contains the time vector. 
-		The file is assumed to be at the same path as the data and to contain a single 
-		type of separated data without header. It also assumes that this is the ending 
-		for the file. The filename itself is taken from the filename. 
-		e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
-		samp1.tid for the times. The transpose setting is applied and sets where the times are 
-		to be inserted (row or column indexes)
-	
-	external_wave: None or str (optional) 
-		Here a filename extension (string) can be given that contains the wavelength vector. 
-		The file is assumed to be at the same path as the data and to contain a single type 
-		of separated data without header. This is the ending for the file. The filename itself 
-		is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
-		then the program searches samp1.wav for the wavelength. The transpose setting is applied 
-		and sets where the wavelength are to be inserted (columns or row indexes)
+		external_time : None or str (optional)
+			Here a filename extension (string) can be given that contains the time vector. 
+			The file is assumed to be at the same path as the data and to contain a single 
+			type of separated data without header. 
+			If use_same_name = True (default)
+			It assumes that this is the ending for the file. The filename itself is taken from the filename. 
+			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
+			samp1.tid for the times. The transpose setting is applied and sets where the times are 
+			to be inserted (row or column indexes)
+			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+			
+		external_wave : None or str (optional) 
+			Here a filename extension (string) can be given that contains the wavelength vector. 
+			If use_same_name = True (default)
+			The file is assumed to be at the same path as the data and to contain a single type 
+			of separated data without header. This is the ending for the file. The filename itself 
+			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
+			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
+			and sets where the wavelength are to be inserted (columns or row indexes)
+			If use_same_name = False
+			this should be a full filename that contains the vector
+			
+		use_same_name : bool, optional
+			this switches if the external filename included the loaded filename or is a separate file True(default)
 	
 	return_ds_only: boolean,(optional)
 		if False (Dafault) returns a TA object, otherwise just a DataFrame
@@ -696,12 +733,12 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 											index_is_energy = index_is_energy, transpose = transpose, 
 											sort_indexes = sort_indexes, divide_times_by = divide_times_by, 
 											shift_times_by = shift_times_by, external_time = external_time, 
-											external_wave = external_wave, data_type = data_type, units = units).ds.values)
+											external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units).ds.values)
 
 			ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
 					index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
 					divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
-					external_time = external_time, external_wave = external_wave, data_type = data_type, units = units).ds
+					external_time = external_time, external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units).ds
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
@@ -1795,6 +1832,13 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		
 	'''
 					 
+	if baseunit != 'ps':
+		if baseunit == 'ns':baseunit = 'Time in ns'
+		re['A'].index.name=baseunit
+		re['AC'].index.name=baseunit
+		re['AE'].index.name=baseunit
+		ds.index.name=baseunit
+		re['c'].index.name=baseunit
 	if width is None:width=wave_nm_bin
 	stringen=[]
 	timedf=re['fit_results_times']
@@ -2019,6 +2063,9 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		ax2[0].set_xlabel(x_label)
 		ax2[1].set_xlabel(x_label)
 		ax2[2].set_xlabel(x_label)
+		ax2a[0].set_xlabel(x_label)
+		ax2a[1].set_xlabel(x_label)
+		ax2a[2].set_xlabel(x_label)
 		fig2.tight_layout()
 	if 2 in plotting:#---plot single wavelength----------
 		fig3,ax3 = plt.subplots(figsize = (15,6),dpi = 100)
@@ -2321,6 +2368,11 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	'''
 	if ds is None:raise ValueError('We need something to plot!!!')
+	if baseunit != 'ps':
+		if baseunit == 'ns':
+			ds.index.name = 'Time in ns'
+		else:
+			ds.index.name=baseunit
 															
 	if path is None:path=check_folder(path='result_figures',current_path=os.path.dirname(os.path.realpath(__file__)))
 	if filename is None:filename='standard.sia'
@@ -4110,8 +4162,8 @@ def pardf_to_timedf(pardf):
 
 class TA():	# object wrapper for the whole
 	def __init__(self, filename, path = None, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
-				sort_indexes = False, divide_times_by = False, shift_times_by = None, external_time = None, external_wave = None,
-				data_type = None , units = None,ds = None):		 
+				sort_indexes = False, divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
+				data_type = None , units = None, baseunit = None, ds = None):		 
 		'''Function that opens and imports data into an TA object
 		it is designed to open combined files that contain both the wavelength and the time. (e.g. SIA files as recorded by Pascher instruments software) or hdf5 projects saved by this software
 		There are however a lot of additional options to open other ascii type files and adapt their format internally
@@ -4151,6 +4203,10 @@ class TA():	# object wrapper for the whole
 			this is used to identify the units on the energy axis and to label the slices, recognized is 'nm', 'eV' and 'keV' 
 			but if another unit like 'cm^-1' is used it will state energy in 'cm^-1'. Pleas observe that if you use the index_is_energy
 			switch the program tries to convert this energy into wavelength. 
+			
+		baseunit: str (optional)
+			this is used to identify the units on the developing/time axis. This is name that is attached to the index of the dataframe. 
+			setting this during import is equivalent to ta.baseunit
 		
 		transpose : bool (optional)
 			if this switch is False (Default) the wavelength are the columns and the rows the times.
@@ -4159,10 +4215,10 @@ class TA():	# object wrapper for the whole
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
 		
-		divide_times_by : bool or float (optional) 
+		divide_times_by : None or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
-			what is written on the axis, while this value is actually used to scale the times. False (Default) 
+			what is written on the axis, while this value is actually used to scale the times. None (Default) 
 			ignores this
 		
 		shift_times_by : None, float (optional)
@@ -4177,19 +4233,27 @@ class TA():	# object wrapper for the whole
 		external_time : None or str (optional)
 			Here a filename extension (string) can be given that contains the time vector. 
 			The file is assumed to be at the same path as the data and to contain a single 
-			type of separated data without header. It also assumes that this is the ending 
-			for the file. The filename itself is taken from the filename. 
+			type of separated data without header. 
+			If use_same_name = True (default)
+			It assumes that this is the ending for the file. The filename itself is taken from the filename. 
 			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
 			samp1.tid for the times. The transpose setting is applied and sets where the times are 
 			to be inserted (row or column indexes)
-		
-		external_wave: None or str (optional) 
+			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+			
+		external_wave : None or str (optional) 
 			Here a filename extension (string) can be given that contains the wavelength vector. 
+			If use_same_name = True (default)
 			The file is assumed to be at the same path as the data and to contain a single type 
 			of separated data without header. This is the ending for the file. The filename itself 
 			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
 			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
 			and sets where the wavelength are to be inserted (columns or row indexes)
+			If use_same_name = False
+			this should be a full filename that contains the vector
+			
+		use_same_name : bool, optional
+			this switches if the external filename included the loaded filename or is a separate file True(default)
 			
 		ds: pandas.DataFrame (optional)
 			feed in an external dataframe instead of opening a file
@@ -4259,15 +4323,16 @@ class TA():	# object wrapper for the whole
 			self.__read_ascii_data(sep = sep, decimal = decimal, index_is_energy = index_is_energy, 
 									transpose = transpose, sort_indexes = sort_indexes, 
 									divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
-									external_time = external_time, external_wave = external_wave,
-									data_type = data_type, units = units)
+									external_time = external_time, external_wave = external_wave, 
+									use_same_name = use_same_name, data_type = data_type, units = units,  
+									baseunit = baseunit)
 			self.__make_standard_parameter()
 
 
 	def __read_ascii_data(self, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
-							sort_indexes = False, divide_times_by = False, shift_times_by = None, 
-							external_time = None, external_wave = None, correct_ascii_errors = True,
-							data_type = None, units = None):
+							sort_indexes = False, divide_times_by = None, shift_times_by = None, 
+							external_time = None, external_wave = None, use_same_name = True, correct_ascii_errors = True,
+							data_type = None, units = None,  baseunit = None):
 		'''Fancy function that handles the import of pure ascii files.
 		
 		Parameters
@@ -4276,48 +4341,71 @@ class TA():	# object wrapper for the whole
 		sep : str (optional)
 			is the separator between different numbers, typical are tap (Backslash t) (Default) ,one or 
 			multiple white spaces 'backslash s+' or comma ','.
+		
 		decimal : str (optional) 
 			sets the ascii symbol that is used for the decimal sign. In most countries this is '.'(Default) 
 			but it can be ',' in countries like Sweden or Germany
+		
 		index_is_energy : bool (optional)
 			switches if the wavelength is given in nm (Default) or in eV (if True), currently everything 
 			is handled as wavelength in nm internally
+		
 		data_type: str (optional)
 			data_type is the string that represents the intensity measurements. Usually this contains if absolute 
 			of differential data. This is used for the color intensity in the 2d plots and the y-axis for the 1d plots
+		
 		units: str (optional)
 			this is used to identify the units on the energy axis and to label the slices, recognized is 'nm', 'eV' and 'keV' 
 			but if another unit like 'cm^-1' is used it will state energy in 'cm^-1'. Pleas observe that if you use the index_is_energy
 			switch the program tries to convert this energy into wavelength. 
+		
+		baseunit: str (optional)
+			this is used to identify the units on the developing/time axis. This is name that is attached to the index of the dataframe. 
+			setting this during import is equivalent to ta.baseunit
+		
 		transpose : bool (optional)
 			if this switch is False (Default) the wavelength are the columns and the rows the times.
+		
 		sort_indexes : bool (optional)
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
-		divide_times_by : bool or float (optional) 
+		
+		divide_times_by : None or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
-			what is written on the axis, while this value is actually used to scale the times. False (Default) 
+			what is written on the axis, while this value is actually used to scale the times. None (Default) 
 			ignores this
+		
 		shift_times_by : None, float (optional)
 			This a value by which the time axis is shifted during import. This is a useful option of e.g. 
 			the recording software does not compensate for t0 and the data is always shifted. 
 			None (Default) ignores this setting
+		
 		external_time : None or str (optional)
 			Here a filename extension (string) can be given that contains the time vector. 
 			The file is assumed to be at the same path as the data and to contain a single 
-			type of separated data without header. It also assumes that this is the ending 
-			for the file. The filename itself is taken from the filename. 
+			type of separated data without header. 
+			If use_same_name = True (default)
+			It assumes that this is the ending for the file. The filename itself is taken from the filename. 
 			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
 			samp1.tid for the times. The transpose setting is applied and sets where the times are 
 			to be inserted (row or column indexes)
+			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+		
 		external_wave : None or str (optional) 
 			Here a filename extension (string) can be given that contains the wavelength vector. 
+			If use_same_name = True (default)
 			The file is assumed to be at the same path as the data and to contain a single type 
 			of separated data without header. This is the ending for the file. The filename itself 
 			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
 			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
 			and sets where the wavelength are to be inserted (columns or row indexes)
+			If use_same_name = False
+			this should be a full filename that contains the vector
+		
+		use_same_name : bool, optional
+			this switches if the external filename included the loaded filename or is a separate file
+		
 		correct_ascii_errors :  bool (optional)
 			If True (Default) then the code tries to catch some stuff like double minus signs and double dots
 			
@@ -4338,18 +4426,37 @@ class TA():	# object wrapper for the whole
 					print(e)
 					return False
 		if external_time is not None:
+			if use_same_name:
+				time_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_time)
+			else:
+				time_file=check_folder(path=self.path,filename=external_time)
+		if external_wave is not None:
+			if use_same_name:
+				wave_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_wave)
+			else:
+				wave_file=check_folder(path=self.path,filename=external_wave)
+		
+		if external_time is not None:
 			data_file_name=check_folder(path=self.path,filename=self.filename)
-			time_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_time)
 			times=pandas.read_csv(time_file,header=None,decimal=decimal).values.ravel()
 			if transpose:
-				self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep , decimal=decimal, index_col=0,header=None)
+				if external_wave is not None:
+					self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep , decimal=decimal, header=None)
+					waves=pandas.read_csv(wave_file,header=None,decimal=decimal).values.ravel()
+					self.ds_ori.index=waves
+				else:
+					self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep , decimal=decimal, index_col=0,header=None)
 				self.ds_ori.columns=times
 			else:
-				self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, decimal=decimal)
+				if external_wave is not None:
+					self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, decimal=decimal,header=None)
+					waves=pandas.read_csv(wave_file,header=None,decimal=decimal).values.ravel()
+					self.ds_ori.columns=waves
+				else:
+					self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, decimal=decimal)
 				self.ds_ori.index=times
-		if external_wave is not None:
+		elif external_wave is not None:
 			data_file_name=check_folder(path=self.path,filename=self.filename)
-			wave_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_wave)
 			waves=pandas.read_csv(wave_file,header=None,decimal=decimal).values.ravel()
 			if transpose:
 				self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, decimal=decimal)
@@ -4369,12 +4476,14 @@ class TA():	# object wrapper for the whole
 			self.ds_ori.sort_index(axis=1,inplace=True)
 		if shift_times_by is not None:
 			self.ds_ori.index=self.ds_ori.index.values+shift_times_by
-		if divide_times_by:
+		if divide_times_by is not None:
 			self.ds_ori.index=self.ds_ori.index.values/divide_times_by
 		if data_type is not None:
 			self.data_type = data_type
 		if units is not None:
 			self.units = units
+		if baseunit is not None:
+			self.baseunit = baseunit
 
 		
 	def __make_standard_parameter(self):
