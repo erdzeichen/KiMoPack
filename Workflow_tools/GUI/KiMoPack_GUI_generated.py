@@ -18,24 +18,54 @@ import wx.aui
 class frameMain ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 621,605 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
-		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+		self.SetSizeHints( wx.Size( -1,550 ), wx.DefaultSize )
 
 		self.m_toolBar1 = self.CreateToolBar( wx.TB_HORIZONTAL, wx.ID_ANY )
-		self.save_settings = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"D:\\Dropbox\\coding\\github\\KiMoPack\\Workflow_tools\\GUI\\embedded_files\\document-save.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, wx.EmptyString, wx.EmptyString, None )
+		self.working_directory_label = wx.StaticText( self.m_toolBar1, wx.ID_ANY, u"current working directory", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.working_directory_label.Wrap( -1 )
+
+		self.m_toolBar1.AddControl( self.working_directory_label )
+		self.working_directory = wx.DirPickerCtrl( self.m_toolBar1, wx.ID_ANY, wx.EmptyString, u"Select a folder", wx.DefaultPosition, wx.Size( 500,-1 ), wx.DIRP_DEFAULT_STYLE )
+		self.working_directory.SetMinSize( wx.Size( 300,-1 ) )
+
+		self.m_toolBar1.AddControl( self.working_directory )
+		self.m_toolBar1.AddSeparator()
 
 		self.m_toolBar1.AddSeparator()
 
-		self.Load_settings = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"D:\\Dropbox\\coding\\github\\KiMoPack\\Workflow_tools\\GUI\\embedded_files\\document-open.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, wx.EmptyString, wx.EmptyString, None )
+		self.load_setting_label = wx.StaticText( self.m_toolBar1, wx.ID_ANY, u"Load setting", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.load_setting_label.Wrap( -1 )
+
+		self.m_toolBar1.AddControl( self.load_setting_label )
+		self.Load_settings = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"embedded_files/document-open.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, wx.EmptyString, wx.EmptyString, None )
 
 		self.m_toolBar1.AddSeparator()
 
-		self.send_email_to_creator = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"D:\\Dropbox\\coding\\github\\KiMoPack\\Workflow_tools\\GUI\\embedded_files\\emblem-mail.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"dump settings in email and ask for help", wx.EmptyString, None )
+		self.m_toolBar1.AddSeparator()
+
+		self.save_setting_label = wx.StaticText( self.m_toolBar1, wx.ID_ANY, u"save settings", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.save_setting_label.Wrap( -1 )
+
+		self.m_toolBar1.AddControl( self.save_setting_label )
+		self.save_settings = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"embedded_files/document-save.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"save current settings", wx.EmptyString, None )
+
+		self.m_toolBar1.AddSeparator()
+
+		self.m_toolBar1.AddSeparator()
+
+		self.send_setting_label = wx.StaticText( self.m_toolBar1, wx.ID_ANY, u"send settings", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.send_setting_label.Wrap( -1 )
+
+		self.m_toolBar1.AddControl( self.send_setting_label )
+		self.send_email_to_creator = self.m_toolBar1.AddTool( wx.ID_ANY, u"tool", wx.Bitmap( u"embedded_files/emblem-mail.png", wx.BITMAP_TYPE_ANY ), wx.NullBitmap, wx.ITEM_NORMAL, u"dump settings in email and ask for help", wx.EmptyString, None )
 
 		self.m_toolBar1.Realize()
 
-		frameMain_sizer = wx.BoxSizer( wx.VERTICAL )
+		frameMain_sizer = wx.BoxSizer( wx.HORIZONTAL )
+
+		wSizer1 = wx.WrapSizer( wx.HORIZONTAL, wx.WRAPSIZER_DEFAULT_FLAGS )
 
 		self.frameMainNotebook = wx.aui.AuiNotebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.aui.AUI_NB_DEFAULT_STYLE )
 		self.data_loading_panel = wx.Panel( self.frameMainNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
@@ -55,23 +85,23 @@ class frameMain ( wx.Frame ):
 
 		gbSizer2.Add( self.Load_recent, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-		self.load_filename = wx.Button( self.data_loading_panel, wx.ID_ANY, u"Load file with name", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.load_filename.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT ) )
-		self.load_filename.SetMinSize( wx.Size( -1,40 ) )
+		self.load_filename1 = wx.Button( self.data_loading_panel, wx.ID_ANY, u"Load file with name", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.load_filename1.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT ) )
+		self.load_filename1.SetMinSize( wx.Size( -1,40 ) )
 
-		gbSizer2.Add( self.load_filename, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		gbSizer2.Add( self.load_filename1, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-		self.m_textCtrl7 = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
-		gbSizer2.Add( self.m_textCtrl7, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		self.load_filename = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		gbSizer2.Add( self.load_filename, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
 		bSizer2 = wx.BoxSizer( wx.VERTICAL )
 
 		type_SIAChoices = [ u"SIA", u"hdf5", u"custom" ]
 		self.type_SIA = wx.RadioBox( self.data_loading_panel, wx.ID_ANY, u"Filetype", wx.DefaultPosition, wx.DefaultSize, type_SIAChoices, 1, wx.RA_SPECIFY_COLS )
-		self.type_SIA.SetSelection( 1 )
+		self.type_SIA.SetSelection( 0 )
 		bSizer2.Add( self.type_SIA, 0, wx.ALL, 5 )
 
-		self.custom_filetype = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.custom_filetype = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"SIA", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer2.Add( self.custom_filetype, 0, wx.ALL, 5 )
 
 
@@ -82,8 +112,8 @@ class frameMain ( wx.Frame ):
 
 		gbSizer2.Add( self.path_label, wx.GBPosition( 7, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-		self.m_textCtrl9 = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
-		gbSizer2.Add( self.m_textCtrl9, wx.GBPosition( 8, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+		self.load_path = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		gbSizer2.Add( self.load_path, wx.GBPosition( 8, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
 		loading_option_sizer = wx.GridSizer( 11, 2, 0, 0 )
 
@@ -92,7 +122,7 @@ class frameMain ( wx.Frame ):
 
 		loading_option_sizer.Add( self.Data_separator_label, 0, wx.ALL, 5 )
 
-		self.data_separator = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"'\\t'", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.data_separator = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"\\t", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.data_separator.SetMaxSize( wx.Size( 30,-1 ) )
 
 		loading_option_sizer.Add( self.data_separator, 0, wx.ALL, 5 )
@@ -102,7 +132,7 @@ class frameMain ( wx.Frame ):
 
 		loading_option_sizer.Add( self.data_decimal_separator_label, 0, wx.ALL, 5 )
 
-		self.data_decimal_separator = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"','", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.data_decimal_separator = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u",", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.data_decimal_separator.SetMaxSize( wx.Size( 30,-1 ) )
 
 		loading_option_sizer.Add( self.data_decimal_separator, 0, wx.ALL, 5 )
@@ -128,15 +158,17 @@ class frameMain ( wx.Frame ):
 
 		loading_option_sizer.Add( self.sort_indexes_label, 0, wx.ALL, 5 )
 
-		self.m_checkBox3 = wx.CheckBox( self.data_loading_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		loading_option_sizer.Add( self.m_checkBox3, 0, wx.ALL, 5 )
+		self.resort_indexes_check = wx.CheckBox( self.data_loading_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		loading_option_sizer.Add( self.resort_indexes_check, 0, wx.ALL, 5 )
 
 		self.divide_times_label = wx.StaticText( self.data_loading_panel, wx.ID_ANY, u"divide times by", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.divide_times_label.Wrap( -1 )
 
 		loading_option_sizer.Add( self.divide_times_label, 0, wx.ALL, 5 )
 
-		self.shift_times_by = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"False", wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
+		self.shift_times_by = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( 50,-1 ), 0 )
+		self.shift_times_by.SetMinSize( wx.Size( 110,-1 ) )
+
 		loading_option_sizer.Add( self.shift_times_by, 0, wx.ALL, 5 )
 
 		self.shift_times_label = wx.StaticText( self.data_loading_panel, wx.ID_ANY, u"shift times by", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -145,6 +177,8 @@ class frameMain ( wx.Frame ):
 		loading_option_sizer.Add( self.shift_times_label, 0, wx.ALL, 5 )
 
 		self.shift_times_value = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( 60,-1 ), 0 )
+		self.shift_times_value.SetMinSize( wx.Size( 110,-1 ) )
+
 		loading_option_sizer.Add( self.shift_times_value, 0, wx.ALL, 5 )
 
 		self.data_type_label = wx.StaticText( self.data_loading_panel, wx.ID_ANY, u"intensity axis [Delta OD]", wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
@@ -152,8 +186,10 @@ class frameMain ( wx.Frame ):
 
 		loading_option_sizer.Add( self.data_type_label, 0, wx.ALL, 5 )
 
-		self.m_textCtrl5 = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( 70,-1 ), 0 )
-		loading_option_sizer.Add( self.m_textCtrl5, 0, wx.ALL, 5 )
+		self.intensity_axis_values = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.intensity_axis_values.SetMinSize( wx.Size( 110,-1 ) )
+
+		loading_option_sizer.Add( self.intensity_axis_values, 0, wx.ALL, 5 )
 
 		self.time_units_label = wx.StaticText( self.data_loading_panel, wx.ID_ANY, u"time units [ps] default", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.time_units_label.Wrap( -1 )
@@ -176,8 +212,8 @@ class frameMain ( wx.Frame ):
 
 		loading_option_sizer.Add( self.external_wave_file_label, 0, wx.ALL, 5 )
 
-		self.m_textCtrl11 = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.DefaultSize, 0 )
-		loading_option_sizer.Add( self.m_textCtrl11, 0, wx.ALL, 5 )
+		self.external_wavelength_file = wx.TextCtrl( self.data_loading_panel, wx.ID_ANY, u"None", wx.DefaultPosition, wx.DefaultSize, 0 )
+		loading_option_sizer.Add( self.external_wavelength_file, 0, wx.ALL, 5 )
 
 
 		gbSizer2.Add( loading_option_sizer, wx.GBPosition( 0, 1 ), wx.GBSpan( 8, 2 ), wx.EXPAND, 5 )
@@ -196,22 +232,56 @@ class frameMain ( wx.Frame ):
 		self.frameMainNotebook.AddPage( self.RAW_plotting_panel, u"RAW plotting", False, wx.NullBitmap )
 		self.data_fitting_panel = wx.Panel( self.frameMainNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		self.frameMainNotebook.AddPage( self.data_fitting_panel, u"Fitting", False, wx.NullBitmap )
+		self.Single_scan_panel = wx.Panel( self.frameMainNotebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.frameMainNotebook.AddPage( self.Single_scan_panel, u"Single Scan handling", False, wx.NullBitmap )
 
-		frameMain_sizer.Add( self.frameMainNotebook, 1, wx.EXPAND |wx.ALL, 5 )
+		wSizer1.Add( self.frameMainNotebook, 1, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer3 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.Logo = wx.StaticBitmap( self, wx.ID_ANY, wx.Bitmap( u"embedded_files/KiMoPack_logo.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer3.Add( self.Logo, 0, wx.ALL, 5 )
+
+		self.copyright = wx.StaticText( self, wx.ID_ANY, u"copyright by Jens Uhlig 2022 \n Jens.uhlig@chemphys.lu.se \n www.chemphys.lu.se/research/~ \n /projects/kimopack/", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.copyright.Wrap( -1 )
+
+		bSizer3.Add( self.copyright, 0, wx.ALL, 5 )
+
+		self.QR = wx.StaticBitmap( self, wx.ID_ANY, wx.Bitmap( u"embedded_files/qr-code50.png", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.QR.Hide()
+		self.QR.SetMaxSize( wx.Size( 40,40 ) )
+
+		bSizer3.Add( self.QR, 0, wx.ALL, 5 )
+
+
+		wSizer1.Add( bSizer3, 1, wx.EXPAND, 5 )
+
+		self.m_filePicker1 = wx.FilePickerCtrl( self, wx.ID_ANY, wx.EmptyString, u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE )
+		wSizer1.Add( self.m_filePicker1, 0, wx.ALL, 5 )
+
+
+		frameMain_sizer.Add( wSizer1, 1, wx.EXPAND, 5 )
+
+		self.log_screen = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL|wx.VSCROLL )
+		self.log_screen.SetMinSize( wx.Size( 500,550 ) )
+
+		frameMain_sizer.Add( self.log_screen, 0, wx.ALL, 5 )
 
 
 		self.SetSizer( frameMain_sizer )
 		self.Layout()
+		frameMain_sizer.Fit( self )
 
 		self.Centre( wx.BOTH )
 
 		# Connect Events
-		self.Bind( wx.EVT_TOOL, self.save_settingsOnToolClicked, id = self.save_settings.GetId() )
+		self.working_directory.Bind( wx.EVT_DIRPICKER_CHANGED, self.working_directoryOnDirChanged )
 		self.Bind( wx.EVT_TOOL, self.Load_settingsOnToolClicked, id = self.Load_settings.GetId() )
+		self.Bind( wx.EVT_TOOL, self.save_settingsOnToolClicked, id = self.save_settings.GetId() )
 		self.Bind( wx.EVT_TOOL, self.send_email_to_creatorOnToolClicked, id = self.send_email_to_creator.GetId() )
 		self.open_single_file_gui_button.Bind( wx.EVT_BUTTON, self.open_single_file_gui_buttonOnButtonClick )
 		self.Load_recent.Bind( wx.EVT_BUTTON, self.Load_recentOnButtonClick )
-		self.load_filename.Bind( wx.EVT_BUTTON, self.load_filenameOnButtonClick )
+		self.load_filename1.Bind( wx.EVT_BUTTON, self.load_filenameOnButtonClick )
 		self.type_SIA.Bind( wx.EVT_RADIOBOX, self.type_SIAOnRadioBox )
 
 	def __del__( self ):
@@ -219,10 +289,13 @@ class frameMain ( wx.Frame ):
 
 
 	# Virtual event handlers, override them in your derived class
-	def save_settingsOnToolClicked( self, event ):
+	def working_directoryOnDirChanged( self, event ):
 		event.Skip()
 
 	def Load_settingsOnToolClicked( self, event ):
+		event.Skip()
+
+	def save_settingsOnToolClicked( self, event ):
 		event.Skip()
 
 	def send_email_to_creatorOnToolClicked( self, event ):
