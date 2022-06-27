@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-<<<<<<< HEAD
 version = "6.7.11"
-=======
-version = "6.7.6"
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -180,11 +176,7 @@ def s2_vs_smin2(Spectral_points = 512, Time_points = 130, number_of_species = 3,
 
 def GUI_open(project_list = None, path = None, filename_part = None, fileending = 'hdf5', sep = "\t", decimal = '.', 
 			index_is_energy = False, transpose = False, sort_indexes = False, divide_times_by = None, 
-<<<<<<< HEAD
 			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, units = None, baseunit = None):
-=======
-			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, units = None):
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 	'''	This Function 
 		1. opens a gui and allows the selection of multiple saved projects, which are returned as a list
 		2. if given a list of project names opens them
@@ -248,10 +240,7 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 		sort_indexes : bool (optional)
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
-<<<<<<< HEAD
 		
-=======
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		divide_times_by : None or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
@@ -562,11 +551,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 					save_name = 'combined.SIA', fileending = 'SIA', filename_part = 'Scan', return_removed_list = False, 
 					sep = "\t", decimal = '.', index_is_energy = False, transpose = False, sort_indexes = False, 
 					divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
-<<<<<<< HEAD
 					return_ds_only=False, data_type = None, units = None, baseunit = None):
-=======
-					return_ds_only=False, data_type = None, units = None):
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 	'''
 	Average single scans. Uses single scans of the data set and plots them as average after different conditions. Usually one defines one or two windows in which the intensity is integrated. This integrated number is then displayed for each scan in the list. There are different tools to select certain scans that are excluded from the summary. These are defined in the list_to_dump. This list can take either be a list with the number, or a string with the words 'single' or 'range' (see below) 
 	
@@ -1881,10 +1866,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 	'''
 					 
 	if baseunit != 'ps':
-<<<<<<< HEAD
 		if baseunit == 'ns':baseunit = 'Time in ns'
-=======
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		re['A'].index.name=baseunit
 		re['AC'].index.name=baseunit
 		re['AE'].index.name=baseunit
@@ -2426,15 +2408,11 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	'''
 	if ds is None:raise ValueError('We need something to plot!!!')
-<<<<<<< HEAD
 	if baseunit != 'ps':
 		if baseunit == 'ns':
 			ds.index.name = 'Time in ns'
 		else:
 			ds.index.name=baseunit
-=======
-	if baseunit != 'ps':ds.index.name=baseunit
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 															
 	if path is None:path=check_folder(path='result_figures',current_path=os.path.dirname(os.path.realpath(__file__)))
 	if filename is None:filename='standard.sia'
@@ -4228,11 +4206,7 @@ def pardf_to_timedf(pardf):
 class TA():	# object wrapper for the whole
 	def __init__(self, filename, path = None, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
 				sort_indexes = False, divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
-<<<<<<< HEAD
 				data_type = None , units = None, baseunit = None, ds = None):		 
-=======
-				data_type = None , units = None,ds = None):		 
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		'''Function that opens and imports data into an TA object
 		it is designed to open combined files that contain both the wavelength and the time. (e.g. SIA files as recorded by Pascher instruments software) or hdf5 projects saved by this software
 		There are however a lot of additional options to open other ascii type files and adapt their format internally
@@ -4393,23 +4367,15 @@ class TA():	# object wrapper for the whole
 									transpose = transpose, sort_indexes = sort_indexes, 
 									divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
 									external_time = external_time, external_wave = external_wave, 
-<<<<<<< HEAD
 									use_same_name = use_same_name, data_type = data_type, units = units,  
 									baseunit = baseunit)
-=======
-									use_same_name = use_same_name, data_type = data_type, units = units)
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 			self.__make_standard_parameter()
 
 
 	def __read_ascii_data(self, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
 							sort_indexes = False, divide_times_by = None, shift_times_by = None, 
 							external_time = None, external_wave = None, use_same_name = True, correct_ascii_errors = True,
-<<<<<<< HEAD
 							data_type = None, units = None,  baseunit = None):
-=======
-							data_type = None, units = None):
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		'''Fancy function that handles the import of pure ascii files.
 		
 		Parameters
@@ -4446,10 +4412,7 @@ class TA():	# object wrapper for the whole
 		sort_indexes : bool (optional)
 			For False (Default) I assume that the times and energies are already in a rising order. 
 			with this switch, both are sorted again. 
-<<<<<<< HEAD
 		
-=======
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		divide_times_by : None or float (optional) 
 			here a number can be given that scales the time by an arbitary factor. This is actually dividing
 			the times by this value. Alternatively there is the variable self.baseunit. The latter only affects 
@@ -4471,10 +4434,7 @@ class TA():	# object wrapper for the whole
 			samp1.tid for the times. The transpose setting is applied and sets where the times are 
 			to be inserted (row or column indexes)
 			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
-<<<<<<< HEAD
 		
-=======
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		external_wave : None or str (optional) 
 			Here a filename extension (string) can be given that contains the wavelength vector. 
 			If use_same_name = True (default)
@@ -4485,15 +4445,10 @@ class TA():	# object wrapper for the whole
 			and sets where the wavelength are to be inserted (columns or row indexes)
 			If use_same_name = False
 			this should be a full filename that contains the vector
-<<<<<<< HEAD
 		
 		use_same_name : bool, optional
 			this switches if the external filename included the loaded filename or is a separate file
 		
-=======
-		use_same_name : bool, optional
-			this switches if the external filename included the loaded filename or is a separate file
->>>>>>> bfad7b26f6cc9d6c7f9b3f3ced50aba809a52bff
 		correct_ascii_errors :  bool (optional)
 			If True (Default) then the code tries to catch some stuff like double minus signs and double dots
 			
