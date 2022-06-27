@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.7"
+version = "6.7.11"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -848,7 +848,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 
 def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, drop_ignore=False, wave_nm_bin = None, 
 			baseunit = None, scattercut = None, drop_scatter=False, bordercut = None, timelimits = None, wavelength_bin = None, 
-			wavelength = None, time_bin = None, equal_energy_bin = None):
+			wavelength = None, time_bin = None, equal_energy_bin = None, from_fit = False):
 	'''This is the main function that creates all the slices of the data matrix
 	
 	Parameters
@@ -891,6 +891,9 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		the measured stepsize is wider than given here, then the original bins are used. 
 		This function is particularly useful for spectrometer with non-linear dispersion, 
 		like a prism in the infrared.
+		
+	equal_energy_bin : None or float(optional)
+		if this is set the wave_nm_bin is ignored and the data is rebinned into equal energy bins.
 		
 	baseunit : str
 		baseunit is a neat way to change the unit on the time axis of the plots. (Default) 'ps', but they 
@@ -939,28 +942,33 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 	time_label=ds.index.name
 	energy_label=ds.columns.name
 	if (wavelength is not None) and (times is not None):raise ValueError('can not get wavelength and times back')
-	if bordercut is not None:
+	if (bordercut is not None) and not from_fit:
 		ds.columns=ds.columns.astype('float')
 		ds=ds.loc[:,bordercut[0]:bordercut[1]]
 	if (equal_energy_bin is not None) and (wavelength is None):# we work with optical data but want to bin in equal energy
 		x=ds.columns.values.astype('float')
 		y=ds.index.values.astype('float')
-		energy_label='eV'
+		energy_label='Energy in eV'
 		x=scipy.constants.h*scipy.constants.c/(x*1e-9*scipy.constants.electron_volt)
-		if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
-		rebin_max=np.argmin((x[1:]-x[:-1])<equal_energy_bin)#find the position where the difference is larger than the wave_nm_bin
-		if rebin_max==0:rebin_max=len(x)# we get 0 when all teh values are ok
-		if rebin_max<len(x):
-			if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
-			bins=np.arange(x.min(),x[rebin_max],equal_energy_bin)
-			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
-			bins=(bin_edges[1:]+bin_edges[:-1])/2.
-			ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')   
+		if from_fit:#they are already binned
+			ds.columns=x
+			ds.sort_index(axis=1,ascending=False)
+		elif (x[1:]-x[:-1]>equal_energy_bin).all():
+			raise ValueError("equal_energy_bin bins are to small for the data")
 		else:
-			bins=np.arange(x.min(),x.max()+equal_energy_bin,equal_energy_bin)
-			bin_means,bins = binned_statistic(x, ds.values, statistic='mean',bins=bins)[:2]
-			bins=(bins[1:]+bins[:-1])/2.
-			ds=pandas.DataFrame(bin_means,index=y,columns=bins)
+			rebin_max=np.argmin((x[1:]-x[:-1])<equal_energy_bin)#find the position where the difference is larger than the wave_nm_bin
+			if rebin_max==0:rebin_max=len(x)# we get 0 when all teh values are ok
+			if rebin_max<len(x):
+				if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
+				bins=np.arange(x.min(),x[rebin_max],equal_energy_bin)
+				bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
+				bins=(bin_edges[1:]+bin_edges[:-1])/2.
+				ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')   
+			else:
+				bins=np.arange(x.min(),x.max()+equal_energy_bin,equal_energy_bin)
+				bin_means,bins = binned_statistic(x, ds.values, statistic='mean',bins=bins)[:2]
+				bins=(bins[1:]+bins[:-1])/2.
+				ds=pandas.DataFrame(bin_means,index=y,columns=bins)
 	elif (wave_nm_bin is not None) and (wavelength is None):# bin in wavelength
 		x=ds.columns.values.astype('float')
 		y=ds.index.values.astype('float')
@@ -979,6 +987,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 			bin_means,bins = binned_statistic(x, ds.values, statistic='mean',bins=bins)[:2]
 			bins=(bins[1:]+bins[:-1])/2.
 			ds=pandas.DataFrame(bin_means,index=y,columns=bins)
+
 	if time_bin is not None:
 		time=ds.index.values.astype('float')
 		y=ds.columns.values.astype('float')
@@ -1015,7 +1024,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		ds=ds.fillna(value=0)
 		x=ds.columns.values.astype('float')
 		if isinstance(scattercut[0], numbers.Number):
-			if equal_energy_bin is not None:
+			if (equal_energy_bin is not None):
 				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
 				scattercut=scattercut[::-1]
 			lower=find_nearest_index(x,scattercut[0])
@@ -1048,12 +1057,18 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		if not hasattr(wavelength,'__iter__'):wavelength=np.array([wavelength])
 		if len(wavelength)>1:wavelength.sort()
 		for i,wave in enumerate(wavelength):
+			upper=wave+wavelength_bin/2
+			lower=wave-wavelength_bin/2
+			if equal_energy_bin is not None and from_fit:
+				upper=scipy.constants.h*scipy.constants.c/(lower*1e-9*scipy.constants.electron_volt)
+				lower=scipy.constants.h*scipy.constants.c/(upper*1e-9*scipy.constants.electron_volt)
+				wave=scipy.constants.h*scipy.constants.c/(wave*1e-9*scipy.constants.electron_volt)
 			if i == 0:
-				out=ds.loc[:,wave-wavelength_bin/2:wave+wavelength_bin/2].mean(axis='columns').to_frame()
+				out=ds.loc[:,lower:upper].mean(axis='columns').to_frame()
 				out.columns = [wave]
 			else:
 				if wave in out.columns:continue
-				out[wave] = ds.loc[:,wave-wavelength_bin/2:wave+wavelength_bin/2].mean(axis='columns')
+				out[wave] = ds.loc[:,lower:upper].mean(axis='columns')
 		out.columns=out.columns.astype('float')
 		out.columns.name=energy_label
 		out.index.name=time_label
@@ -1100,7 +1115,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			scattercut = None, bordercut = None, wave_nm_bin = None, ignore_time_region = None,
 			time_bin = None, log_scale = False, plot_type = 'symlog', lintresh = 1, 
 			wavelength_bin = None, levels = 256, use_colorbar = True, cmap = None, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None):
+			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None, from_fit = False):
 	'''function for plotting matrix of TA data.
 	
 	Parameters
@@ -1161,6 +1176,10 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		the measured stepsize is wider than given here, then the original bins are used. 
 		This function is particularly useful for spectrometer with non-linear dispersion, 
 		like a prism in the infrared.
+		
+	equal_energy_bin : None or float(optional)
+		if this is set the wave_nm_bin is ignored and the data is rebinned into equal energy bins (based upon that the data is in nm. 
+		If dual axis  is on then the lower axis is energy and the upper is wavelength
 	
 	ignore_time_region : None or list (of two floats or of lists), optional
 		cut set a time range with a low and high limit from the fits. (Default) None nothing happens
@@ -1218,7 +1237,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		(e.g.~your university colors). colours are always given as a, list or tuple with RGA or RGBA
 		(with the last A beeing the Alpha=transparency. All numbers are between 0 and 1. 
 		If a list/vector/DataFrame is given for the colours they will be used in the order provided.
-
+		
+	from_fit : bool optional
+		it needed this swtich to avoid re-slicing of data in spectal axis for equal energy bins
 	'''
 	
 	if cmap is None:
@@ -1236,7 +1257,8 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		timelimits=(ds.index.min(),ds.index.max())
 	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, 
 				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region, 
-				drop_scatter = False, drop_ignore = False, equal_energy_bin = equal_energy_bin)		
+				drop_scatter = False, drop_ignore = False, equal_energy_bin = equal_energy_bin, from_fit = from_fit)		
+	
 	if intensity_range is None:
 		try:
 			maxim=max([abs(ds.values.min()),abs(ds.values.max())])
@@ -1265,6 +1287,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		mid_color_index=find_nearest_index(0,levels)
 		mid_color=colm(k=range(nbins),cmap=cmap)
 		mid_color=mid_color[mid_color_index]
+	#print(ds.head())
 	x = ds.columns.values.astype('float')
 	y = ds.index.values.astype('float')
 	X, Y = np.meshgrid(x, y)
@@ -1381,11 +1404,13 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		ax.set_ylim(timelimits)
 	if bordercut is not None:
 		try:
+			if equal_energy_bin is not None:
+				bordercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in bordercut]
 			ax.set_xlim(bordercut[0],bordercut[1])
 		except:
 			print('bordercut failed')
 			pass
-	if equal_energy_bin is not None:
+	if equal_energy_bin is not None and False:
 		temp=np.array(ax.get_xlim())
 		ax.set_xlim(temp.max(),temp.min())
 	ax.set_xlabel(ds.columns.name)
@@ -1470,6 +1495,10 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		This function is particularly useful for spectrometer with non-linear dispersion, 
 		like a prism in the infrared.
 	
+	equal_energy_bin : None or float(optional)
+		if this is set the wave_nm_bin is ignored and the data is rebinned into equal energy bins (based upon that the data is in nm. 
+		If dual axis  is on then the lower axis is energy and the upper is wavelength
+	
 	ignore_time_region : None or list (of two floats or of lists), optional
 		cut set a time range with a low and high limit from the fits. (Default) None nothing happens
 		The region will be removed during the fitting process (and will be missing in the fit-result
@@ -1535,15 +1564,15 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		plot2d(re['A'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[0], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
 		plot2d(re['AC'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[1], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
 		plot2d(re['AE'], cmap = cmap, log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, ax = ax[2], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
 		for i in range(3):
 			ax[i].set_title(label='')
 			stringen=['measured','calculated','difference']
@@ -1560,15 +1589,15 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		plot2d(re['A'], cmap = cmap, title = 'Measured', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[0], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)																					
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)																					
 		plot2d(re['AC'], cmap = cmap, title = 'Calculated', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[1], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits , data_type = data_type, equal_energy_bin = equal_energy_bin)
+				timelimits = timelimits , data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
 		plot2d(re['AE'], cmap = cmap, title = 'Difference', log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, 
 				ax = ax[2], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
 				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin)
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
 		#fig.subplots_adjust(left=0.15, bottom=0.067, right=0.97, top=0.97, wspace=0.0, hspace=0.398)
 	fig.tight_layout()
 	return fig
@@ -1775,6 +1804,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		the measured stepsize is wider than given here, then the original bins are used. 
 		This function is particularly useful for spectrometer with non-linear dispersion, 
 		like a prism in the infrared.
+		
+	equal_energy_bin : None or float(optional)
+		if this is set the wave_nm_bin is ignored and the data is rebinned into equal energy bins (based upon that the data is in nm. 
+		If dual axis  is on then the lower axis is energy and the upper is wavelength
 
 	intensity_range : None, float or list [of two floats]
 		intensity_range is a general switch that governs what intensity range the plots show. 
@@ -1849,7 +1882,8 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 			stringen.append('Fit with Model: %s'%mod)
 		timedf.rename(index={'resolution': "res"},inplace=True)
 		timedf.rename(columns={'init_value': "init"},inplace=True)	  
-		stringen.append(timedf.to_string(columns=['value','init','vary','min','max','expr'],float_format='{:.3g}'.format,justify='center'))
+		stringen.append(timedf.to_string(columns = ['value','init','vary','min','max','expr'],
+						float_format = '{:.3g}'.format, justify = 'center'))
 	else:
 		if mod is not None:
 			if mod in ['paral','exponential']:stringen.append('Fit with ind.\nexpon. decays:')	
@@ -1867,7 +1901,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		#-------plot DAC------------
 		#for i,col in enumerate(re['DAC']):
 			#re['DAC'].iloc[:,i]=re['DAC'].iloc[:,i].values*re['c'].max().iloc[i]
-		fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=150)
+		fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=100)
 		n_colors=len(re['DAC'].columns)
 		DAC=re['DAC']
 		DAC_copy=DAC.copy()
@@ -2073,11 +2107,11 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
 					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
 					  timelimits = timelimits, text_in_legend = time_string, title = '', 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units)
+					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
 		_=plot1d( ds = re['A'], cmap = cmap,ax = ax3, subplot = True, width = width, 
 					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
 					  baseunit = baseunit , lintresh = lintresh , timelimits = timelimits, 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units)
+					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
 		ax3.autoscale(axis = 'y',tight = True)
 		for t in times:
 			if isinstance(t, float):
@@ -2088,12 +2122,14 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		_=plot_time(ds=re['A'],cmap=cmap,ax=ax4,subplot=False, rel_time=rel_time, title=title, baseunit=baseunit, 
 					time_width_percent=time_width_percent, lines_are='data', scattercut=scattercut, 
 					bordercut = bordercut, intensity_range = intensity_range,  data_type = data_type, 
-					plot_second_as_energy = plot_second_as_energy, units = units)
+					plot_second_as_energy = plot_second_as_energy, units = units, equal_energy_bin = equal_energy_bin, from_fit = True )
 		_=plot_time(ds=re['AC'],cmap=cmap,ax=ax4, subplot=False, rel_time=rel_time, title=title, 
 						baseunit=baseunit, time_width_percent=time_width_percent, lines_are='fitted',
 						color_offset=color_offset, scattercut=scattercut,  data_type = data_type, 
-						plot_second_as_energy = plot_second_as_energy, units = units)
+						plot_second_as_energy = plot_second_as_energy, units = units, equal_energy_bin = equal_energy_bin, from_fit = True )
 		try:
+			if equal_energy_bin is not None:
+				bordercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in bordercut]
 			ax4.set_xlim(bordercut)
 		except:
 			pass
@@ -2102,7 +2138,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		fig4.tight_layout()
 	if 4 in plotting:#---matrix with fit and error, as figures----------
 		fig5 = plot2d_fit(re, cmap = cmap, intensity_range = intensity_range, baseunit = baseunit, 
-							error_matrix_amplification = error_matrix_amplification, wave_nm_bin = None, 
+							error_matrix_amplification = error_matrix_amplification, wave_nm_bin = None, equal_energy_bin = equal_energy_bin,
 							use_images = True, log_scale = log_scale, scale_type = scale_type, patches = patches, 
 							lintresh = lintresh, bordercut = bordercut, ignore_time_region = ignore_time_region, 
 							scattercut = scattercut, timelimits = timelimits, levels = 200,  data_type = data_type)	
@@ -2257,6 +2293,10 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		the measured stepsize is wider than given here, then the original bins are used. 
 		This function is particularly useful for spectrometer with non-linear dispersion, 
 		like a prism in the infrared.
+	
+	equal_energy_bin : None or float(optional)
+		if this is set the wave_nm_bin is ignored and the data is rebinned into equal energy bins (based upon that the data is in nm. 
+		If dual axis  is on then the lower axis is energy and the upper is wavelength
 	
 	width : float, optional
 		the width used in kinetics, see below (Default) 10nm
@@ -2470,7 +2510,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 			wave_nm_bin = None, title = None, text_in_legend = None, baseunit = 'ps', 
 			lines_are = 'smoothed', scattercut = None, bordercut = None, subplot = False, linewidth = 1, 
 			color_offset = 0, intensity_range = None, plot_second_as_energy = True, cmap = standard_map, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', equal_energy_bin = None):
+			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', equal_energy_bin = None, from_fit = None):
 	'''Function to create plots at a certain time. In general you give under rel_time a 
 		list of times at which yu do want to plot the time width percentage means that 
 		this function integrates ewverything plus minus 10% at this time. lines_are is a 
@@ -2609,7 +2649,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		ax1=ax
 	ds = sub_ds(ds = ds, times = rel_time, time_width_percent = time_width_percent, 
 				scattercut = scattercut, drop_scatter=True, bordercut = bordercut, 
-				ignore_time_region = ignore_time_region, wave_nm_bin = wave_nm_bin, equal_energy_bin = equal_energy_bin)
+				ignore_time_region = ignore_time_region, wave_nm_bin = wave_nm_bin, equal_energy_bin = equal_energy_bin, from_fit = from_fit)
 	if 'smoothed' in lines_are:
 		if scattercut is None:
 			smoothed=Frame_golay(ds, window = 5, order = 3,transpose=False)
@@ -2730,7 +2770,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = False, title = None, intensity_range = None, 
 			baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, cmap = standard_map, plot_type = 'symlog',
 			lintresh = 0.1, text_in_legend = None, lines_are = 'smoothed', color_offset = 0, ignore_time_region = None,
-			linewidth = 1, data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm'):																			  
+			linewidth = 1, data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', from_fit = False):																			  
 	'''Plots the single line kinetic for specific wavelength given with the parameter wavelength.
 
 	Parameters
@@ -2853,6 +2893,9 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 	lintresh : float
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
+	
+	from_fit : bool optional
+		i needed this swtich to avoid re-slicing of data in spectal axis for equal energy bins
 
 	'''
 	if not isinstance(ds,pandas.DataFrame):
@@ -2868,7 +2911,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 	else:
 		colors = colm(np.arange(color_offset, len(wavelength)+color_offset), cmap = cmap)
 	ds = sub_ds(ds = ds, wavelength = wavelength, wavelength_bin = width, scattercut = scattercut, 
-				ignore_time_region = ignore_time_region, drop_ignore = True)
+				ignore_time_region = ignore_time_region, drop_ignore = True, from_fit = from_fit)
 	if 'smoothed' in lines_are:
 		if ignore_time_region is None:
 			smoothed=Frame_golay(ds, window = 5, order = 3)
@@ -2989,7 +3032,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 
 def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-1, 150], wave_nm_bin = 10, 
 		time_bin = None, wavelength_bin = None, plotting = True, baseunit = 'ps', title = None, ignore_time_region = None, 
-		cmap = None, data_type = 'differential Absorption in $\mathregular{\Delta OD}$'):
+		cmap = None, equal_energy_bin = None, data_type = 'differential Absorption in $\mathregular{\Delta OD}$'):
 	'''This function calculates the SVD and plots an overview.
 	
 	Parameters
@@ -3196,8 +3239,8 @@ def Species_Spectra(ta=None,conc=None,das=None):
 	return results
 
 
-def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, 
-			shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
+def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, bordercut=None,
+				shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
 			cmap = cm.prism):										
 	'''Manual selecting polynom for chirp. 	This function is opening 
 		a plot and allows the user to select a number of points, which are then 
@@ -3311,9 +3354,9 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 			timelimits=shown_window+np.asarray([-window_difference,window_difference])
 			for repeat in range(30):
 				fig,ax=plt.subplots()
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, 
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut,
 							timelimits = timelimits, intensity_range = intensity_range, 
-							title = 'select intensity where we can work,  if happy,  choose confirm or abort', 
+							title = 'select intensity where we can work,\n  if happy,  choose confirm or abort', 
 							use_colorbar = False, plot_type = "linear", log_scale = False)
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
 				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]),w,0.5,facecolor='white'))
@@ -3345,14 +3388,14 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 					continue
 			for repeat in range(10):
 				fig,ax=plt.subplots()
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, 
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							timelimits = shown_window, intensity_range = intensity_range, 
 							title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
 							use_colorbar = False, plot_type = "linear", log_scale = False)
 				polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
 				plt.close(fig)
 				fig,ax=plt.subplots()
-				ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, 
+				ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							timelimits = shown_window, intensity_range = intensity_range, 
 							title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
 							plot_type = "linear", log_scale = False)
@@ -3393,7 +3436,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 			#finding where zero time is
 			for repeat in range(10):
 				fig,ax=plt.subplots()
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, 
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = 1, timelimits = [-1, 1], intensity_range = intensity_range, 
 							title = 'uncorrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
@@ -3404,7 +3447,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 							
 				plt.close(fig)
 				fig,ax=plt.subplots()
-				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, 
+				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = 1, timelimits = [-0.5, 0.5], intensity_range = intensity_range, 
 							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
@@ -4856,7 +4899,8 @@ class TA():	# object wrapper for the whole
 		'''
 		
 		temp_ds = Fix_Chirp(self.ds_ori, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
-							wave_nm_bin = 10, shown_window = shown_window, filename = self.filename,
+							wave_nm_bin = 10, shown_window = shown_window, filename = self.filename, 
+							scattercut = self.scattercut, bordercut = self.bordercut, 
 							path = check_folder(path = path, current_path = self.path), max_points = max_points) 
 		if isinstance(temp_ds,pandas.DataFrame):
 			self.ds=temp_ds
@@ -4881,7 +4925,9 @@ class TA():	# object wrapper for the whole
 		automatically ends after max_points (40 preset).
 		
 		The first option allows to fine select an intensity setting for this chirp correction.
-		However sometimes spikes are making this things difficult. In this case set a guessed intensity with self.intensity_range=1e-3
+		However sometimes spikes are making this things difficult. 
+		In this case set a guessed intensity with self.intensity_range=1e-3\n 
+		Note that scattercut, bordercut and intensity_range can be used
 
 		After the first run the polynom is stored in self.fitcoeff, a new matrix 
 		calculated from self.ds_ori that is stored as self.ds and a file stored in the 
@@ -4899,7 +4945,9 @@ class TA():	# object wrapper for the whole
 		# "other files"
 		# "stored_file"
 		# call Man_Chirp (clicking by hand)
+		
 
+		
 		Parameters
 		-------------
 		
@@ -4989,9 +5037,7 @@ class TA():	# object wrapper for the whole
 				print('fitcoeff is currently:' + fitcoeff)
 		else:
 			try:
-				self.ds=Fix_Chirp(self.ds_ori,cmap=cmap,save_file=check_folder(path=path,filename=chirp_file),scattercut=self.scattercut,intensity_range=self.intensity_range,wave_nm_bin=10,shown_window=shown_window,fitcoeff=fitcoeff,max_points=max_points)
-																						  
-																			 
+				self.ds=Fix_Chirp(self.ds_ori,cmap=cmap,save_file=check_folder(path=path,filename=chirp_file),scattercut=self.scattercut,bordercut=self.bordercut,intensity_range=self.intensity_range,wave_nm_bin=10,shown_window=shown_window,fitcoeff=fitcoeff,max_points=max_points)
 				with open(check_folder(path=path,filename=chirp_file),'r') as f:
 					self.fitcoeff=[float(a) for a in f.readline().split(',')]
 			except:
@@ -5001,7 +5047,7 @@ class TA():	# object wrapper for the whole
 					raise
 				else:
 					print('No old chirp file')
-					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points)
+					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points,scattercut=self.scattercut,bordercut=self.bordercut)
 					chirp_file=self.chirp_file
 					with open(check_folder(path=path,filename=chirp_file),'r') as f:
 						self.fitcoeff=[float(a) for a in f.readline().split(',')]
@@ -5072,7 +5118,7 @@ class TA():	# object wrapper for the whole
 		class MouseMove:
 			# initialization
 			def __init__(self, ds, cmap, intensity_range, log_scale, baseunit, 
-							timelimits, scattercut, bordercut, wave_nm_bin, ignore_time_region,
+							timelimits, scattercut, bordercut, wave_nm_bin, equal_energy_bin, ignore_time_region,
 							time_bin, lintresh, data_type, width, time_width_percent):
 				fig = plt.figure(tight_layout=True,figsize=(14,8))
 				gs = GridSpec(5, 4)
@@ -5086,6 +5132,7 @@ class TA():	# object wrapper for the whole
 				self.scattercut=scattercut
 				self.bordercut=bordercut
 				self.wave_nm_bin=wave_nm_bin
+				self.equal_energy_bin=equal_energy_bin
 				self.ignore_time_region=ignore_time_region
 				self.time_bin=time_bin
 				self.data_type=data_type
@@ -5093,9 +5140,10 @@ class TA():	# object wrapper for the whole
 				self.lintresh=lintresh
 				self.time_width_percent=time_width_percent
 				
+				
 				self.ax = plot2d(ds=ds, ax=self.ax, cmap=cmap, intensity_range=self.intensity_range, 
 					log_scale=self.log_scale, baseunit=self.baseunit, timelimits=self.timelimits, 
-					scattercut=self.scattercut, bordercut=self.bordercut, wave_nm_bin=self.wave_nm_bin, 
+					scattercut=self.scattercut, bordercut=self.bordercut, wave_nm_bin=self.wave_nm_bin, equal_energy_bin=self.equal_energy_bin,
 					ignore_time_region=self.ignore_time_region, time_bin=self.time_bin, 
 					lintresh=self.lintresh, data_type = self.data_type, use_colorbar = False)
 				self.ax_time= fig.add_subplot(gs[0, :3],sharex=self.ax)
@@ -5108,11 +5156,16 @@ class TA():	# object wrapper for the whole
 					fig.canvas.mpl_connect('button_press_event', self.move)
 			
 			def click(self, event):
+				
 				x, y = event.xdata, event.ydata
+				if self.equal_energy_bin is not None:
+					x=scipy.constants.h*scipy.constants.c/(x*1e-9*scipy.constants.electron_volt) 
 				print('x=%g, y=%g\n'%(x,y))
 			
 			def move(self, event):
 				x, y = event.xdata, event.ydata
+				if self.equal_energy_bin is not None:
+					x=scipy.constants.h*scipy.constants.c/(x*1e-9*scipy.constants.electron_volt) 
 				try:
 					self.ax_time.cla()
 				except:
@@ -5121,19 +5174,20 @@ class TA():	# object wrapper for the whole
 				if not fitted:	
 					ds_temp1 = sub_ds(ds = Frame_golay(ds,5,3), times = y, time_width_percent = self.time_width_percent, 
 									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
-									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, equal_energy_bin=self.equal_energy_bin,
 									wavelength_bin = self.width)
 					ds_temp1.plot(ax=self.ax_time,style='-',color='red')
+					
 				else:
 					ds_temp1 = sub_ds(ds = modelled, times = y, time_width_percent = self.time_width_percent, 
 									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
-									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin,  equal_energy_bin=self.equal_energy_bin,
 									wavelength_bin = self.width)
 					ds_temp1.plot(ax=self.ax_time,style='-',color='red')
 					
 				ds_temp = sub_ds(ds = ds, times = y, time_width_percent = self.time_width_percent, 
 									scattercut = self.scattercut, drop_scatter=True, bordercut = self.bordercut, 
-									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin, 
+									ignore_time_region = self.ignore_time_region, wave_nm_bin = self.wave_nm_bin,  equal_energy_bin=self.equal_energy_bin,
 									wavelength_bin = self.width)
 				ds_temp.plot(ax=self.ax_time,style='*',color='black')
 				self.ax_time.plot(self.ax_time.get_xlim(),[0,0],'gray')
@@ -5155,7 +5209,7 @@ class TA():	# object wrapper for the whole
 				if not fitted:
 					ds_temp1 = sub_ds(ds = Frame_golay(ds), wavelength = x, scattercut = self.scattercut, drop_scatter=True, 
 								bordercut = self.bordercut, ignore_time_region = self.ignore_time_region, 
-								wave_nm_bin = self.wave_nm_bin, wavelength_bin = self.width)
+								wave_nm_bin = self.wave_nm_bin,wavelength_bin = self.width)
 					self.ax_kinetic.plot(ds_temp1.values,ds_temp1.index.values,'-',label='%.0f smoothed'%x,color='red')
 				else:
 					ds_temp1 = sub_ds(ds = modelled, wavelength = x, scattercut = self.scattercut, drop_scatter=True, 
@@ -5174,9 +5228,11 @@ class TA():	# object wrapper for the whole
 				self.ax_kinetic.legend(['%.0f'%x])				
 				self.ax_kinetic.set_xticks(self.ax_kinetic.get_xlim())
 				self.ax_kinetic.set_xticklabels(['%.1e'%f for f in self.ax_kinetic.get_xlim()])
+				self.ax_kinetic.set_yticklabels(self.ax.get_yticklabels())
+				plt.subplots_adjust(wspace=0,hspace=0)
 				
 		eve=MouseMove(ds, cmap, self.intensity_range, self.log_scale, self.baseunit, self.timelimits, 
-						self.scattercut, self.bordercut, self.wave_nm_bin, self.ignore_time_region,
+						self.scattercut, self.bordercut, self.wave_nm_bin, self.equal_energy_bin, self.ignore_time_region,
 						self.time_bin, self.lintresh, self.data_type, self.wavelength_bin, self.time_width_percent)
 		cursor = Cursor(eve.ax, useblit=True, color='red', linewidth=2)
 		return eve,cursor
@@ -5449,7 +5505,9 @@ class TA():	# object wrapper for the whole
 			ds_back_corr = self.ds_ori-correction
 		except:
 			ds_back_corr = self.ds_ori
-		ds_back_corr = sub_ds(ds = ds_back_corr, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, time_bin = self.time_bin)																	   
+		ds_back_corr = sub_ds(ds = ds_back_corr, scattercut = self.scattercut, bordercut = self.bordercut, 
+								timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, time_bin = self.time_bin, 
+								equal_energy_bin = self.equal_energy_bin)																	   
 		print('Before chirpfit the error is:{:.6e}'.format(initial_error[-1]))
 		
 		#################################################################################################################
@@ -5486,7 +5544,7 @@ class TA():	# object wrapper for the whole
 				time = ds_back_corr.index.values.astype('float')#extract the time		 
 				new_ds = ds_back_corr.copy().apply(lambda x:np.interp(x = time+np.polyval(temp, float(x.name)), xp = time, fp = x), axis = 0, raw = False)
 				#New Global Fit
-				fit_ds_loop = sub_ds(ds = new_ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, time_bin = self.time_bin)	
+				fit_ds_loop = sub_ds(ds = new_ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, equal_energy_bin = self.equal_energy_bin, time_bin = self.time_bin)	
 				if pardf.vary.any():							 
 					mini  =  lmfit.Minimizer(err_func, par_into_chirpfit, fcn_kws = {'ds':fit_ds_loop, 'mod':mod, 'log_fit':self.log_fit, 'final':False})
 					results_in_chirp  =  mini.minimize('nelder', options = {'maxiter':1e5})
@@ -5532,7 +5590,7 @@ class TA():	# object wrapper for the whole
 				raise
 			time = ds_back_corr.index.values.astype('float')#extract the time
 			self.ds = ds_back_corr.apply(lambda x:np.interp(x = time+np.polyval(temp, float(x.name)), xp = time, fp = x), axis = 0, raw = False)			 
-			fit_ds = sub_ds(ds = self.ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, time_bin = self.time_bin)
+			fit_ds = sub_ds(ds = self.ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, equal_energy_bin = self.equal_energy_bin, time_bin = self.time_bin)
 			if pardf.vary.any():
 				results.params = results_in_chirp.params
 		return results, fit_ds
@@ -5782,7 +5840,9 @@ class TA():	# object wrapper for the whole
 				pardf.loc[pardf.is_rate,key]=pardf.loc[pardf.is_rate,key].apply(lambda x: np.log10(x))	
 		
 		#create-shape the data to be fitted	
-		fit_ds=sub_ds(ds=self.ds.copy(),scattercut=self.scattercut,bordercut=self.bordercut,timelimits=self.timelimits,wave_nm_bin=self.wave_nm_bin,time_bin=self.time_bin,ignore_time_region=self.ignore_time_region,drop_scatter=True,drop_ignore=True)
+		fit_ds = sub_ds(ds = self.ds.copy(), scattercut = self.scattercut, bordercut = self.bordercut, 
+						timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, equal_energy_bin = self.equal_energy_bin, 
+						time_bin = self.time_bin, ignore_time_region = self.ignore_time_region, drop_scatter = True, drop_ignore = True)
 		time_label=fit_ds.index.name
 		energy_label=fit_ds.columns.name
 		
@@ -5956,12 +6016,25 @@ class TA():	# object wrapper for the whole
 		re['fit_results_rates']=pardf
 		timedf=pardf_to_timedf(pardf)
 		re['fit_results_times']=timedf			
-		self.re=re
+		
+		###############################################
+		##convert energy back to wavelength#############
+		################################################
+		if 1:
+			if self.equal_energy_bin is not None:
+				for name in ['A','AC','AE']:
+					re[name].columns=(scipy.constants.h*scipy.constants.c/(re[name].columns.values*1e-9*scipy.constants.electron_volt))
+					re[name].columns.name='wavelength in nm'
+					re[name].sort_index(inplace=True,axis=1,ascending=True)
+				re['DAC'].index=(scipy.constants.h*scipy.constants.c/(re['DAC'].index.values*1e-9*scipy.constants.electron_volt))
+				re['DAC'].index.name='wavelength in nm'
+				re['DAC'].sort_index(inplace=True,axis=0,ascending=True)
+		
 		
 		############################################################################
 		#---print the output---------------------------------------------------
 		############################################################################
-		
+		self.re=re
 		Result_string='\nFit Results:\n'
 		
 		if isinstance(mod,type('hello')):
@@ -5994,8 +6067,7 @@ class TA():	# object wrapper for the whole
 		if dump_paras:
 			with open("Fit_results_print.par", "w") as text_file:
 				text_file.write(Result_string)
-			
-	
+
 	def Plot_fit_output(self, plotting = range(6), path = 'result_figures', savetype = 'png', 
 						evaluation_style = False, title = None, scale_type = 'symlog', 
 						patches = False, filename = None, cmap = None , print_click_position = False,

@@ -76,6 +76,8 @@ a middle click (sometime appreviated by clicking left and right together)
 finishes the selection. If no middle click exists, the process
 automatically ends after max_points (40 preset).
 
+Note that scattercut, bordercut and intensity_range can be used to adjust intensity.
+
 After the first run the polynom is stored in self.fitcoeff, a new matrix 
 calculated from self.ds_ori that is stored as self.ds and a file stored in the 
 same location as the original data. The second time the function *Cor_Chirp* is 
