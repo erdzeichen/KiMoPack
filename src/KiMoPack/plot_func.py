@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.11"
+version = "6.7.12"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -458,7 +458,10 @@ def Frame_golay(df, window=5, order=2,transpose=False):
 		df=df.T
 	if isinstance(df,pandas.DataFrame):
 		for col in df.columns:
-			df[col]=savitzky_golay(df[col].values, window, order)
+			try:
+				df[col]=savitzky_golay(df[col].values, window, order)
+			except:
+				print(col + 'was not smoothed')
 		if transpose:
 			df=df.T
 		return df
