@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.7.12"
+version = "6.8.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -176,7 +176,9 @@ def s2_vs_smin2(Spectral_points = 512, Time_points = 130, number_of_species = 3,
 
 def GUI_open(project_list = None, path = None, filename_part = None, fileending = 'hdf5', sep = "\t", decimal = '.', 
 			index_is_energy = False, transpose = False, sort_indexes = False, divide_times_by = None, 
-			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, units = None, baseunit = None):
+			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, 
+			units = None, baseunit = None, conversion_function = None):
+								
 	'''	This Function 
 		1. opens a gui and allows the selection of multiple saved projects, which are returned as a list
 		2. if given a list of project names opens them
@@ -277,6 +279,24 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 		use_same_name : bool, optional
 			this switches if the external filename included the loaded filename or is a separate file True(default)
 		
+		
+		conversion_function: function(optional)
+			function that receives should have the shape:
+			return pandas Dataframe with time/frames  in rows and wavelength/energy in columns,
+			The function is tested to accept (in that order) a 
+			my_function(filename, external_time,external_wave), 
+			my_function(filename, external_time), 
+			my_function(filename,external_wave), 
+			my_function(filename) and 
+			return: the dataframe ds with the time_axis as rows and spectral axis as columns 
+			if the ds.index.name ia not empty the "time axis" is in to that name the spectral axis is in ds.columns.name
+			the return is investigated if it is one, two, or three things. 
+			if two are returned then the second must be the name of what the intensity axis is. This value will then be set to data_type
+			if three are returned the third is the baseunit (for the time axis) this allows to use the automatic naming in ps or nanosecond
+			If the values units, data_type or baseunit are (manually) set in the import function the corresponding entries in
+			datafram will be overwritten
+			shift_times_by and divide_times_by will be applied if not None (useful to adjust for offset before chirp correction)
+		
 		Returns
 		--------------
 		
@@ -336,8 +356,8 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 			ta = TA(filename = filename, path = path, sep = sep, decimal = decimal, 
 					index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
 					divide_times_by = divide_times_by, shift_times_by = shift_times_by, external_time = external_time, 
-					external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units)
-																
+					external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units, 
+					baseunit = baseunit, conversion_function = conversion_function)					
 			return_list.append(ta)
 		except:
 			print('Problem with entrance:\n %s'%entrance)
@@ -554,7 +574,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 					save_name = 'combined.SIA', fileending = 'SIA', filename_part = 'Scan', return_removed_list = False, 
 					sep = "\t", decimal = '.', index_is_energy = False, transpose = False, sort_indexes = False, 
 					divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
-					return_ds_only=False, data_type = None, units = None, baseunit = None):
+					return_ds_only=False, data_type = None, units = None, baseunit = None, conversion_function = None):
 	'''
 	Average single scans. Uses single scans of the data set and plots them as average after different conditions. Usually one defines one or two windows in which the intensity is integrated. This integrated number is then displayed for each scan in the list. There are different tools to select certain scans that are excluded from the summary. These are defined in the list_to_dump. This list can take either be a list with the number, or a string with the words 'single' or 'range' (see below) 
 	
@@ -656,30 +676,47 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		the recording software does not compensate for t0 and the data is always shifted. 
 		None (Default) ignores this setting
 	
-		external_time : None or str (optional)
-			Here a filename extension (string) can be given that contains the time vector. 
-			The file is assumed to be at the same path as the data and to contain a single 
-			type of separated data without header. 
-			If use_same_name = True (default)
-			It assumes that this is the ending for the file. The filename itself is taken from the filename. 
-			e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
-			samp1.tid for the times. The transpose setting is applied and sets where the times are 
-			to be inserted (row or column indexes)
-			If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+	external_time : None or str (optional)
+		Here a filename extension (string) can be given that contains the time vector. 
+		The file is assumed to be at the same path as the data and to contain a single 
+		type of separated data without header. 
+		If use_same_name = True (default)
+		It assumes that this is the ending for the file. The filename itself is taken from the filename. 
+		e.g. if samp1.txt is the filename and external_time='.tid' the program searches 
+		samp1.tid for the times. The transpose setting is applied and sets where the times are 
+		to be inserted (row or column indexes)
+		If use_same_name = False this should be the file containing the vector for the time (in the same format as the main file)
+		
+	external_wave : None or str (optional) 
+		Here a filename extension (string) can be given that contains the wavelength vector. 
+		If use_same_name = True (default)
+		The file is assumed to be at the same path as the data and to contain a single type 
+		of separated data without header. This is the ending for the file. The filename itself 
+		is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
+		then the program searches samp1.wav for the wavelength. The transpose setting is applied 
+		and sets where the wavelength are to be inserted (columns or row indexes)
+		If use_same_name = False
+		this should be a full filename that contains the vector
 			
-		external_wave : None or str (optional) 
-			Here a filename extension (string) can be given that contains the wavelength vector. 
-			If use_same_name = True (default)
-			The file is assumed to be at the same path as the data and to contain a single type 
-			of separated data without header. This is the ending for the file. The filename itself 
-			is taken from the filename. e.g. if samp1.txt is the filename and external_wave='.wav' 
-			then the program searches samp1.wav for the wavelength. The transpose setting is applied 
-			and sets where the wavelength are to be inserted (columns or row indexes)
-			If use_same_name = False
-			this should be a full filename that contains the vector
-			
-		use_same_name : bool, optional
-			this switches if the external filename included the loaded filename or is a separate file True(default)
+	use_same_name : bool, optional
+		this switches if the external filename included the loaded filename or is a separate file True(default)
+		
+	conversion_function: function(optional)
+		function that receives should have the shape:
+		return pandas Dataframe with time/frames  in rows and wavelength/energy in columns,
+		The function is tested to accept (in that order) a 
+		my_function(filename, external_time,external_wave), 
+		my_function(filename, external_time), 
+		my_function(filename,external_wave), 
+		my_function(filename) and 
+		return: the dataframe ds with the time_axis as rows and spectral axis as columns 
+		if the ds.index.name ia not empty the "time axis" is in to that name the spectral axis is in ds.columns.name
+		the return is investigated if it is one, two, or three things. 
+		if two are returned then the second must be the name of what the intensity axis is. This value will then be set to data_type
+		if three are returned the third is the baseunit (for the time axis) this allows to use the automatic naming in ps or nanosecond
+		If the values units, data_type or baseunit are (manually) set in the import function the corresponding entries in
+		datafram will be overwritten
+		shift_times_by and divide_times_by will be applied if not None (useful to adjust for offset before chirp correction)
 	
 	return_ds_only: boolean,(optional)
 		if False (Dafault) returns a TA object, otherwise just a DataFrame
@@ -736,12 +773,15 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 											index_is_energy = index_is_energy, transpose = transpose, 
 											sort_indexes = sort_indexes, divide_times_by = divide_times_by, 
 											shift_times_by = shift_times_by, external_time = external_time, 
-											external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units).ds.values)
-
+											external_wave = external_wave, use_same_name = use_same_name, 
+											data_type = data_type, units = units, baseunit = baseunit, 
+											conversion_function = conversion_function).ds.values)
 			ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
 					index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
 					divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
-					external_time = external_time, external_wave = external_wave, use_same_name = use_same_name, data_type = data_type, units = units).ds
+					external_time = external_time, external_wave = external_wave, 
+					use_same_name = use_same_name, data_type = data_type, units = units, 
+					baseunit = baseunit, conversion_function = conversion_function).ds
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
@@ -757,6 +797,9 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
+			
+	if baseunit is None:baseunit=ds.index.name
+	if units is None:units=ds.columns.name
 	if list_to_dump is not None:
 		if list_to_dump == 'single':
 			print('we will use a gui to select single scans to extract')
@@ -779,11 +822,11 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 			window1 = [0.5,10,300,1200]
 		window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
 		series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
-		series1.name = '%.3g:%.3g ps at %.1f:%.1f nm'%(window1[0],window1[1],window1[2],window1[3])
+		series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
 		if not window2 is None:
 			window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
 			series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
-			series2.name = '%.3g:%.3g ps at %.1f:%.1f nm'%(window2[0],window2[1],window2[2],window2[3])
+			series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
 			fig,(ax,ax2) = plt.subplots(2,1,sharex = True,figsize = (16,12))
 			series1.plot(ax = ax,color = colm(1),use_index = False)
 			series2.plot(ax = ax2,color = colm(3),use_index = False)
@@ -1247,7 +1290,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	
 	if cmap is None:
 		cmap=standard_map
-	elif not isinstance(cmap,type(cm.jet)) or isinstance(cmap,type(cm.viridis)):#we must have a 
+	elif not np.array([isinstance(cmap,type(cm.viridis)),isinstance(cmap,type(cm.jet)),isinstance(cmap,type(cm.Blues)),isinstance(cmap,type(cm.coolwarm)),isinstance(cmap,type(cm.terrain))]).any():#we must have a 
 		cmap=standard_map
 
 	if ax is None:
@@ -1884,9 +1927,12 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		if mod is not None:
 			stringen.append('Fit with Model: %s'%mod)
 		timedf.rename(index={'resolution': "res"},inplace=True)
-		timedf.rename(columns={'init_value': "init"},inplace=True)	  
-		stringen.append(timedf.to_string(columns = ['value','init','vary','min','max','expr'],
+		timedf.rename(columns={'init_value': "init"},inplace=True)
+		try:	  
+			stringen.append(timedf.to_string(columns = ['value','init','vary','min','max','expr'],
 						float_format = '{:.3g}'.format, justify = 'center'))
+		except:
+			print('something strange happened, most likely one value went "inf" or is set unexpectedly to None')
 	else:
 		if mod is not None:
 			if mod in ['paral','exponential']:stringen.append('Fit with ind.\nexpon. decays:')	
@@ -1944,7 +1990,11 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 				DAC_copy.plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap))	
 		
 		if mod in ['paral','exponential']:
-			names=['decay %i: %.3g %s'%(i,a,baseunit) for i,a in enumerate(times)]
+			try:
+				names=['decay %i: %.3g %s'%(i,a,baseunit) for i,a in enumerate(times)]
+			except:
+				print('something strange happened, most likely one value went "inf" or is set unexpectedly to None')
+				names=['decay %i: %s %s'%(i,a,baseunit) for i,a in enumerate(times)]
 			if 'background' in list(re['DAC'].columns):names.append('background')
 			if 'Non Decaying' in list(re['DAC'].columns):names.append('Non Decaying')
 			ax1a.legend(names,title='Model: {}'.format(mod))
@@ -3440,7 +3490,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 			for repeat in range(10):
 				fig,ax=plt.subplots()
 				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = 1, timelimits = [-1, 1], intensity_range = intensity_range, 
+							lintresh = np.max(timelimits), timelimits = timelimits, intensity_range = intensity_range, 
 							title = 'uncorrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
 				fittingto = np.array(plt.ginput(1)[0])[1]
@@ -3451,7 +3501,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				plt.close(fig)
 				fig,ax=plt.subplots()
 				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = 1, timelimits = [-0.5, 0.5], intensity_range = intensity_range, 
+							lintresh = np.max(timelimits), timelimits = timelimits, intensity_range = intensity_range, 
 							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
@@ -4208,8 +4258,8 @@ def pardf_to_timedf(pardf):
 
 class TA():	# object wrapper for the whole
 	def __init__(self, filename, path = None, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
-				sort_indexes = False, divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
-				data_type = None , units = None, baseunit = None, ds = None):		 
+				sort_indexes = False, divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, 
+				use_same_name = True, data_type = None , units = None, baseunit = None, ds = None, conversion_function = None):		 
 		'''Function that opens and imports data into an TA object
 		it is designed to open combined files that contain both the wavelength and the time. (e.g. SIA files as recorded by Pascher instruments software) or hdf5 projects saved by this software
 		There are however a lot of additional options to open other ascii type files and adapt their format internally
@@ -4304,6 +4354,25 @@ class TA():	# object wrapper for the whole
 		ds: pandas.DataFrame (optional)
 			feed in an external dataframe instead of opening a file
 			
+		conversion_function: function(optional)
+			function that receives should have the shape:
+			return pandas Dataframe with time/frames  in rows and wavelength/energy in columns,
+			The function is tested to accept (in that order) a 
+			my_function(filename, external_time,external_wave), 
+			my_function(filename, external_time), 
+			my_function(filename,external_wave), 
+			my_function(filename) and 
+			return: the dataframe ds with the time_axis as rows and spectral axis as columns 
+			if the ds.index.name ia not empty the "time axis" is in to that name the spectral axis is in ds.columns.name
+			the return is investigated if it is one, two, or three things. 
+			if two are returned then the second must be the name of what the intensity axis is. This value will then be set to data_type
+			if three are returned the third is the baseunit (for the time axis) this allows to use the automatic naming in ps or nanosecond
+			If the values units, data_type or baseunit are (manually) set in the import function the corresponding entries in
+			datafram will be overwritten
+			shift_times_by and divide_times_by will be applied if not None (useful to adjust for offset before chirp correction)
+			 
+			
+			
 		Returns
 		-------
 		
@@ -4326,6 +4395,16 @@ class TA():	# object wrapper for the whole
 		
 		'''
 		
+		
+		
+		self.path=check_folder(path=path,current_path=os.getcwd())
+		self.filename=filename
+
+		
+		if ds is not None:
+			if filename is None:
+				filename = 'external'
+				self.filename='external'
 		if filename == 'gui':
 			root_window = tkinter.Tk()			
 			root_window.withdraw()
@@ -4355,18 +4434,127 @@ class TA():	# object wrapper for the whole
 				filename=listen[1]
 				with open('recent.dat','w') as f:
 					f.write(complete_path)
-		self.path=check_folder(path=path,current_path=os.getcwd())
-		self.filename=filename
-		if 'hdf5' in filename:#we read in data from previous run
-			self.__read_project(saved_project=check_folder(path=self.path,filename=self.filename))
-			self.__make_standard_parameter()
-			self.Cor_Chirp(fitcoeff=self.fitcoeff)
-		elif filename == 'external':#use a provided dataframe (ds) instead
+
+		if filename == 'external':#use a provided dataframe (ds) instead
+			if data_type is not None:
+				self.data_type = data_type
+			if units is not None:
+				self.units = units
+				try:
+					if len(ds.columns.name)==0:
+						ds.columns.name= units
+				except:
+					pass
+			else:
+				try:
+					if len(ds.columns.name)!=0:
+						self.units = ds.columns.name 
+				except:
+					pass
+			if baseunit is not None:
+				self.baseunit = baseunit
+				try:
+					if len(ds.index.name)==0:
+						if (baseunit == 'ps') or (baseunit == 'ns'):
+							ds.index.name='Time in %s'%baseunit
+						else:
+							ds.index.name= baseunit
+				except:
+					pass
+			else:
+				try:
+					if len(ds.index.name)!=0:
+						self.baseunit = ds.index.name
+				except:
+						pass
 			self.ds_ori=ds
 			self.ds=ds
 			self.__make_standard_parameter()
+		elif ('hdf5' in filename) and (conversion_function is None):#we load a conversion function to deal with the file:#we read in data from previous run
+			self.__read_project(saved_project=check_folder(path=self.path,filename=self.filename))
+			self.__make_standard_parameter()
+			self.Cor_Chirp(fitcoeff=self.fitcoeff)
 		else:#we read in raw data from sia File
-			self.__read_ascii_data(sep = sep, decimal = decimal, index_is_energy = index_is_energy, 
+			if conversion_function is not None:
+				try:
+					ret=conversion_function(filename = filename, external_time = external_time, external_wave = external_wave)
+				except:
+					try:
+						ret=conversion_function(filename = filename, external_time = external_time)
+					except:
+						try:
+							ret=conversion_function(filename = filename, external_wave = external_wave)
+						except:
+							try:
+								ret=conversion_function(filename = filename)
+							except Exception as e:
+								print(e)
+								return False
+				if isinstance(ret,pandas.DataFrame):
+					##import is what we wanted
+					ds=ret
+				elif isinstance(ret,pandas.Series):
+					ds=ret.as_frame()
+				else:
+					if len(ret) == 2:
+						if data_type is None:
+							ds,data_type=ret
+						else:
+							ds,_=ret
+					elif len(ret) == 3:
+						if data_type is None:
+							ds,data_type,baseunit=ret
+						else:
+							ds,_,baseunit=ret
+					else:
+						print('sorry the return format of the conversion_function was not understood')
+						print('return: the dataframe ds with the time_axis as rows and spectral axis as columns\n')
+						print('if the ds.index.name ia not empty the "time axis" is in to that name the spectral axis is in ds.columns.name\n')
+						print('the return is investigated if it is one, two, or three things.\n ')
+						print('if two are returned then the second must be the name of what the intensity axis is. This value will then be set to data_type\n')
+						print('if three are returned the third is the baseunit (for the time axis) this allows to use the automatic naming in ps or ns ' )
+						return False
+				## see if we have the name a data types in the data 
+				if data_type is not None:
+					self.data_type = data_type
+				if units is not None:
+					self.units = units
+					try:
+						if len(ds.columns.name)==0:
+							ds.columns.name= units
+					except:
+						pass
+				else:
+					try:
+						if len(ds.columns.name)!=0:
+							self.units = ds.columns.name 
+					except:
+						pass
+				if baseunit is not None:
+					self.baseunit = baseunit
+					try:
+						if len(ds.index.name)==0:
+							if (baseunit == 'ps') or (baseunit == 'ns'):
+								ds.index.name='Time in %s'%baseunit
+							else:
+								ds.index.name= baseunit
+					except:
+						pass
+				else:
+					try:
+						if len(ds.index.name)!=0:
+							self.baseunit = ds.index.name
+					except:
+							pass
+				if shift_times_by is not None:
+					ds.index=ds.index.values+shift_times_by
+				if divide_times_by is not None:
+					ds.index=ds.index.values/divide_times_by
+				self.ds_ori=ds
+				self.ds=ds
+				self.__make_standard_parameter()
+			else:
+				self.__read_ascii_data(sep = sep, decimal = decimal, index_is_energy = index_is_energy, 
 									transpose = transpose, sort_indexes = sort_indexes, 
 									divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
 									external_time = external_time, external_wave = external_wave, 
@@ -5050,7 +5238,7 @@ class TA():	# object wrapper for the whole
 					raise
 				else:
 					print('No old chirp file')
-					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points,scattercut=self.scattercut,bordercut=self.bordercut)
+					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points)
 					chirp_file=self.chirp_file
 					with open(check_folder(path=path,filename=chirp_file),'r') as f:
 						self.fitcoeff=[float(a) for a in f.readline().split(',')]

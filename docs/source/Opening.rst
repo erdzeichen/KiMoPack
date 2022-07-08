@@ -1,20 +1,22 @@
 Opening of data
 ==========================================
 
-A key challenge in using a non graphical programming software is to locate files. 
-This tool provides a mixed interface to solve this challenge.
+A key challenge in using a non graphical programming software is to locate and open files. 
+This tool provides a mixed interface to solve this challenge and in general allows three different ways to import data.
+
 Each of the following function has a "Gui" keyword that can trigger a standard file 
 opening dialogue. Alternatively the filenames can be written together with an (optional) 
 path argument. 
 If the analysis uses the from us provided workflow notebooks, then we suggest that a fresh notebook
 is used for each particular analysis and that the notebook is copied close to the data. 
 
-All import functions provide a wide variety of options to adapt for data formats. If a particular option is missing,
-please contact the developers via email or raise an issue on github for it to be added.
-The formats of the example file have the spectral information as the first row, 
-the time vector as first entrance of each of the following rows and are separated by tab. 
-Files of this type can be read without any further adaption (using the standard parameter).
+Three different pathways of importing data are offered:
 
+1. All import functions provide a wide variety of options to adapt for data formats. If a particular option is missing and is desired, please contact the developers via email or raise an issue on github. We will consider to do so but most likely instead provide you with a function for option 2. The formats of the example file have the spectral information as the first row, the time vector as first entrance of each of the following rows and are separated by tab. Files of this type can be read without any further adaption (using the standard parameter). typical options include the transposing of columns, the conversion of time and energy vectors or the providing of external files for energy and times.
+
+2. All import function have the option of providing an external import function. (from version 7.8.0 onwards) this function gets the filename and should return a dataframe to KiMoPack. We provide a function library that contains the formats of befriended groups. If you would like help to develop an import function then please contact the developers.
+
+3. The two main import function have a "ds" parameter to which a Pandas DataFrame can be given. Thus the user might simply import and shape the file and then hand it over to KiMoPack.  
 
 Opening single file and creating TA object
 ------------------------------------------
