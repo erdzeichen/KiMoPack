@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.8.0"
+version = "6.8.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -574,7 +574,9 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 					save_name = 'combined.SIA', fileending = 'SIA', filename_part = 'Scan', return_removed_list = False, 
 					sep = "\t", decimal = '.', index_is_energy = False, transpose = False, sort_indexes = False, 
 					divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
-					return_ds_only=False, data_type = None, units = None, baseunit = None, conversion_function = None):
+					return_ds_only=False, data_type = None, units = None, baseunit = None, conversion_function = None, fitcoeff = None,
+					base_TA_object = None, value_filter = None, zscore_filter_level = None, dump_times = True, replace_values = None, 
+					drop_scans = False):
 	'''
 	Average single scans. Uses single scans of the data set and plots them as average after different conditions. Usually one defines one or two windows in which the intensity is integrated. This integrated number is then displayed for each scan in the list. There are different tools to select certain scans that are excluded from the summary. These are defined in the list_to_dump. This list can take either be a list with the number, or a string with the words 'single' or 'range' (see below) 
 	
@@ -721,6 +723,30 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	return_ds_only: boolean,(optional)
 		if False (Dafault) returns a TA object, otherwise just a DataFrame
 	
+	fitcoeff: list, optional
+		these should be the shirp parameteres that are to be applied to all sub scans in the list. 
+	
+	base_TA_object: TA object, optional
+		instead of the fit_coefficients a Ta object can be provided that is then used as a template, meaning that the scattercuts and bordercuts will be applied before the filtering.
+		
+	value_filter : None or float, optional
+		if this is set then all times with values above this limit will be filtered away. 
+		
+	zscore_filter_level : float, optional
+		if this value is set then the manual selection will be replaced with an automatic filter, the following options, dump_times = True, 
+		replace_values = None, drop_scans = False decide what is done to the values that are filtered
+		
+	zscore_in_window : bool, decides if the filter is applied in window1 or over the whole matrix (using statistics on the values)
+		
+	dump_times : bool,optional 
+		Standard True means that if the zscore filter filters a file the bad time is droped for the average
+	
+	replace_values : None, float, optional
+		if dump times is False the values will be replaced with this value. = None, drop_scans = False
+		
+	drop_scans : bool,optional
+		Default: = False. This is the harshest type to filter and means that the whole scan is dropped
+	
 	Returns
 	---------
 	
@@ -742,8 +768,9 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	>>> pf.Summarize_scans(window1=window1)
 
 	'''
-
-
+	if (base_TA_object is not None) and (conversion_function is None):
+		if units is None:units=base_TA_object.ds.columns.name
+		if baseunit is None:baseunit=base_TA_object.ds.index.name
 	debug = True
 	if list_of_scans is None:
 		scan_path=check_folder(path = path_to_scans, current_path = os.getcwd())
@@ -769,19 +796,36 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				listen = os.path.split(entrance)
 				path = os.path.normpath(listen[0])
 				filename = listen[1]
-				list_of_projects.append(TA(filename = filename,path = path, sep = sep, decimal = decimal, 
+				new_ds=TA(filename = filename,path = path, sep = sep, decimal = decimal, 
 											index_is_energy = index_is_energy, transpose = transpose, 
 											sort_indexes = sort_indexes, divide_times_by = divide_times_by, 
 											shift_times_by = shift_times_by, external_time = external_time, 
 											external_wave = external_wave, use_same_name = use_same_name, 
 											data_type = data_type, units = units, baseunit = baseunit, 
-											conversion_function = conversion_function).ds.values)
-			ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
-					index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
-					divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
-					external_time = external_time, external_wave = external_wave, 
-					use_same_name = use_same_name, data_type = data_type, units = units, 
-					baseunit = baseunit, conversion_function = conversion_function).ds
+											conversion_function = conversion_function).ds
+				if base_TA_object is None:
+					if fitcoeff is not None:
+						new_ds=Fix_Chirp(ds=new_ds,fitcoeff=fitcoeff)
+					list_of_projects.append(new_ds.values)
+				else:
+					if fitcoeff is not None:
+						new_ds=Fix_Chirp(ds=new_ds,fitcoeff=fitcoeff)
+					list_of_projects.append(new_ds.values)
+					try:
+						new_ds=sub_ds(new_ds, ignore_time_region = base_TA_object.ignore_time_region, wave_nm_bin = base_TA_object.wave_nm_bin, baseunit = base_TA_object.baseunit, 
+										scattercut = base_TA_object.scattercut, bordercut = base_TA_object.bordercut, timelimits = base_TA_object.timelimits, time_bin = base_TA_object.time_bin, 
+										equal_energy_bin = base_TA_object.equal_energy_bin)
+					except:
+						print('applying the base_TA_object slices failed')
+			if base_TA_object is None:
+				ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
+						index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
+						divide_times_by = divide_times_by, shift_times_by = shift_times_by, 
+						external_time = external_time, external_wave = external_wave, 
+						use_same_name = use_same_name, data_type = data_type, units = units, 
+						baseunit = baseunit, conversion_function = conversion_function).ds
+			else:
+				ds=base_TA_object.ds
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
@@ -792,84 +836,94 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 			for entrance in list_of_scans:
 				list_of_projects.append(entrance.ds.values)
 				list_of_scans_names.append(entrance.filename)
-			ds = list_of_scans[0]
+			if base_TA_object is None:
+				ds = list_of_scans[0]
+			else:
+				ds=base_TA_object.ds
 			list_of_scans = list_of_scans_names
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
 			
-	if baseunit is None:baseunit=ds.index.name
-	if units is None:units=ds.columns.name
-	if list_to_dump is not None:
-		if list_to_dump == 'single':
-			print('we will use a gui to select single scans to extract')
-		elif list_to_dump == 'range':
-			print('we will use a gui to select the first and last scan to remove')
-		else:
-			if not hasattr(list_to_dump,'__iter__'):#we have only a single number/name in there
-				list_to_dump = [list_to_dump]
-			filenames_to_dump = []
-			for entry in list_to_dump:
-				try:
-					filenames_to_dump.append(list_of_scans[entry].filename) #list_of_scans is a list of TA objects that have filename and if entry is an index of this list this goes well
-				except:
-					filenames_to_dump.append(entry)# we assume it is already a filename
-			list_to_dump = []
-			for filename in filenames_to_dump:
-				list_to_dump.append(list_of_scans.index(filename))
-	for i in range(30):#we make a maximum of 30 rounds
-		if window1 is None:
-			window1 = [0.5,10,300,1200]
-		window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
-		series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
-		series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
-		if not window2 is None:
-			window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
-			series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
-			series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
-			fig,(ax,ax2) = plt.subplots(2,1,sharex = True,figsize = (16,12))
-			series1.plot(ax = ax,color = colm(1),use_index = False)
-			series2.plot(ax = ax2,color = colm(3),use_index = False)
-			if len(series1) >15:
-				gol=Frame_golay(series1,window=11,order=1)
-				gol.plot(ax=ax,use_index=False,color=colm(2))
-				ax.fill_between(x=range(len(series1)), y1=gol-series1.var(), y2=gol+series1.var(),color=colm(2),alpha=0.3)	
-				gol=Frame_golay(series2,window=11,order=1)
-				gol.plot(ax=ax2,use_index=False,color=colm(4))
-				ax2.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(4),alpha=0.3)	
-		else:
-			fig,ax=plt.subplots(1,1,sharex=True,figsize=(16,12))
-			series1.plot(ax=ax,color=colm(1),use_index=False)
-			if len(series1) >15:
-				gol=Frame_golay(series1,window=11,order=1)
-				gol.plot(ax=ax,use_index=False,color=colm(2))
-				ax.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(2),alpha=0.3)
-		if list_to_dump == 'single':
-			ax.set_title('click on the scans that should be dropped\n left click to chose, right click to delete last point, middle click finishes selection\n an empty middle click ends the process')
-			polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-			if len(polypts)<1:break
-			to_remove=[int(a) for a in np.array(polypts)[:,0]]
-			remove=pandas.Series(np.arange(len(series1)))+1	
-			remove[to_remove]=0
-			to_remove=list(remove[remove<1].index.values)
-			to_keep=list(remove[remove>1].index.values)
-		elif (list_to_dump == 'range') or (i>0):
-			ax.set_title('click on the first and last scan to be removed, repeat as long as necessary\n an empty middle click ends the process')
-			polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-			if len(polypts)<1:break
-			polypts=np.array(polypts)[:,0]
-			remove=pandas.Series(np.arange(len(series1)))+1
-			for i in range(int(len(polypts)/2)):
-				remove.loc[polypts[2*i]:polypts[2*i+1]]=0
-			to_remove=list(remove[remove<1].index.values)
-			to_keep=list(remove[remove>1].index.values)
-		elif i == 0:
-			to_keep=list(range(len(series1)))
-			to_keep.remove(list_to_dump)
-		else:
-			raise ValueError('Something is weired')
-		list_of_projects=list_of_projects[:,:,to_keep]
-		plt.close('all')
+	if window1 is None:
+		window1 = [ds.index.values.min,ds.index.values.max,ds.columns.values.min,ds.columns.values.max]
+	
+	#### automatic filtering#####
+	if zscore_filter_level is not None:
+		pass
+		#, dump_times = True, replace_values = None, drop_scans = False
+		
+	else:	
+		if baseunit is None:baseunit=ds.index.name
+		if units is None:units=ds.columns.name
+		if list_to_dump is not None:
+			if list_to_dump == 'single':
+				print('we will use a gui to select single scans to extract')
+			elif list_to_dump == 'range':
+				print('we will use a gui to select the first and last scan to remove')
+			else:
+				if not hasattr(list_to_dump,'__iter__'):#we have only a single number/name in there
+					list_to_dump = [list_to_dump]
+				filenames_to_dump = []
+				for entry in list_to_dump:
+					try:
+						filenames_to_dump.append(list_of_scans[entry].filename) #list_of_scans is a list of TA objects that have filename and if entry is an index of this list this goes well
+					except:
+						filenames_to_dump.append(entry)# we assume it is already a filename
+				list_to_dump = []
+				for filename in filenames_to_dump:
+					list_to_dump.append(list_of_scans.index(filename))
+		for i in range(30):#we make a maximum of 30 rounds
+			window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
+			series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
+			series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
+			if not window2 is None:
+				window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
+				series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
+				series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
+				fig,(ax,ax2) = plt.subplots(2,1,sharex = True,figsize = (16,12))
+				series1.plot(ax = ax,color = colm(1),use_index = False)
+				series2.plot(ax = ax2,color = colm(3),use_index = False)
+				if len(series1) >15:
+					gol=Frame_golay(series1,window=11,order=1)
+					gol.plot(ax=ax,use_index=False,color=colm(2))
+					ax.fill_between(x=range(len(series1)), y1=gol-series1.var(), y2=gol+series1.var(),color=colm(2),alpha=0.3)	
+					gol=Frame_golay(series2,window=11,order=1)
+					gol.plot(ax=ax2,use_index=False,color=colm(4))
+					ax2.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(4),alpha=0.3)	
+			else:
+				fig,ax=plt.subplots(1,1,sharex=True,figsize=(16,12))
+				series1.plot(ax=ax,color=colm(1),use_index=False)
+				if len(series1) >15:
+					gol=Frame_golay(series1,window=11,order=1)
+					gol.plot(ax=ax,use_index=False,color=colm(2))
+					ax.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(2),alpha=0.3)
+			if list_to_dump == 'single':
+				ax.set_title('click on the scans that should be dropped\n left click to chose, right click to delete last point, middle click finishes selection\n an empty middle click ends the process')
+				polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
+				if len(polypts)<1:break
+				to_remove=[int(a) for a in np.array(polypts)[:,0]]
+				remove=pandas.Series(np.arange(len(series1)))+1	
+				remove[to_remove]=0
+				to_remove=list(remove[remove<1].index.values)
+				to_keep=list(remove[remove>1].index.values)
+			elif (list_to_dump == 'range') or (i>0):
+				ax.set_title('click on the first and last scan to be removed, repeat as long as necessary\n an empty middle click ends the process')
+				polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
+				if len(polypts)<1:break
+				polypts=np.array(polypts)[:,0]
+				remove=pandas.Series(np.arange(len(series1)))+1
+				for i in range(int(len(polypts)/2)):
+					remove.loc[polypts[2*i]:polypts[2*i+1]]=0
+				to_remove=list(remove[remove<1].index.values)
+				to_keep=list(remove[remove>1].index.values)
+			elif i == 0:
+				to_keep=list(range(len(series1)))
+				to_keep.remove(list_to_dump)
+			else:
+				raise ValueError('Something is weired')
+			list_of_projects=list_of_projects[:,:,to_keep]
+			plt.close('all')
 	plt.close('all')
 	ds=pandas.DataFrame(list_of_projects.mean(axis=2),index=ds.index,columns=ds.columns)
 	if not save_name is None:
@@ -4399,8 +4453,6 @@ class TA():	# object wrapper for the whole
 		
 		self.path=check_folder(path=path,current_path=os.getcwd())
 		self.filename=filename
-
-		
 		if ds is not None:
 			if filename is None:
 				filename = 'external'
@@ -4413,7 +4465,9 @@ class TA():	# object wrapper for the whole
 			complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 			listen=os.path.split(complete_path)
 			path=os.path.normpath(listen[0])
+			self.path=path
 			filename=listen[1]
+			self.filename=filename
 			with open('recent.dat','w') as f:
 				f.write(complete_path)
 		elif filename == 'recent':
@@ -4422,7 +4476,9 @@ class TA():	# object wrapper for the whole
 					complete_path = f.readline()
 					listen=os.path.split(complete_path)
 					path=os.path.normpath(listen[0])
+					self.path=path
 					filename=listen[1]
+					self.filename=filename
 			except:
 				root_window = tkinter.Tk()
 				root_window.withdraw()
@@ -4431,7 +4487,9 @@ class TA():	# object wrapper for the whole
 				complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
 				listen=os.path.split(complete_path)
 				path=os.path.normpath(listen[0])
+				self.path=path
 				filename=listen[1]
+				self.filename=filename
 				with open('recent.dat','w') as f:
 					f.write(complete_path)
 
@@ -4926,7 +4984,7 @@ class TA():	# object wrapper for the whole
 		self.ds=self.ds_ori.copy()
 
 	
-	def Filter_data(self, cut_bad_times = True, replace_bad_values = None, value = 20, uppervalue = None, lowervalue = None):
+	def Filter_data(self, cut_bad_times = True, replace_bad_values = None, value = 20, uppervalue = None, lowervalue = None, upper_matrix = None, lower_matrix = None):
 		'''Filteres the data by applying hard replacements. if both replace_bad_values and 
 		cut_bad_times are false or None, the times above "value" are replaced by zero
 		
@@ -4953,6 +5011,11 @@ class TA():	# object wrapper for the whole
 		cut_bad_times = bool, optional
 			True (Default) removes the whole time where this is true
 		
+		upper_matrix : Pandas DataFrame, optional
+			all values above this treshold will be put N/A or replace by the value in replace_bad_values
+		
+		lower_matrix Pandas DataFrame, optional
+			all values below this treshold will be put N/A or replace by the value in replace_bad_values
 		
 		the value is the upper bound. everything 
 		above will be filtered. Standard is to drop the rows(=times) where something went wrong
@@ -4971,17 +5034,34 @@ class TA():	# object wrapper for the whole
 		if uppervalue is None: uppervalue = np.abs(value)
 		if lowervalue is None: lowervalue = -np.abs(value)
 		
+		if replace_bad_values is not None:
+			cut_bad_times=False
+		
 		for dataset in [self.ds,self.ds_ori]:
 			if cut_bad_times: #timepoint filter, delete the timepoints where value is stupid
-				damaged_times=dataset[np.any(dataset.values>uppervalue,axis=1)].index
-				damaged_times=dataset[np.any(dataset.values<lowervalue,axis=1)].index
+				if upper_matrix is None:
+					damaged_times=dataset[np.any(dataset.values>uppervalue,axis=1)].index
+				else:
+					damaged_times=dataset[np.any(dataset.values>upper_matrix,axis=1)].index
 				dataset.drop(damaged_times,inplace = True)
-			elif replace_bad_values is not None: #individual data filter
-				dataset.values[abs(dataset.values)>uppervalue]=replace_bad_values
-				dataset.values[abs(dataset.values)<lowervalue]=replace_bad_values
-			else:																 
-				dataset.values[abs(dataset.values)>uppervalue]=0
-				dataset.values[abs(dataset.values)<lowervalue]=0
+				if lower_matrix is None:
+					damaged_times=dataset[np.any(dataset.values<lowervalue,axis=1)].index
+				else:
+					damaged_times=dataset[np.any(dataset.values<lower_matrix,axis=1)].index
+				dataset.drop(damaged_times,inplace = True)
+			else: 
+				if replace_bad_values is None: #individual data filter
+					replace_bad_values=np.nan
+				if upper_matrix is None:
+					dataset.values[dataset.values>uppervalue]=replace_bad_values
+				else:
+					dataset.values[dataset.values>upper_matrix]=replace_bad_values
+				if lower_matrix is None:
+					dataset.values[dataset.values<lowervalue]=replace_bad_values
+				else:
+					dataset.values[dataset.values<lower_matrix]=replace_bad_values
+
+
 	
 	
 	def Background(self, lowlimit=None,uplimit=-1, use_median=False, ds=None, correction=None):

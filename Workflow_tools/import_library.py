@@ -32,3 +32,15 @@ def streak_Lund(filename):
     ds.index.name='Time in ps'
     ds.columns.name='Wavelength in nm'
     return ds,'emission intensity'
+	
+def Amine_func(filename):
+	df=pd.read_csv(filename,sep='\t',header=None)
+	wavelength=pd.Series(np.linspace(343.33,656.03,512))
+	time=pd.Series(np.linspace(0,50.500,512))
+	df.columns=wavelength
+	df.index=time
+	df.index=df.index.astype(float)
+	df.columns=df.columns.astype(float)
+	df.index.name='Time in ns'
+    df.columns.name='Wavelength in nm'
+	return df,'differential absorption','ns'
