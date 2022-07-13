@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.8.1"
+version = "6.9.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -575,8 +575,8 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 					sep = "\t", decimal = '.', index_is_energy = False, transpose = False, sort_indexes = False, 
 					divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, use_same_name = True,
 					return_ds_only=False, data_type = None, units = None, baseunit = None, conversion_function = None, fitcoeff = None,
-					base_TA_object = None, value_filter = None, zscore_filter_level = None, dump_times = True, replace_values = None, 
-					drop_scans = False):
+					base_TA_object = None, value_filter = None, zscore_filter_level = None, zscore_in_window = True,
+					dump_times = True, replace_values = None, drop_scans = False):
 	'''
 	Average single scans. Uses single scans of the data set and plots them as average after different conditions. Usually one defines one or two windows in which the intensity is integrated. This integrated number is then displayed for each scan in the list. There are different tools to select certain scans that are excluded from the summary. These are defined in the list_to_dump. This list can take either be a list with the number, or a string with the words 'single' or 'range' (see below) 
 	
@@ -729,14 +729,17 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	base_TA_object: TA object, optional
 		instead of the fit_coefficients a Ta object can be provided that is then used as a template, meaning that the scattercuts and bordercuts will be applied before the filtering.
 		
-	value_filter : None or float, optional
-		if this is set then all times with values above this limit will be filtered away. 
+	value_filter : None, float or iterable with two entries, optional
+		if float, everything above that value or below -abs(value_filter) will be filtered replaced with replace_values
+		if iterable, then first is lower treshold, second is upper treshold
 		
 	zscore_filter_level : float, optional
 		if this value is set then the manual selection will be replaced with an automatic filter, the following options, dump_times = True, 
 		replace_values = None, drop_scans = False decide what is done to the values that are filtered
+		typical value would be e.g. 3
 		
-	zscore_in_window : bool, decides if the filter is applied in window1 or over the whole matrix (using statistics on the values)
+	zscore_in_window : bool, 
+		decides if the filter is applied in the windows or over the whole matrix (using statistics on the values)
 		
 	dump_times : bool,optional 
 		Standard True means that if the zscore filter filters a file the bad time is droped for the average
@@ -810,13 +813,13 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				else:
 					if fitcoeff is not None:
 						new_ds=Fix_Chirp(ds=new_ds,fitcoeff=fitcoeff)
-					list_of_projects.append(new_ds.values)
 					try:
 						new_ds=sub_ds(new_ds, ignore_time_region = base_TA_object.ignore_time_region, wave_nm_bin = base_TA_object.wave_nm_bin, baseunit = base_TA_object.baseunit, 
 										scattercut = base_TA_object.scattercut, bordercut = base_TA_object.bordercut, timelimits = base_TA_object.timelimits, time_bin = base_TA_object.time_bin, 
 										equal_energy_bin = base_TA_object.equal_energy_bin)
 					except:
 						print('applying the base_TA_object slices failed')
+					list_of_projects.append(new_ds.values)
 			if base_TA_object is None:
 				ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
 						index_is_energy = index_is_energy, transpose = transpose, sort_indexes = sort_indexes, 
@@ -824,9 +827,15 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 						external_time = external_time, external_wave = external_wave, 
 						use_same_name = use_same_name, data_type = data_type, units = units, 
 						baseunit = baseunit, conversion_function = conversion_function).ds
+
 			else:
 				ds=base_TA_object.ds
+				ds = sub_ds(ds, ignore_time_region = base_TA_object.ignore_time_region, wave_nm_bin = base_TA_object.wave_nm_bin, baseunit = base_TA_object.baseunit, 
+							scattercut = base_TA_object.scattercut, bordercut = base_TA_object.bordercut, timelimits = base_TA_object.timelimits, time_bin = base_TA_object.time_bin, 
+							equal_energy_bin = base_TA_object.equal_energy_bin)
+			######################
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
+			#######################
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
 	else:
@@ -841,18 +850,65 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 			else:
 				ds=base_TA_object.ds
 			list_of_scans = list_of_scans_names
+			
+			##########################
 			list_of_projects = np.transpose(np.array(list_of_projects),(1, 2, 0))
+			#########################
 		except:
 			raise ValueError('Sorry did not understand the project_list entry, use GUI_open to create one')
 			
 	if window1 is None:
-		window1 = [ds.index.values.min,ds.index.values.max,ds.columns.values.min,ds.columns.values.max]
+		window1 = [ds.index.values.min(),ds.index.values.max(),ds.columns.values.min(),ds.columns.values.max()]
 	
 	#### automatic filtering#####
-	if zscore_filter_level is not None:
-		pass
-		#, dump_times = True, replace_values = None, drop_scans = False
+	if (zscore_filter_level is not None) or (value_filter is not None):
+		if replace_values is not None:
+			cut_bad_times=False
+		if replace_values is None:
+			replace_values = np.nan
+		dataset=list_of_projects
+		if value_filter is not None:
+			if hasattr(value_filter,'__iter__'):
+				lowervalue=value_filter[0]
+				uppervalue=value_filter[1]
+			else:
+				uppervalue = np.abs(value_filter)
+				lowervalue = -np.abs(value_filter)
+			outside_range=np.invert(log_and(dataset>lowervalue,dataset<uppervalue))
+			if dump_times:#this is default
+				outside_range=np.tile(outside_range.all(axis=1,keepdims=True),(1,dataset.shape[1],1))
+			elif drop_scans:
+				outside_range=np.tile(outside_range.any(axis=1,keepdims=True),(1,dataset.shape[1],1))
+				outside_range=np.tile(outside_range.any(axis=0,keepdims=True),(dataset.shape[0],1,1))
+			dataset[outside_range]=replace_values
+		if zscore_filter_level is not None:
+			if zscore_in_window:
+				window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
+				vector=np.nanmean(np.nanmean(dataset[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:],axis=0),axis=1)
+				good=log_and(vector>(np.nanmean(vector) - zscore_filter_level*np.nanstd(vector)),vector<(np.nanmean(vector) + zscore_filter_level*np.nanstd(vector)))
+				if not window2 is None:
+					window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
+					vector=np.nanmean(np.nanmean(dataset[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:],axis=0),axis=1)
+					good2=log_and(vector>(np.nanmean(vector) - zscore_filter_level*np.nanstd(vector)),vector<(np.nanmean(vector) + zscore_filter_level*np.nanstd(vector)))
+					good=log_and(good,good2)
+				dataset[:,:,np.invert(good)]=replace_values
+			else:
+				mean=np.nanmean(dataset,axis=2)
+				var=np.nanstd(dataset,axis=2)
+				lower=(mean - zscore_filter_level*var).T
+				upper=(mean + zscore_filter_level*var).T
+				lower=np.array([lower for i in range(dataset.shape[2])]).T
+				upper=np.array([upper for i in range(dataset.shape[2])]).T
+				outside_range=np.invert(log_and(dataset>lower,dataset<upper))
+				if drop_scans:
+					outside_range=np.tile(outside_range.any(axis=1,keepdims=True),(1,dataset.shape[1],1))
+					outside_range=np.tile(outside_range.any(axis=0,keepdims=True),(dataset.shape[0],1,1))
+				elif dump_times:
+					outside_range=np.tile(outside_range.any(axis=1,keepdims=True),(1,dataset.shape[1],1))
+				dataset[outside_range]=replace_values
+		list_of_projects=dataset
 		
+	#############manual filtering################
 	else:	
 		if baseunit is None:baseunit=ds.index.name
 		if units is None:units=ds.columns.name
@@ -897,7 +953,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				if len(series1) >15:
 					gol=Frame_golay(series1,window=11,order=1)
 					gol.plot(ax=ax,use_index=False,color=colm(2))
-					ax.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(2),alpha=0.3)
+					ax.fill_between(x=range(len(series1)), y1=gol-2*series1.nanvar(), y2=gol+2*series1.nanvar(),color=colm(2),alpha=0.3)
 			if list_to_dump == 'single':
 				ax.set_title('click on the scans that should be dropped\n left click to chose, right click to delete last point, middle click finishes selection\n an empty middle click ends the process')
 				polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
@@ -925,7 +981,12 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 			list_of_projects=list_of_projects[:,:,to_keep]
 			plt.close('all')
 	plt.close('all')
-	ds=pandas.DataFrame(list_of_projects.mean(axis=2),index=ds.index,columns=ds.columns)
+	try:
+		df=pandas.DataFrame(np.any(np.isnan(dataset),axis=1),index=ds.index)
+		plot2d(df,levels = 2,use_colorbar = False,intensity_range=[0,1],title='rejected are red')
+	except:
+		print('plotting of filtered went wrong')
+	ds=pandas.DataFrame(np.nanmean(list_of_projects,axis=2),index=ds.index,columns=ds.columns)
 	if not save_name is None:
 		path = str(check_folder(path=path,filename=save_name))
 		ds.to_csv(path,sep='\t')
@@ -943,6 +1004,10 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	elif return_removed_list:
 		return filenames_to_dump
 	else:
+		if base_TA_object is not None:
+			ta=base_TA_object.Copy()
+			ta.ds_ori=ds
+			ta.ds=ds
 		return ta
 		
 

@@ -64,4 +64,6 @@ in a temporal and spectral window. This single number is plotted as function aga
 Then either a list of numbers or a GUI is used to select the scans that are 
 removed from the average. A number of opening and selection options are given.
 
+Observe the new automatic filter options of summarize_scans
+
 This function could also be used to combine a number of different experiments.
