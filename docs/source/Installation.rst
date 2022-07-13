@@ -29,8 +29,12 @@ Install and update using "conda" from the channel erdzeichen:
 
 Workflow tools
 -----------
-While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n These notebooks can be found on github\n https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools. \n Please copy one of these notebooks into your data analysis folder (close to the data)  and rename them to create a analysis log of your session. The most comfortable way to open these notebooks is to use the module nbopen, that can be integrated into the file manager following the instructions on this webpage: https://pypi.org/project/nbopen/
+While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
+These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
 
+To do that start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack.plot_func as pf; pf.download_notebooks()" This downloads the notebooks from github for you.
+Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
+	
 Under windows this would be:
 
 .. code-block:: text

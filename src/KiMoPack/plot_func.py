@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.9.0"
+version = "6.9.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -63,6 +63,40 @@ if 1: #Hide imports
 	standard_map = cm.jet
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
+
+def download_notebooks():
+	import urllib3
+	import shutil
+	http = urllib3.PoolManager()
+	list_of_tools=['TA_Advanced_Fit.ipynb',
+					'TA_comparative_plotting_and_data_extraction.ipynb',
+					'TA_Raw_plotting.ipynb',
+					'TA_Raw_plotting_and_Simple_Fit.ipynb',
+					'TA_single_scan_handling.ipynb',
+					'Function_library_overview.pdf',
+					'function_library.py',
+					'import_library.py',
+					'Tutorial_Notebooks_for_local_use.zip']
+	print('Now downloading the workflow tools and tutorials')
+	for f in list_of_tools:
+		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
+		print('Downloading Workflow Tools/%s'%f)
+		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
+			r = http.request('GET', url, preload_content=False)
+			shutil.copyfileobj(r, out)
+	list_of_example_data=['sample_1_chirp.dat',
+							'Sample_2_chirp.dat',
+							'sample_1.hdf5',
+							'sample_2.hdf5',
+							'Sample_1.SIA',
+							'Sample_2.SIA']
+	print('Now downloading the example files')
+	for f in list_of_example_data:
+		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
+		print('Downloading Workflow Tools/Data/%s'%f)
+		with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
+			r = http.request('GET', url, preload_content=False)
+			shutil.copyfileobj(r, out)
 
 def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, LARGE_SIZE=18):
 	'''
