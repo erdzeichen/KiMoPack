@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.10.3"
+version = "6.11.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -867,6 +867,8 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 						new_ds=sub_ds(new_ds, ignore_time_region = base_TA_object.ignore_time_region, wave_nm_bin = base_TA_object.wave_nm_bin, baseunit = base_TA_object.baseunit, 
 										scattercut = base_TA_object.scattercut, bordercut = base_TA_object.bordercut, timelimits = base_TA_object.timelimits, time_bin = base_TA_object.time_bin, 
 										equal_energy_bin = base_TA_object.equal_energy_bin)
+						if (base_TA_object.wave_nm_bin is not None) or (base_TA_object.equal_energy_bin is not None):
+							print('in the original TA objec the data was rebinned, which is now also done for the single scans. To avoid that use "ta.wave_nm_bin = None" and / or "ta.equal_energy_bin = None" before handing it to base_TA_object')
 					except:
 						print('applying the base_TA_object slices failed')
 					list_of_projects.append(new_ds.values)
@@ -4223,6 +4225,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		are not to be shared between the projects (and that are not optimized either) 
 		The intended use of this is to give e.g. the pump power for multiple experiments 
 		to study non linear behaviour. (Default) None
+		
+	same_DAS : bool,optional
+		changes the fit behavior and uses the same DAS for the optimization. This means that the ds are stacked before the fill int rounds
 	
 	weights : list of floats, optional
 		only used in conjunction with 'multi_project'. The "weights" option allows to 
@@ -4244,10 +4249,14 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	slice_setting_object=multi_project[0].Copy()
 	####### new same DAS, I'm lazy and will doublicate te loop. ###########
 	if same_DAS:
+		c_stack=[]
+		ds_stack=[]
+		par_stack=[]
+		height_stack=[]
 		for i,ta in enumerate(multi_project):
 			ds = sub_ds(ds = ta.ds, scattercut = slice_setting_object.scattercut, bordercut = slice_setting_object.bordercut, 
 						timelimits = slice_setting_object.timelimits, wave_nm_bin = slice_setting_object.wave_nm_bin, 
-						time_bin = slice_setting_object.time_bin, ignore_time_region = slice_setting_object.ignore_time_region)	
+						time_bin = slice_setting_object.time_bin, ignore_time_region = slice_setting_object.ignore_time_region)
 			pardf=pardf_changing.copy()
 			try:#let's see if the project has an parameter object
 				pardf_ori=par_to_pardf(ta.par)
@@ -4255,121 +4264,52 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				pardf_ori=pardf
 			if unique_parameter is not None:
 				for key in unique_parameter:
-					pardf.loc[key,'value']=pardf_ori.loc[key,'value']	
+					pardf.loc[key,'value']=pardf_ori.loc[key,'value']
+			par_stack.append(pardf)
 			if log_fit:
 				pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
 			if isinstance(mod,type('hello')):#did we use a build in model?
 				c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
-				
-				
-				
-				
-				if ext_spectra is None:
-					re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
-				else:
-					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
-					c_temp=c.copy()
-					for col in ext_spectra.columns:
-						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
-						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
-						ds=ds-C
-						c_temp.drop(col,axis=1,inplace=True)
-					re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
-				
-				if final:
-					if i==0:
-						labels=list(re['DAC'].columns.values)
-						changed=True
-						if 'background' in list(pardf.index.values):
-							if 'infinite' in list(pardf.index.values):
-								labels[-1]='Non Decaying'
-								labels[-2]='background'
-							else:
-								labels[-1]='background'
-						else:
-							if 'infinite' in list(pardf.index.values):
-								labels[-1]='Non Decaying'
-			   
-							else:changed=False
-						if changed:
-							re['DAC'].columns=labels
-							re['c'].columns=labels
-						if not ext_spectra is None:
-							for col in ext_spectra.columns:
-								re['DAC'][col]=ext_spectra.loc[:,col].values
-								re['c'][col]=c.loc[:,col].values
-								A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
-								C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
-								re['A']=re['A']+C
-								re['AC']=re['AC']+C	
-						re_final=re.copy()
-					error_listen.append(re['error'])
-					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
-				else:
-					if dump_shapes:
-						re['c'].to_csv(path_or_buf=ta.filename + '_c')
-						re['DAC'].to_csv(path_or_buf=ta.filename + '_DAC')
-					error_listen.append(re['error'])
 			else:
 				c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
-				if ext_spectra is None:
-					re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
-				else:
-					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
-					c_temp=c.copy()
-					for col in ext_spectra.columns:
-						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
-						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
-						ds=ds-C
-						c_temp.drop(col,axis=1,inplace=True)
-				re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
-				if final:
-					if i==0:
-						re['DAC'].columns=c.columns.values
-						re['c'].columns=c.columns.values
-						if not ext_spectra is None:
-							for col in ext_spectra.columns:
-								re['DAC'][col]=ext_spectra.loc[:,col].values
-								re['c'][col]=c.loc[:,col].values
-								A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
-								C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
-								re['A']=re['A']+C
-								re['AC']=re['AC']+C	
-						re_final=re.copy()
-					error_listen.append(re['error'])
-					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
-				else:
-					if dump_shapes:
-						re['c'].to_csv(path_or_buf=filename + '_c')
-						re['DAC'].to_csv(path_or_buf=filename + '_DAC')
-					error_listen.append(re['error'])
-		if not weights is None:
-			if len(weights)==len(error_listen)-1:
-				weights=list(weights)
-				weights.insert(0,1)
-			elif len(weights)!=len(error_listen):
-				Ex = ValueError()
-				Ex.strerror='The number of entries i the list must either be the number of all elements (including \"TA\" or the number of elements in other. In this case the element ta gets the weight=1'
-				raise Ex
-			combined_error=np.sqrt(((np.array(error_listen)*np.array(weights))**2).mean())
-			if final:
-				combined_r2=np.sqrt(((np.array(r2_listen)*np.array(weights))**2).mean())
-		else:
-			combined_error=np.sqrt((np.array(error_listen)**2).mean())
-			if final:
-				combined_r2=np.sqrt(((np.array(r2_listen))**2).mean())
-		if final:
-			re_final['error']=combined_error
-			re_final['r2']=combined_r2
+			if ext_spectra is None:
+				c_temp=c.copy()
+			else:
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				c_temp=c.copy()
+				for col in ext_spectra.columns:
+					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+					ds=ds-C
+					c_temp.drop(col,axis=1,inplace=True)
+			if not weights is None:
+				if len(weights)==len(multi_project)-1:
+					weights=list(weights)
+					weights.insert(0,1)
+				elif len(weights)!=len(multi_project):
+					Ex = ValueError()
+					Ex.strerror='The number of entries i the list must either be the number of all elements (including \"TA\" or the number of elements in other. In this case the element ta gets the weight=1'
+					raise Ex
+				ds_stack.append(ds*weights[i])
+			else:
+				ds_stack.append(ds)
+			c_stack.append(c_temp)
+			height_stack.append(len(c_temp.index.values))
+			
+		A_con=pandas.concat(ds_stack)
+		c_con=pandas.concat(c_stack)
+		re=fill_int(ds=A_con,c=c_con, return_shapes = dump_shapes, final =final)
+		
 		if dump_paras:
 			try:
-				pardf.loc['error','value']=combined_error
+				pardf.loc['error','value']=re['error']
 			except:
 				pass
-			try:
-				pardf.loc['r2','value']=combined_r2
-			except:
-				pass
+			if final:
+				try:
+					pardf.loc['r2','value']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
+				except:
+					pass
 			try:
 				if filename is None:
 					store_name='minimal_dump_paras.par'
@@ -4388,13 +4328,72 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				pardf.to_csv(store_name)
 			except:
 				print('Saving of %s failed'%store_name)
-		if not mod in ['paral','exponential','consecutive']:
-			print(combined_error)
+		
 		if final:
-			return re_final
+			if isinstance(mod,type('hello')):#did we use a build in model?	
+				labels=list(re['DAC'].columns.values)
+				changed=True
+				if 'background' in list(pardf.index.values):
+					if 'infinite' in list(pardf.index.values):
+						labels[-1]='Non Decaying'
+						labels[-2]='background'
+					else:
+						labels[-1]='background'
+				else:
+					if 'infinite' in list(pardf.index.values):
+						labels[-1]='Non Decaying'
+					else:changed=False
+				if changed:
+					re['DAC'].columns=labels
+					re['c'].columns=labels
+				if not ext_spectra is None:
+					for col in ext_spectra.columns:
+						re['DAC'][col]=ext_spectra.loc[:,col].values
+						re['c'][col]=c.loc[:,col].values
+						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+						re['A']=re['A']+C
+						re['AC']=re['AC']+C
+			else:
+				re['DAC'].columns=c.columns.values
+				re['c'].columns=c.columns.values
+				if not ext_spectra is None:
+					for col in ext_spectra.columns:
+						re['DAC'][col]=ext_spectra.loc[:,col].values
+						re['c'][col]=c.loc[:,col].values
+						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
+						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
+						re['A']=re['A']+C
+						re['AC']=re['AC']+C
+			return_listen=[]
+			for i,ta in enumerate(multi_project):
+				re_local={}
+				if i==0:
+					lower=0
+				else:
+					lower=np.array(height_stack)[:i].sum()
+				re_local['A']=re['A'].copy().iloc[lower:lower+height_stack[i],:]
+				re_local['AC']=re['AC'].copy().iloc[lower:lower+height_stack[i],:]
+				re_local['AE']=re['AE'].copy().iloc[lower:lower+height_stack[i],:]
+				re_local['c']=re['c'].copy().iloc[lower:lower+height_stack[i],:]
+				re_local['error_total']=re['error']
+				re_local['error']=(re['AE']**2).sum().sum()
+				re_local['DAC']=re['DAC'].copy()
+				re_local['r2']=1-re_local['error']/((re_local['A']-re_local['A'].mean().mean())**2).sum().sum()
+				re_local['r2_total']=1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum()
+				re_local['pardf']=par_stack[i]
+				try:
+					re_local['filename']=filename
+				except:
+					pass
+				return_listen.append(re_local)
+		if not mod in ['paral','exponential','consecutive']:
+			print(re['error'])
+		if final:
+			return return_listen
 		else:
-			return combined_error
-		###################   not same DAS####################
+			return re['error']
+	###################   not same DAS####################
 	else:
 		
 		for i,ta in enumerate(multi_project):
@@ -6188,8 +6187,8 @@ class TA():	# object wrapper for the whole
 		return results, fit_ds
 		
 		
-	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, 
-					fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, 
+	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
+					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
 					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
@@ -6278,6 +6277,10 @@ class TA():	# object wrapper for the whole
 				the optimisation results if the fit needs to be interrupted 
 				(if e.g. Ampgo simply needs to long to optimize.) useful option if things are slow
 				this parameter also triggers the writing of fitout to a textfile on disc
+				
+			dump_shapes : bool, optional
+				this option dumps the concentratoin matrix and the DAS onto disk for each round of optimization,
+				mostly useful for multi-project fitting that wants to use the spectral or temporal intensity
 			
 			filename : None or str, optional
 				Only used in conjunction with 'dump_paras'. The program uses this filename to dump the 
@@ -6309,6 +6312,10 @@ class TA():	# object wrapper for the whole
 				are not to be shared between the projects (and that are not optimized either) 
 				The intended use of this is to give e.g. the pump power for multiple experiments 
 				to study non linear behaviour. (Default) None
+			
+			same_DAS : bool,optional
+				changes the fit behavior and uses the same DAS for the optimization. 
+				This means that the ds are stacked before the fill_int rounds. This option is only used in multi-project fitting
 			
 			weights : list of floats, optional
 				only used in conjunction with 'multi_project'. The "weights" option allows to 
@@ -6472,7 +6479,7 @@ class TA():	# object wrapper for the whole
 				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
 																					'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 																					'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-																					'dump_shapes':dump_shapes})
+																					'dump_shapes':dump_shapes,'same_DAS':same_DAS})
 				if len(pardf[pardf.vary].index)>3:
 					print('we use adaptive mode for nelder')
 					results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
@@ -6508,7 +6515,15 @@ class TA():	# object wrapper for the whole
 		if multi_project is None:
 			re=err_func(paras=self.par_fit,ds=fit_ds,mod=self.mod,final=True,log_fit=self.log_fit,ext_spectra=ext_spectra)
 		else:
-			re=err_func_multi(paras=self.par_fit,mod=mod,final=True,log_fit=self.log_fit,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,ext_spectra=ext_spectra)
+			if same_DAS:
+				re_listen = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
+									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
+									ext_spectra = ext_spectra)
+				re=re_listen[0]
+			else:
+				re = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
+									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
+									ext_spectra = ext_spectra)
 		
 		############################################################################
 		#----Estimate errors---------------------------------------------------------------------
@@ -6553,7 +6568,8 @@ class TA():	# object wrapper for the whole
 									if multi_project is None:
 										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
 									else:
-										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
+										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,
+																										'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
 									if len(pardf[pardf.vary].index)>3:
 										results_sub = mini_sub.minimize('Nelder',options={'maxiter':1e5,'adaptive':True})
 									else:
@@ -6567,7 +6583,9 @@ class TA():	# object wrapper for the whole
 										return err_func_multi(pardf_local,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,mod=mod,log_fit=log_fit,ext_spectra=ext_spectra)
 							try:
 								
-								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra})							
+								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,
+																							'multi_project':multi_project, 'unique_parameter':unique_parameter,'same_DAS':same_DAS,'weights':weights,
+																							'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra})							
 								one_percent_precission=(target-1)*0.01*re['error']
 								#results_local = mini_local.minimize('least_squares',ftol=one_percent_precission)
 								results_local = mini_local.minimize(method='nelder',options={'maxiter':100,'fatol':one_percent_precission})
@@ -6616,25 +6634,44 @@ class TA():	# object wrapper for the whole
 		re['fit_results_rates']=pardf
 		timedf=pardf_to_timedf(pardf)
 		re['fit_results_times']=timedf			
+		if same_DAS:
+			for i,re_local in enumerate(re_listen):
+				for name in ['fit_output','fit_results_rates','fit_results_times']:
+					re_listen[i][name]=re[name]
 		
 		###############################################
 		##convert energy back to wavelength#############
 		################################################
 		if 1:
 			if self.equal_energy_bin is not None:
-				for name in ['A','AC','AE']:
-					re[name].columns=(scipy.constants.h*scipy.constants.c/(re[name].columns.values*1e-9*scipy.constants.electron_volt))
-					re[name].columns.name='wavelength in nm'
-					re[name].sort_index(inplace=True,axis=1,ascending=True)
-				re['DAC'].index=(scipy.constants.h*scipy.constants.c/(re['DAC'].index.values*1e-9*scipy.constants.electron_volt))
-				re['DAC'].index.name='wavelength in nm'
-				re['DAC'].sort_index(inplace=True,axis=0,ascending=True)
+				if same_DAS:
+					for i,re_local in enumerate(re_listen):
+						for name in ['A','AC','AE']:
+							re_local[name].columns=(scipy.constants.h*scipy.constants.c/(re_local[name].columns.values*1e-9*scipy.constants.electron_volt))
+							re_local[name].columns.name='wavelength in nm'
+							re_local[name].sort_index(inplace=True,axis=1,ascending=True)
+						re_local['DAC'].index=(scipy.constants.h*scipy.constants.c/(re_local['DAC'].index.values*1e-9*scipy.constants.electron_volt))
+						re_local['DAC'].index.name='wavelength in nm'
+						re_local['DAC'].sort_index(inplace=True,axis=0,ascending=True)
+						re_listen[i]=re_local
+				else:
+					for name in ['A','AC','AE']:
+						re[name].columns=(scipy.constants.h*scipy.constants.c/(re[name].columns.values*1e-9*scipy.constants.electron_volt))
+						re[name].columns.name='wavelength in nm'
+						re[name].sort_index(inplace=True,axis=1,ascending=True)
+					re['DAC'].index=(scipy.constants.h*scipy.constants.c/(re['DAC'].index.values*1e-9*scipy.constants.electron_volt))
+					re['DAC'].index.name='wavelength in nm'
+					re['DAC'].sort_index(inplace=True,axis=0,ascending=True)
 		
 		
 		############################################################################
 		#---print the output---------------------------------------------------
 		############################################################################
 		self.re=re
+		if same_DAS:
+			re_listen[0]=re
+			self.multi_projects=re_listen
+
 		Result_string='\nFit Results:\n'
 		
 		if isinstance(mod,type('hello')):
@@ -6651,6 +6688,9 @@ class TA():	# object wrapper for the whole
 					Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(entry[0],self.baseunit,entry[1],self.baseunit)
 		Result_string+='The minimum error is:{:.8e}\n'.format(re['error'])
 		Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
+		if same_DAS:
+			Result_string+='The minimum global error is:{:.8e}\n'.format(re['error_total'])
+			Result_string+='The minimum global R2-value is:{:.8e}\n'.format(re['r2_total'])
 		if confidence_level is not None:
 			Result_string+='\nIn Rates with confidence interval to level of %.1f\n\n'%((confidence_level)*100)
 			Result_string+=pardf.to_string(columns=['value','lower_limit','upper_limit','init_value','vary','min','max','expr'])
@@ -6661,13 +6701,16 @@ class TA():	# object wrapper for the whole
 			Result_string+=pardf.to_string(columns=['value','init_value','vary','min','max','expr'])
 			Result_string+='\n\nThe rates converted to times with unit %s\n\n'%self.baseunit
 			Result_string+=timedf.to_string(columns=['value','init_value','vary','min','max','expr'])
-		
+		if same_DAS:
+			Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
+			
 		print(Result_string)
 		
 		if dump_paras:
 			with open("Fit_results_print.par", "w") as text_file:
 				text_file.write(Result_string)
-
+			
+			
 	def Plot_fit_output(self, plotting = range(6), path = 'result_figures', savetype = 'png', 
 						evaluation_style = False, title = None, scale_type = 'symlog', 
 						patches = False, filename = None, cmap = None , print_click_position = False,

@@ -405,27 +405,22 @@ that in general a new (different) DAS is calculated for each of the measurements
 	ta.Fit_Global(multi_project = ta_list, unique_parameter = 'pump_power', weights = [1/power1,1/power2])
 
 
-To work with the same DAS for the measured and calculated matrices need to be
-concatenated before the fitting. A convenient way to do this is to use the 
-shaped matrices (potentially with different scattercuts) and the concentrations 
-that are created after an individual fit.::
+To work with the same DAS for the measured and calculated matrices need to be concatenated before the fitting. This is now implemented and one simply needs to use the switch same_DAS=True::
+
+	ta.Fit_Global(multi_project=[ta1],same_DAS=True)
+
+In the new version the results of the other datasets are layed into the variable ta.multi_projects (assuming that self=ta)
+with the current result on position 0 that means::
+
+	ta.re = ta.multi_projects[1] 
+	ta.Plot_fit_output() 
 	
-# without scaling::
-
-	A_con=ta_list[0].re['A']
-	c_con=ta_list[0].re['c']
+plots the other second project::
 	
-# With scaling::
+	ta.re = ta.multi_projects[0] 
 
-	A_con=pd.concat([ta_list[0].re['A'],ta_list[1].re['A']*0.5,ta_list[2].re['A']*0.4])
-	c_con=pd.concat([ta_list[0].re['c'],ta_list[1].re['c'],ta_list[2].re['c']])
+returns the current results into the usual storage
 
-# using the "fill_int" function calculates just the DAC::
-
-	re=pf.fill_int(A_con,c_con,final=True)
-	
-Alternatively one could give this concatenated Matrix to the Fit_Global and construct 
-an assembled external function.
 
 Error Estimation
 ----------------
