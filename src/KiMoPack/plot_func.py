@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.11.0"
+version = "6.11.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -66,6 +66,9 @@ if 1: #Hide imports
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
 
+#use this to trigger a real error for DeprecationWarnings
+#np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)                  
+
 def download_notebooks():
 	http = urllib3.PoolManager()
 	list_of_tools=['TA_Advanced_Fit.ipynb',
@@ -74,7 +77,8 @@ def download_notebooks():
 					'TA_Raw_plotting_and_Simple_Fit.ipynb',
 					'TA_single_scan_handling.ipynb',
 					'Function_library_overview.pdf',
-					'function_library.py']
+					'function_library.py',
+					'import_library.py']
 	print('Now downloading the workflow tools')
 	for f in list_of_tools:
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
@@ -3802,7 +3806,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 						else:
 							dc[l]=g[i]*dt-decays[l]*dt*c_temp[l]
 				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])
+					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])
 			c[i,:] =c_temp
 		c=pandas.DataFrame(c,index=times)
 		c.index.name='time'

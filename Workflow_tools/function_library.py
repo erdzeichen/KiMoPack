@@ -25,7 +25,7 @@ def manual_consecutive(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]	#form with "k0" and decay with "k1"
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]	#form with "k1" and decay with "k2"
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -48,7 +48,7 @@ def Square_dependence(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]	#form with "k0" and decay with "k1"
 			dc[2]=pardf['k2']*dt*c_temp[0]**2						#one single part of c[2] is formed from the non linear combination of two c[0]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -80,7 +80,7 @@ def gaussian_distribution(times,pardf):
 				dc[1]=0																					#set to 0 because we do use the matrix later to record the change
 				dc[2]=(spread_shape*rate_spread*dt).sum()												#whatever flows out of the C1 (the distrubution) is collected into 
 				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])										#check that nothing will be below 0 (concentrations)
+					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])										#check that nothing will be below 0 (concentrations)
 			c[i,:] =c_temp
 			c[i,1] =spread.sum()																		#here we fill the record matrix with the sum of the units
 		c=pandas.DataFrame(c,index=times)
@@ -105,11 +105,11 @@ def P12(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k1']*dt*c_temp[1]+pardf['k2']*dt*c_temp[0]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
-	c.columns=['A','B','Inf']									#this is optional but very useful. The species get names that represent some particular states
+	c.columns=['A','B','Inf']									    #this is optional but very useful. The species get names that represent some particular states
 	if 'background' in list(pardf.index.values):					#optional but usefull, allow the keyword "background" to be used to fit the background in the global analysis
 		c['background']=1											#background always there (flat)
 	if 'infinite' in list(pardf.index.values):
@@ -133,7 +133,7 @@ def P13(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k4']*dt*c_temp[0]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -162,7 +162,7 @@ def P14(times,pardf):
 			dc[3]=pardf['k4']*dt*c_temp[0]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k6']*dt*c_temp[0]+pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -191,7 +191,7 @@ def P21(times,pardf):
 			dc[3]=pardf['k4']*dt*c_temp[0]+pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k5']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -220,7 +220,7 @@ def P22(times,pardf):
 			dc[3]=pardf['k4']*dt*c_temp[1]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -249,7 +249,7 @@ def P23(times,pardf):
 			dc[3]=pardf['k4']*dt*c_temp[1]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k1']*dt*c_temp[0]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -278,7 +278,7 @@ def P24(times,pardf):
 			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[0]+pardf['k5']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -306,7 +306,7 @@ def P31(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[0]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -334,7 +334,7 @@ def P32(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]+pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k3']*dt*c_temp[2]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -362,7 +362,7 @@ def P33(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k3']*dt*c_temp[1]+pardf['k2']*dt*c_temp[2]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -391,7 +391,7 @@ def P41(times,pardf):
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k5']*dt*c_temp[2]+pardf['k3']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -420,7 +420,7 @@ def P42(times,pardf):
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[1]-pardf['k4']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -449,7 +449,7 @@ def P43(times,pardf):
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[0]-pardf['k4']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -478,7 +478,7 @@ def P44(times,pardf):
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[1]+pardf['k3']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -507,7 +507,7 @@ def P45(times,pardf):
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[0]+pardf['k3']*dt*c_temp[3]
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -535,7 +535,7 @@ def ABC_model(times,pardf):
 			dc[1]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[1]
 			dc[2]=pardf['k0']*dt*c_temp[0]+2*pardf['k1']*dt*c_temp[0]^2+2*pardf['k2']*dt*c_temp[0]^3
 			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+dc[b]),0.])		#check that nothing will be below 0 (concentrations)
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
