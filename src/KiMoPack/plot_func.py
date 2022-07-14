@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.9.2"
+version = "6.10.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -65,6 +65,24 @@ print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.d
 print('The current working folder is:\n %s' % os.getcwd())
 
 def download_notebooks():
+	import urllib3
+	import shutil
+	http = urllib3.PoolManager()
+	list_of_tools=['TA_Advanced_Fit.ipynb',
+					'TA_comparative_plotting_and_data_extraction.ipynb',
+					'TA_Raw_plotting.ipynb',
+					'TA_Raw_plotting_and_Simple_Fit.ipynb',
+					'TA_single_scan_handling.ipynb',
+					'Function_library_overview.pdf',
+					'function_library.py']
+	print('Now downloading the workflow tools')
+	for f in list_of_tools:
+		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
+		print('Downloading Workflow Tools/%s'%f)
+		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
+			r = http.request('GET', url, preload_content=False)
+			shutil.copyfileobj(r, out)
+def download_all():
 	import urllib3
 	import shutil
 	http = urllib3.PoolManager()
@@ -3793,7 +3811,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 	return c
 
 
-def fill_int(ds,c,final=True,baseunit='ps'):
+def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 	'''solving the intensity an equation_way, takes the target dataframe and the concentration frame 
 	prepares the matrixes(c) the tries to solve this equation system using 
 	eps=np.linalg.lstsq(AA,Af,rcond=-1)[0]
@@ -3816,6 +3834,9 @@ def fill_int(ds,c,final=True,baseunit='ps'):
 		
 	baseunit : str,optional
 		this string is used as unit for the time axis
+	
+	return_shapes : bool,optional
+		Default = False, if True, then the concentrations and spectra are added to the re (even if not final)
 
 	Returns
 	------------------
@@ -3870,12 +3891,14 @@ def fill_int(ds,c,final=True,baseunit='ps'):
 		AE.columns.name=energy_label
 		DAC.index.name=energy_label
 		re={'A':A,'AC':AC,'AE':AE,'DAC':DAC,'error':fit_error,'c':c}
+	elif return_shapes:
+		re={'DAC':DAC,'error':fit_error,'c':c}
 	else:
 		re={'error':fit_error}
 	return re
 
 
-def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, filename = None, ext_spectra = None):
+def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, filename = None, ext_spectra = None, dump_shapes = False):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting a single dataset.
 	
@@ -3956,7 +3979,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			c=build_c(times=ds.index.values.astype('float'),mod='paral',pardf=pardf)
 		c.index.name=time_label
 		if ext_spectra is None:
-			re=fill_int(ds=ds,c=c)
+			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 		else:
 			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 			c_temp=c.copy()
@@ -3965,7 +3988,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
 				c_temp.drop(col,axis=1,inplace=True)
-			re=fill_int(ds=ds,c=c_temp)
+			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
 			labels=list(re['DAC'].columns.values)
 			changed=True
@@ -4044,11 +4067,14 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				pardf.to_csv(store_name)
 			if not mod in ['paral','exponential','consecutive']:
 				print(re['error'])
+			if dump_shapes:
+				re['c'].to_csv(filename + '_c')
+				re['DAC'].to_csv(filename + '_DAC')
 			return re['error']
 	else:
 		c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
 		if ext_spectra is None:
-			re=fill_int(ds=ds,c=c)
+			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 		else:
 			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 			c_temp=c.copy()
@@ -4057,7 +4083,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
 				c_temp.drop(col,axis=1,inplace=True)
-			re=fill_int(ds=ds,c=c_temp)
+			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
 			if len(re.keys())<3:#
 				print('error in the calculation')
@@ -4103,11 +4129,15 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					pass
 				pardf.to_csv('dump_paras.par')
 			print(re['error'])
+			if dump_shapes:
+				re['c'].to_csv(filename + '_c')
+				re['DAC'].to_csv(filename + '_DAC')
 			return re['error']
 
 
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
-					unique_parameter = None, weights = None, dump_paras = False, filename = None, ext_spectra = None):
+					unique_parameter = None, weights = None, dump_paras = False, filename = None, 
+					ext_spectra = None, dump_shapes = False):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
 	
@@ -4226,7 +4256,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		if isinstance(mod,type('hello')):#did we use a build in model?
 			c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
 			if ext_spectra is None:
-				re=fill_int(ds=ds,c=c)
+				re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 			else:
 				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 				c_temp=c.copy()
@@ -4235,7 +4265,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					ds=ds-C
 					c_temp.drop(col,axis=1,inplace=True)
-				re=fill_int(ds=ds,c=c_temp)
+				re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 			if final:
 				if i==0:
 					labels=list(re['DAC'].columns.values)
@@ -4266,11 +4296,14 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				error_listen.append(re['error'])
 				r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 			else:
+				if dump_shapes:
+					re['c'].to_csv(filename + '_c')
+					re['DAC'].to_csv(filename + '_DAC')
 				error_listen.append(re['error'])
 		else:
 			c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
 			if ext_spectra is None:
-				re=fill_int(ds=ds,c=c)
+				re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 			else:
 				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 				c_temp=c.copy()
@@ -4279,7 +4312,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					ds=ds-C
 					c_temp.drop(col,axis=1,inplace=True)
-			re=fill_int(ds=ds,c=c_temp)
+			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 			if final:
 				if i==0:
 					re['DAC'].columns=c.columns.values
@@ -4296,6 +4329,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				error_listen.append(re['error'])
 				r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 			else:
+				if dump_shapes:
+					re['c'].to_csv(filename + '_c')
+					re['DAC'].to_csv(filename + '_DAC')
 				error_listen.append(re['error'])
 	if not weights is None:
 		if len(weights)==len(error_listen)-1:
@@ -5966,7 +6002,9 @@ class TA():	# object wrapper for the whole
 		return results, fit_ds
 		
 		
-	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, dump_paras = False, filename = None, ext_spectra = None):
+	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, 
+					fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, 
+					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -6224,7 +6262,9 @@ class TA():	# object wrapper for the whole
 			#check if there is any concentration to optimise
 			if pardf.vary.any():#ok we have something to optimize
 				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),
-										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra})
+										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
+												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
+												'dump_shapes':dump_shapes})
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
@@ -6242,7 +6282,10 @@ class TA():	# object wrapper for the whole
 			fit_chirp=False #chirp fitting currently only works for single problems
 			if pardf.vary.any():#ok we have something to optimize lets return the spectra
 				multi_project.insert(0,self)
-				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra})
+				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
+																					'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
+																					'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
+																					'dump_shapes':dump_shapes})
 				if len(pardf[pardf.vary].index)>3:
 					print('we use adaptive mode for nelder')
 					results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
