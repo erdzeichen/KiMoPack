@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.11.2"
+version = "6.12.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3991,7 +3991,13 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		if ext_spectra is None:
 			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 		else:
-			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			if 'ext_spectra_shift' in list(pardf.index.values):
+				ext_spectra.index=ext_spectra.index.values+pardf.loc['ext_spectra_shift','value']
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			else:
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			if "ext_spectra_scale" in list(pardf.index.values):
+				ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 			c_temp=c.copy()
 			for col in ext_spectra.columns:
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
@@ -4279,7 +4285,13 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			if ext_spectra is None:
 				c_temp=c.copy()
 			else:
-				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				if 'ext_spectra_shift' in list(pardf.index.values):
+					ext_spectra.index=ext_spectra.index.values+pardf.loc['ext_spectra_shift','value']
+					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				else:
+					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				if "ext_spectra_scale" in list(pardf.index.values):
+					ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 				c_temp=c.copy()
 				for col in ext_spectra.columns:
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)

@@ -13,6 +13,8 @@ T. Stensitzki, D. B. Allen, A. Ingargiola, 2014. DOI:
 steps have to be followed (assuming that "ta" is your object):
 
 Model
+--------
+
    you have to define a model by setting ta.mod="internal model name"
    for one of the internal models, of by setting
    ta.mod=external_function to an external function. For the internal
@@ -27,6 +29,8 @@ Model
    and "standard_functions.py")
 
 Parameter
+-----------
+
    For handling of Parameters I am using the lmfit Parameter objects to
    have a flexible and fast Parameter handling toolset. The general
    steps are: create a Parameter object (or use an existing parameter
@@ -35,6 +39,8 @@ Parameter
    for more details
 
 Trigger the fitting
+----------------------
+
    To trigger the fitting the function ta.Fit_Global() is called. The
    fitting function will display its results on the screen and write
    them into the TA object. first it will create an parameter object
@@ -409,6 +415,9 @@ To work with the same DAS for the measured and calculated matrices need to be co
 
 	ta.Fit_Global(multi_project=[ta1],same_DAS=True)
 
+If you work with the same_DAS=True
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In the new version the results of the other datasets are layed into the variable ta.multi_projects (assuming that self=ta)
 with the current result on position 0 that means::
 
@@ -420,6 +429,25 @@ plots the other second project::
 	ta.re = ta.multi_projects[0] 
 
 returns the current results into the usual storage
+
+If you work with the same_DAS=False
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+then you unfortunately have to calculate the DAS new for each of the different fits. But as the ta.par_fit contains the fits results
+this is not very difficult and can be done with this code snippet. We assume "project_list" is a list of projects and unique_parameter is a list of unique parameters.::
+
+	for ta_local in projects_list:
+		local_fitted_parameter=ta.par_fit
+		try:
+			for key in unique_parameter:
+				local_fitted_parameter[key].value=ta_local.par.value
+		except:
+			pass
+		ta_local.par=local_fitted_parameter
+		for key in ta_local.par.keys():
+			ta_local.par[key].vary=False
+		ta_local.Fit_Global()
+		ta_local.Plot_Fit_output()
 
 
 Error Estimation
@@ -457,3 +485,13 @@ A small but often useful function is :meth:`pf.Species_Spectra()<plot_func.Speci
 	#plot the measured spectrum and substract the 
 	#contribution of "1" and "2"
 	ta.Plot_RAW(ds=ta.re['A']-dicten[1]-dicten[2])  
+	
+	
+External Spectra
+-------------------
+
+While the species development can be used to generate a spectra development that is then substracted from the matrix, the option 
+ext_spectra that is available in the Fit_Global can be used to assign a specific spectrum to a species. 
+The ext_spectra needs to be a pandas dataframe with the wavelength (or energy) as index and the name of species that is suppose to be replaced by the provided spectrum as column name.
+If the parameter set contains a parameter  "ext_spectra_shift" this external spectrum will be moved by that parameter. As this is an external parameter, this can be optimized the usual way.
+Similarly the parameter "ext_spectra_scale" is multiplied to all spectra given.

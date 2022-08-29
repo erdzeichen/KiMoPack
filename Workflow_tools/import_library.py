@@ -1,6 +1,24 @@
 import numpy as np
 import pandas as pd
 
+def Ivan_horse(filename):
+	#print(filename)
+	import scipy.constants as const
+	ds=pd.read_csv(filename,sep='\t',index_col=0)
+	ds.index=ds.index.astype(float)
+	ds.columns=ds.columns.astype(float)
+	#ds.index=ds.index.values/1e8
+	#ds.columns=ds.columns.values/1e5
+	#ds=ds.apply(lambda x:x*ds.index.values)
+	#ds=ds.apply(lambda x:x*ds.columns.values,axis=1)
+	#per_photon=const.h*const.c/(485e-9)
+	#ds=	ds*per_photon
+	ds.index.name='Fluence in Photons/cm2 s'
+	ds.columns.name='Repetitions rate in Hz'
+	ds.sort_index(inplace=True)
+	ds.sort_index(inplace=True,axis=1)
+	return ds.T,'PLQY'
+
 def streak_Lund(filename):
     code=filename.split('-')
     ds=pd.read_csv(filename,sep='\t',header=None)
@@ -42,5 +60,5 @@ def Amine_func(filename):
 	df.index=df.index.astype(float)
 	df.columns=df.columns.astype(float)
 	df.index.name='Time in ns'
-    df.columns.name='Wavelength in nm'
+	df.columns.name='Wavelength in nm'
 	return df,'differential absorption','ns'
