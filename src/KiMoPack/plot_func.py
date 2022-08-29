@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.12.0"
+version = "6.12.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7409,7 +7409,7 @@ class TA():	# object wrapper for the whole
 						if isinstance(read,bytes):
 							read=f[key].asstr()[()] 
 						elif isinstance(read,type('hello')):
-							if read=='None':
+							if (read=='None') or (read=='none'):
 								read=None
 						elif key in ['bordercut','timelimits','fitcoeff','scattercut']:
 							read=[float(a) for a in read]
