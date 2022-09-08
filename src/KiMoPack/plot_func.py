@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.12.2"
+version = "6.12.4"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4486,7 +4486,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						ds=ds-C
 						c_temp.drop(col,axis=1,inplace=True)
-				re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
+					re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 				if final:
 					if i==0:
 						re['DAC'].columns=c.columns.values
