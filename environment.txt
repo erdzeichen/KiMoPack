@@ -8,6 +8,6 @@ python-pptx>=0.6.18
 scipy>=1.5
 pathlib
 qtconsole>=5
-QtPy
+PyQt5
 
 
