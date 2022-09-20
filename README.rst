@@ -47,8 +47,8 @@ We provide a series of jupyter based work flow packages that guide the user thro
 during the analysis of optical transient absorption data and that we strongly recommend.
 The files can be downloaded from the github directory https://github.com/erdzeichen/KiMoPack and manually installed (added to the path).
 Alternatively we recommend the usage of the usual python install commands "pip" or if the distribution is using the Anaconda
-package manager, The conda type installation. For both please open a command line (e.g. using "cmd" in windows) and execute the following commands. 
-The Jupyter notebooks are copied during the install process. The notebooks can also be downloaded from the github server https://github.com/erdzeichen/KiMoPack.
+package manager, The conda type installation. For both please open a command line (e.g. using "cmd" in windows) and execute one of the following commands. 
+The notebooks can also be downloaded from the github server https://github.com/erdzeichen/KiMoPack.
 
 Install using "pip":
 

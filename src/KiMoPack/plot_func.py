@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.12.4"
+version = "6.12.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5474,7 +5474,7 @@ class TA():	# object wrapper for the whole
 			return ds-correction
 
 
-	def Man_Chirp(self,shown_window=[-1,1],path=None,max_points=40,cmap=cm.prism):
+	def Man_Chirp(self,shown_window=[-1,1],path=None,max_points=40,cmap=cm.prism,ds=None):
 		'''Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run already. 
 		Alternatively delete the chirp file. This Function opens a plot in which the user manually selects a number of points
 		These points will then be interpolated with a 4th order polynomial
@@ -5503,16 +5503,42 @@ class TA():	# object wrapper for the whole
 			a different map than is used for the normal 2d plotting.\n
 			cm.prism (Default) has proofen to be very usefull
 		
+		ds: pandas dataframe,optional
+			this allows to hand in an external ds, if this is done then the on disk saved fitcoeff are the new ones only and the 
+			function returns the new fitcoeff and the combined fitcoeff, self also has a new variable called self.combined_fitcoeff
+			the original file on dis and self.fitcoeff are NOT overwritten (are the old ones)
+			the self.ds is the NEW one (with the correction applied)
+			to reverse simply run Cor_Chirp()
+			to permanently apply change self.fitcoeff with self.combined_fitcoeff and rename the file with 'filename_second_chirp' to filename_chirp
 		'''
-		
-		temp_ds = Fix_Chirp(self.ds_ori, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
-							wave_nm_bin = 10, shown_window = shown_window, filename = self.filename, 
-							scattercut = self.scattercut, bordercut = self.bordercut, 
-							path = check_folder(path = path, current_path = self.path), max_points = max_points) 
+		if ds is None:
+			ds=self.ds_ori
+			original=True
+		else:
+			original=False
+		if original:
+			temp_ds = Fix_Chirp(ds, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
+								wave_nm_bin = 10, shown_window = shown_window, filename = self.filename, 
+								scattercut = self.scattercut, bordercut = self.bordercut, 
+								path = check_folder(path = path, current_path = self.path), max_points = max_points)
+		else:
+			temp_ds = Fix_Chirp(ds, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
+								wave_nm_bin = 10, shown_window = shown_window, filename = self.filename+'_second_chirp', 
+								scattercut = self.scattercut, bordercut = self.bordercut, 
+								path = check_folder(path = path, current_path = self.path), max_points = max_points)
 		if isinstance(temp_ds,pandas.DataFrame):
 			self.ds=temp_ds
 			self.chirp_file=self.filename.split('.')[0] + '_chirp.dat'
-			self.Cor_Chirp(path=path)
+			if original:#we have run from scratch
+				self.Cor_Chirp(path=path)
+			else:
+				print('you provided a separate ds file. returned are the new fitcoeff and the combined fitcoeff, ta also has a new variable called ta.combined_fitcoeff')
+				save_file=check_folder(path=path,current_path = self.path, filename=self.filename+'_second_chirp')
+				with open(save_file,'r') as f:
+					new_fitcoeff=f.readline()
+				new_fitcoeff=np.array(new_fitcoeff.split(','),dtype='float')
+				self.combined_fitcoeff=self.fitcoeff+new_fitcoeff
+				return new_fitcoeff,self.combined_fitcoeff
 		else:
 			raise Warning('Man Chirp interrupted')
 
@@ -6578,7 +6604,7 @@ class TA():	# object wrapper for the whole
 							else: #go above min
 								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=True)
 							
-							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None ):
+							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False ):
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
