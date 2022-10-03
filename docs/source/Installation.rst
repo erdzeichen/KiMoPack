@@ -28,7 +28,7 @@ Install and update using "conda" from the channel erdzeichen:
     $ conda install -c erdzeichen kimopack
 
 Workflow tools
------------
+----------------
 While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
 These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
 
