@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.13.0"
+version = "6.13.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -527,13 +527,13 @@ def Frame_golay(df, window=5, order=2,transpose=False):
 		DataFrame or Series with the interpolation applied
 	
 	'''
-	df=df.fillna(0)
+	#df=df.fillna(0)
 	if transpose:
 		df=df.T
 	if isinstance(df,pandas.DataFrame):
 		for col in df.columns:
 			try:
-				df[col]=savitzky_golay(df[col].values, window, order)
+				df.loc[:,col]=savitzky_golay(df.loc[:,col].values, window, order)
 			except:
 				print(col + 'was not smoothed')
 		if transpose:
