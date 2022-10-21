@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.13.2"
+version = "6.13.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -70,6 +70,7 @@ print('The current working folder is:\n %s' % os.getcwd())
 #np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)                  
 
 def download_notebooks():
+	'''function loads the workflow notebooks into the active folder'''
 	http = urllib3.PoolManager()
 	list_of_tools=['TA_Advanced_Fit.ipynb',
 					'TA_comparative_plotting_and_data_extraction.ipynb',
@@ -87,6 +88,7 @@ def download_notebooks():
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
 def download_all():
+	''' function loads workflow notebooks and example files and tutorials'''
 	http = urllib3.PoolManager()
 	list_of_tools=['TA_Advanced_Fit.ipynb',
 					'TA_comparative_plotting_and_data_extraction.ipynb',
