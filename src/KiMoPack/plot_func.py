@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-version = "6.13.5"
+version = "6.13.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
 	from os import walk
 	import sys
 	import pandas
-	import urllib3
-	import shutil
 	import numpy as np
 	from numpy import power, log10, shape
 	import numbers
@@ -57,7 +55,11 @@ if 1: #Hide imports
 		from pptx.util import Inches
 	except:
 		print('We need python-pptx to create a powerpoint file. Not essential. Either use pip or for anaconda: conda install -c conda-forge python-pptx')
-	
+	try:
+		import urllib3
+		import shutil
+	except:
+		print('We need the packages urllib3 and shutil to download files from the web') 
 	plt.ion()
 	pandas.options.mode.chained_assignment = None  # I use this a lot and think I can ignore it
 	FWHM = 2.35482
@@ -609,7 +611,7 @@ def colm(k,cmap = standard_map):
 			out = [ cmap(x) for x in np.linspace(mini, 1, len(k)+1) ]
 			out = out[:-1]
 			return out
-		else:# get me 13 colors
+		else:# get me 10 colors
 			out = [cmap(x) for x in np.linspace(0, 1, 10)]
 			ret = out[k]
 			return ret
@@ -2884,7 +2886,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	else:
 		ax1=ax
 	ds = sub_ds(ds = ds, times = rel_time, time_width_percent = time_width_percent, 
-				scattercut = scattercut, drop_scatter=True, bordercut = bordercut, 
+				scattercut = scattercut, drop_scatter=True, bordercut = bordercut, baseunit=baseunit,
 				ignore_time_region = ignore_time_region, wave_nm_bin = wave_nm_bin, equal_energy_bin = equal_energy_bin, from_fit = from_fit)
 	if 'smoothed' in lines_are:
 		if scattercut is None:

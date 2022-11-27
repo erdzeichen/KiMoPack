@@ -6,7 +6,7 @@
 	:target: http://www.gnu.org/licenses/gpl-3.0
 	:alt: License: GPL v3
 	
-.. image:: https://anaconda.org/erdzeichen/kimopack/badges/installer/conda.svg   
+.. image:: https://anaconda.org/erdzeichen/kimopack/badges/version.svg  
 	:target: https://conda.anaconda.org/erdzeichen
 	
 .. image:: https://badge.fury.io/py/KiMoPack.svg

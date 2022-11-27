@@ -60,6 +60,7 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['custom.css',]
+html_logo = 'KiMoPack_logo.png'
 html_theme_options = {
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
@@ -71,5 +72,6 @@ html_theme_options = {
     'sticky_navigation': True,
     'navigation_depth': 4,
     'includehidden': True,
-    'titles_only': False
+    'titles_only': False,
+    'logo_only': True,
 }
