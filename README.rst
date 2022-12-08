@@ -66,6 +66,7 @@ Install and update using "conda" from the channel erdzeichen:
 
     $ conda install -c erdzeichen kimopack
 
+Hint: there is a KiMoPack_noqt version
 	
 Best usage
 -----------
