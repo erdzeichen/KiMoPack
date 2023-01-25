@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.13.7"
+version = "6.13.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6291,6 +6291,8 @@ class TA():	# object wrapper for the whole
 				Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200)
 				The confidence level is to be understood that it defines the e.g. 0.65 * 100\% area that the
 				parameter with this set of values is within this bounds.
+				Normal behaviour for this is to re-optimise the parameter during the optimization. if the parameter 
+				par['error_param_fix'] is present, this will be suppressed.
 			
 			use_ampgo : bool, optional
 				(Default) is False
@@ -6404,6 +6406,7 @@ class TA():	# object wrapper for the whole
 			
 		The rest is mainly printed on screen.
 		
+		
 		Examples
 		--------------------
 		
@@ -6471,6 +6474,12 @@ class TA():	# object wrapper for the whole
 			par['background'].vary=False
 		except:
 			pass
+		try: # this is either freezing or enabling the re-optimization of all other parameter during confidence interval calculation
+			par['error_param_fix'].value=1
+			par['error_param_fix'].vary=False
+			vary_error_parameter=False
+		except:
+			vary_error_parameter=True
 		
 		pardf=par_to_pardf(par)
 		pardf.loc[np.logical_and(pardf.loc[:,'min'].values<0,pardf.is_rate),'min']=0
@@ -6602,11 +6611,11 @@ class TA():	# object wrapper for the whole
 							par_local=lmfit.Parameters()
 							if 'lower' in i:#go below min
 								if par_to_pardf(pardf_local).loc[fixed_par,'is_rate']:
-									par_local.add(fixed_par,value=pardf_local[fixed_par].value*0.95,min=0,max=pardf_local[fixed_par].value,vary=True)
+									par_local.add(fixed_par,value=pardf_local[fixed_par].value*0.95,min=0,max=pardf_local[fixed_par].value,vary=vary_error_parameter)
 								else:
-									par_local.add(fixed_par,value=pardf_local[fixed_par].value*0.95,max=pardf_local[fixed_par].value,vary=True)
+									par_local.add(fixed_par,value=pardf_local[fixed_par].value*0.95,max=pardf_local[fixed_par].value,vary=vary_error_parameter)
 							else: #go above min
-								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=True)
+								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=vary_error_parameter)
 							
 							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False ):
 								pardf_local[varied_par].value=par_local[varied_par].value
