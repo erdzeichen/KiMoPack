@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.13.8"
+version = "6.13.11"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -493,7 +493,7 @@ def rebin(ori_df,new_x):
 		new_df=pandas.DataFrame(dum,index=new_x)
 		for col in ori_df.columns:
 			new_df[col]=np.interp(new_x,ori_df.index.values.astype('float'),ori_df[col].values)
-		new_df=new_df.drop(['dummy'],1)
+		new_df=new_df.drop(['dummy'],axis=1)
 		return new_df
 	elif isinstance(ori_df,pandas.Series):
 		new_df=np.interp(new_x,ori_df.index.values.astype('float'),ori_df.values)
@@ -4000,6 +4000,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 			else:
 				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+				
 			if "ext_spectra_scale" in list(pardf.index.values):
 				ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 			c_temp=c.copy()
@@ -4095,8 +4096,15 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
 		if ext_spectra is None:
 			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
-		else:
-			ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+		else: 
+			ext_spectra.sort_index(inplace=True)
+			if 'ext_spectra_shift' in list(pardf.index.values):
+				ext_spectra.index=ext_spectra.index.values+pardf.loc['ext_spectra_shift','value']
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			else:
+				ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
+			if "ext_spectra_scale" in list(pardf.index.values):
+				ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 			c_temp=c.copy()
 			for col in ext_spectra.columns:
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
