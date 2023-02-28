@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.13.11"
+version = "6.14.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -669,7 +669,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		window must have the shape [start time, end time, start wavelength, end wavelength]
 		(Default: None) IF not given then only one window will be displayed
 		
-	list_to_dump : list, 'single' or 'range', optional
+	list_to_dump : list, 'single' or 'range', or None, optional
 		takes a list of scans to be excluded from the average, this list can be indexes (order) 
 		in which the scans come, or a list of names. if this is given as a list the option "range" 
 		is offered, which allows to add additional selection to the cut.\n 
@@ -686,6 +686,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 		useful for spike removal and definition of exclusion region (e.g. where the sample died) 
 		This makes only sense in conjunction with at least a defined window1 , 
 		if none is defined window1 = [0.5,10,300,1200] will be set automatically
+		if None then it is not filtered, but simply returned										 
 
 	data_type: str (optional)
 		data_type is the string that represents the intensity measurements. Usually this contains if absolute 
@@ -995,64 +996,73 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				list_to_dump = []
 				for filename in filenames_to_dump:
 					list_to_dump.append(list_of_scans.index(filename))
-		for i in range(30):#we make a maximum of 30 rounds
-			window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
-			series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
-			series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
-			if not window2 is None:
-				window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
-				series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
-				series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
-				fig,(ax,ax2) = plt.subplots(2,1,sharex = True,figsize = (16,12))
-				series1.plot(ax = ax,color = colm(1),use_index = False)
-				series2.plot(ax = ax2,color = colm(3),use_index = False)
-				if len(series1) >15:
-					gol=Frame_golay(series1,window=11,order=1)
-					gol.plot(ax=ax,use_index=False,color=colm(2))
-					ax.fill_between(x=range(len(series1)), y1=gol-series1.var(), y2=gol+series1.var(),color=colm(2),alpha=0.3)	
-					gol=Frame_golay(series2,window=11,order=1)
-					gol.plot(ax=ax2,use_index=False,color=colm(4))
-					ax2.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(4),alpha=0.3)	
-			else:
-				fig,ax=plt.subplots(1,1,sharex=True,figsize=(16,12))
-				series1.plot(ax=ax,color=colm(1),use_index=False)
-				if len(series1) >15:
-					gol=Frame_golay(series1,window=11,order=1)
-					gol.plot(ax=ax,use_index=False,color=colm(2))
-					ax.fill_between(x=range(len(series1)), y1=gol-2*series1.nanvar(), y2=gol+2*series1.nanvar(),color=colm(2),alpha=0.3)
-			if list_to_dump == 'single':
-				ax.set_title('click on the scans that should be dropped\n left click to chose, right click to delete last point, middle click finishes selection\n an empty middle click ends the process')
-				polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-				if len(polypts)<1:break
-				to_remove=[int(a) for a in np.array(polypts)[:,0]]
-				remove=pandas.Series(np.arange(len(series1)))+1	
-				remove[to_remove]=0
-				to_remove=list(remove[remove<1].index.values)
-				to_keep=list(remove[remove>1].index.values)
-			elif (list_to_dump == 'range') or (i>0):
-				ax.set_title('click on the first and last scan to be removed, repeat as long as necessary\n an empty middle click ends the process')
-				polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-				if len(polypts)<1:break
-				polypts=np.array(polypts)[:,0]
-				remove=pandas.Series(np.arange(len(series1)))+1
-				for i in range(int(len(polypts)/2)):
-					remove.loc[polypts[2*i]:polypts[2*i+1]]=0
-				to_remove=list(remove[remove<1].index.values)
-				to_keep=list(remove[remove>1].index.values)
-			elif i == 0:
-				to_keep=list(range(len(series1)))
-				to_keep.remove(list_to_dump)
-			else:
-				raise ValueError('Something is weired')
-			list_of_projects=list_of_projects[:,:,to_keep]
-			plt.close('all')
+			for i in range(30):#we make a maximum of 30 rounds
+				window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
+				series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
+				series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
+				if not window2 is None:
+					window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
+					series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
+					series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
+					fig,(ax,ax2) = plt.subplots(2,1,sharex = True,figsize = (16,12))
+					series1.plot(ax = ax,color = colm(1),use_index = False)
+					series2.plot(ax = ax2,color = colm(3),use_index = False)
+					if len(series1) >15:
+						gol=Frame_golay(series1,window=11,order=1)
+						gol.plot(ax=ax,use_index=False,color=colm(2))
+						ax.fill_between(x=range(len(series1)), y1=gol-series1.var(), y2=gol+series1.var(),color=colm(2),alpha=0.3)	
+						gol=Frame_golay(series2,window=11,order=1)
+						gol.plot(ax=ax2,use_index=False,color=colm(4))
+						ax2.fill_between(x=range(len(series1)), y1=gol-2*series1.var(), y2=gol+2*series1.var(),color=colm(4),alpha=0.3)	
+				else:
+					fig,ax=plt.subplots(1,1,sharex=True,figsize=(16,12))
+					series1.plot(ax=ax,color=colm(1),use_index=False)
+					if len(series1) >15:
+						gol=Frame_golay(series1,window=11,order=1)
+						gol.plot(ax=ax,use_index=False,color=colm(2))
+						#try:
+						ax.fill_between(x=range(len(series1)), y1=gol-2*np.nanvar(series1.values), y2=gol+2*np.nanvar(series1.values),color=colm(2),alpha=0.3)
+						#except:
+						#	pass
+				if list_to_dump == 'single':
+					ax.set_title('click on the scans that should be dropped\n left click to chose, right click to delete last point, middle click finishes selection\n an empty middle click ends the process')
+					polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
+					if len(polypts)<1:break
+					to_remove=[int(a) for a in np.array(polypts)[:,0]]
+					remove=pandas.Series(np.arange(len(series1)))+1	
+					remove[to_remove]=0
+					to_remove=list(remove[remove<1].index.values)
+					to_keep=list(remove[remove>1].index.values)
+				elif (list_to_dump == 'range') or (i>0):
+					ax.set_title('click on the first and last scan to be removed, repeat as long as necessary\n an empty middle click ends the process')
+					polypts=np.asarray(plt.ginput(n=int(len(series1)/2),timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
+					if len(polypts)<1:break
+					polypts=np.array(polypts)[:,0]
+					remove=pandas.Series(np.arange(len(series1)))+1
+					for i in range(int(len(polypts)/2)):
+						remove.loc[polypts[2*i]:polypts[2*i+1]]=0
+					to_remove=list(remove[remove<1].index.values)
+					to_keep=list(remove[remove>1].index.values)
+				elif i == 0:
+					to_keep=list(range(len(series1)))
+					to_keep.remove(list_to_dump)
+				else:
+					raise ValueError('Something is weired')
+				list_of_projects=list_of_projects[:,:,to_keep]
+				plt.close('all')
 	plt.close('all')
+	if 0:
+		try:
+			df=pandas.DataFrame(np.any(np.isnan(dataset),axis=1),index=ds.index)
+			plot2d(df,levels = 2,use_colorbar = False,intensity_range=[0,1],title='rejected are red')
+		except Exception as e:
+			print('plotting of filtered went wrong\n Error message was: \n')
+			print(e)
 	try:
-		df=pandas.DataFrame(np.any(np.isnan(dataset),axis=1),index=ds.index)
-		plot2d(df,levels = 2,use_colorbar = False,intensity_range=[0,1],title='rejected are red')
+		ds=pandas.DataFrame(np.nanmean(list_of_projects,axis=2),index=ds.index,columns=ds.columns)
 	except:
-		print('plotting of filtered went wrong')
-	ds=pandas.DataFrame(np.nanmean(list_of_projects,axis=2),index=ds.index,columns=ds.columns)
+		print('nanmean failed, assume single wavelength')
+		ds=pandas.DataFrame(np.mean(list_of_projects),index=ds.index,columns=ds.columns)																	  
 	if not save_name is None:
 		path = str(check_folder(path=path,filename=save_name))
 		ds.to_csv(path,sep='\t')
@@ -4855,6 +4865,7 @@ class TA():	# object wrapper for the whole
 			self.Cor_Chirp(fitcoeff=self.fitcoeff)
 		else:#we read in raw data from sia File
 			if conversion_function is not None:
+				filename=check_folder(path=self.path,filename=filename)										   
 				try:
 					ret=conversion_function(filename = filename, external_time = external_time, external_wave = external_wave)
 				except:
@@ -4931,7 +4942,6 @@ class TA():	# object wrapper for the whole
 					ds.index=ds.index.values/divide_times_by
 				self.ds_ori=ds
 				self.ds=ds
-				self.__make_standard_parameter()
 			else:
 				self.__read_ascii_data(sep = sep, decimal = decimal, index_is_energy = index_is_energy, 
 									transpose = transpose, sort_indexes = sort_indexes, 
@@ -4940,6 +4950,8 @@ class TA():	# object wrapper for the whole
 									use_same_name = use_same_name, data_type = data_type, units = units,  
 									baseunit = baseunit)
 			self.__make_standard_parameter()
+			if len(self.ds.columns.values)<2:
+				self.rel_wave=[self.ds.columns.values[0]]									
 
 
 	def __read_ascii_data(self, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
@@ -5256,7 +5268,10 @@ class TA():	# object wrapper for the whole
 		self.log_fit = False if not hasattr(self, 'log_fit') else self.log_fit
 		self.ignore_time_region = None if not hasattr(self, 'ignore_time_region') else self.ignore_time_region
 		self.error_matrix_amplification = 10 if not hasattr(self, 'error_matrix_amplificatio') else self.error_matrix_amplification
-		self.rel_wave = np.arange(300,1000,100) if not hasattr(self, 'rel_wave') else self.rel_wave
+		try:
+			self.rel_wave = self.rel_wave
+		except:
+			self.rel_wave = np.arange(300,1000,100) if not hasattr(self, 'rel_wave') else self.rel_wave
 		self.rel_time = [0.2,0.3,0.5,1,3,10,30,100,300,1000,3000,9000] if not hasattr(self, 'rel_time') else self.rel_time
 		self.time_width_percent = 0 if not hasattr(self, 'time_width_percent') else self.time_width_percent
 		self.baseunit = 'ps' if not hasattr(self, 'baseunit') else self.baseunit
