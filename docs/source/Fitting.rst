@@ -453,12 +453,33 @@ this is not very difficult and can be done with this code snippet. We assume "pr
 Error Estimation
 ----------------
 
-Estimating errors correctly is based on estimating the validity of the full set of optimized parameter for this we use the F-statistics of the single or combined datasets to define a cutoff value. At the cutoff value the combined Chi^2 is so much larger than the minimum Chi^2 that this can not be explained statistically anymore. Practically this corresponds to making the "Null hypothesis" that all parameters are zero and if the difference of Chi^2 is statistically significant, the coefficients improve the fit
+Estimating errors correctly is based on estimating the validity of the full set of optimized parameter for this we use the 
+F-statistics of the single or combined datasets to define a cutoff value. At the cutoff value the combined Chi^2 is so much 
+larger than the minimum Chi^2 that this can not be explained statistically anymore. Practically this corresponds to making 
+the "Null hypothesis" that all parameters are zero and if the difference of Chi^2 is statistically significant, the coefficients 
+improve the fit
+
 the f-statistics compares the number of 
+
 "fitted parameter"=number of species*number of spectral points + number of kinetic parameter
 "free points"=number of datasets*number of spectral points*number of time points - fitted parameter
+
 within the target quality, meaning, what fraction do my variances need to have, so that I'm 100% * target_quality sure that they are different from zero
-This is done in the function :meth:`plot_func.s2_vs_smin2`. The confidence level then defines the cutoff value. For each (varied) parameter a separate optimization is performed, that attempts to find the upper and lower bound at which the total error of the re-optimized globally fitted results reaches the by F-statistics defined confidence bound. Careful, this option might run for very long time. Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200) The confidence level is to be understood that it defines the e.g. 0.65 * 100% area that the parameter with this set of values is within this bounds.
+This is done in the function :meth:`plot_func.s2_vs_smin2`. In this function we use the scipy function 
+
+"f_stat"=scipy.stats.f.ppf(q = target_quality, dfn = fitted_parameter, dfd = Free_points) to calculate a scaling factor:
+
+"cut_off_factor"=1+(fitted_parameter*f_stat/Free_points)
+
+The minimum chi^2 multiplied with this scaling factor gives the targeted cutoff at the desired confidence level:
+
+"target_chi_2"=chi_2*cut_off_factor
+
+For each (varied) parameter a separate optimization is performed, that attempts to find the upper and lower bound at which the total 
+error of the re-optimized globally fitted results reaches the by F-statistics defined confidence bound. 
+Careful, this option might run for very long time. Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200) 
+The confidence level is to be understood that it defines the e.g. 0.65 * 100% area that the parameter with this set of values is within this bounds.
+
 
 Iterative Fitting
 ------------------
