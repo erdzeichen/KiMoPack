@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "6.14.2"
+version = "7.0.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -42,12 +42,15 @@ if 1: #Hide imports
 	import h5py
 	try:
 		import PyQt5
+		print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 	except:
 		try:
 			import PyQt4
+			print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 		except:
 			try:
 				import qt
+				print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 			except:
 				print('Qt was not found')
 	try:	
@@ -5320,7 +5323,7 @@ class TA():	# object wrapper for the whole
 		self.ds=self.ds_ori.copy()
 
 	
-	def Filter_data(self, ds=None, cut_bad_times = True, replace_bad_values = None, value = 20, uppervalue = None, lowervalue = None, upper_matrix = None, lower_matrix = None):
+	def Filter_data(self, ds=None, cut_bad_times = False, replace_bad_values = 0, value = 20, uppervalue = None, lowervalue = None, upper_matrix = None, lower_matrix = None):
 		'''Filteres the data by applying hard replacements. if both replace_bad_values and 
 		cut_bad_times are false or None, the times above "value" are replaced by zero
 		
@@ -5349,7 +5352,7 @@ class TA():	# object wrapper for the whole
 			values above the treshold are replaced with this value. Ignored of None (Default)
 			
 		cut_bad_times = bool, optional
-			True (Default) removes the whole time where this is true
+			True (Default=False) removes the whole time where this is true
 		
 		upper_matrix : Pandas DataFrame, optional
 			all values above this treshold will be put N/A or replace by the value in replace_bad_values
