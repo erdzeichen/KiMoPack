@@ -4296,7 +4296,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			try:#let's see if the project has an parameter object
 				pardf_ori=par_to_pardf(ta.par)
 			except:
-				pardf_ori=pardf
+				pardf_ori=ta.pardf.copy()
 			if unique_parameter is not None:
 				for key in unique_parameter:
 					pardf.loc[key,'value']=pardf_ori.loc[key,'value']
@@ -6768,7 +6768,10 @@ class TA():	# object wrapper for the whole
 				for entry in self.ignore_time_region:
 					Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(entry[0],self.baseunit,entry[1],self.baseunit)
 		Result_string+='The minimum error is:{:.8e}\n'.format(re['error'])
-		Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
+		try:
+			Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
+		except:
+			pass
 		if same_DAS:
 			Result_string+='The minimum global error is:{:.8e}\n'.format(re['error_total'])
 			Result_string+='The minimum global R2-value is:{:.8e}\n'.format(re['r2_total'])
