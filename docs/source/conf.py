@@ -23,7 +23,7 @@ copyright = '2022, Jens Uhlig'
 author = 'Jens Uhlig'
 
 # The full version, including alpha/beta/rc tags
-release = '7.0.0'
+release = '7.0.2'
 
 # -- General configuration ---------------------------------------------------
 

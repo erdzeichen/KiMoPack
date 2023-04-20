@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.1"
+version = "7.0.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6720,7 +6720,10 @@ class TA():	# object wrapper for the whole
 		if same_DAS:
 			for i,re_local in enumerate(re_listen):
 				for name in ['fit_output','fit_results_rates','fit_results_times']:
-					re_listen[i][name]=re[name]
+					try:
+						re_listen[i][name]=re[name]
+					except:
+						print(name + 'not found')
 		
 		###############################################
 		##convert energy back to wavelength#############
