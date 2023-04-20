@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.0"
+version = "7.0.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4340,7 +4340,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		A_con=pandas.concat(ds_stack)
 		c_con=pandas.concat(c_stack)
 		re=fill_int(ds=A_con,c=c_con, return_shapes = dump_shapes, final =final)
-		
+		if final:
+			re['c']=c
 		if dump_paras:
 			try:
 				pardf.loc['error','value']=re['error']
@@ -4396,8 +4397,6 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['A']=re['A']+C
 						re['AC']=re['AC']+C
 			else:
-				re['DAC'].columns=c.columns.values
-				re['c'].columns=c.columns.values
 				if not ext_spectra is None:
 					for col in ext_spectra.columns:
 						re['DAC'][col]=ext_spectra.loc[:,col].values
@@ -4406,6 +4405,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						re['A']=re['A']+C
 						re['AC']=re['AC']+C
+				else:
+					re['DAC'].columns=c.columns.values
+					re['c'].columns=c.columns.values
 			return_listen=[]
 			for i,ta in enumerate(multi_project):
 				re_local={}
