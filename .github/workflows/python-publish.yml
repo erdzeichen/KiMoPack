@@ -9,8 +9,9 @@
 name: Upload Python Package to PiPy
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+        - '*'
 
 jobs:
   build:
