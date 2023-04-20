@@ -130,3 +130,10 @@ dmypy.json
 create_and_upload_pypi.bat
 conda/create_build_Anaconda.bat
 conda/Untitled.ipynb
+
+pip_upload_token.txt
+conda/
+alt/
+video use/
+
+_version.py

@@ -1,6 +1,51 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel"
-]
+    "wheel",
+	"setuptools_scm>=6.2"]
+
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "_version.py"
+
+[project]
+name = "KiMoPack"
+authors = [{name = "Jens Uhlig", email = "jens.uhlig@chemphys.lu.se"}]
+description = "A comprehensive package for the analysis of kinetic data."
+readme = "README.rst"
+requires-python = ">=3.8"
+dynamic= ["version"]
+
+classifiers =[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Framework :: Jupyter"]
+dependencies =[
+	"pandas>1.2",
+	"h5py>=3.1",
+	"matplotlib>=3.3",
+	"numpy>=1.19",
+	"lmfit>=1.0",
+	"scipy>=1.5",
+	"pathlib",
+	"urllib3"]
+
+[project.urls]
+"Bug Tracker"="https://github.com/erdzeichen/KiMoPack/issues"
+"Repository"="https://github.com/erdzeichen/KiMoPack"
+"Homepage"="https://www.chemphys.lu.se/research/projects/kimopack/"
+"Documentation"="https://kimopack.readthedocs.io/"
+
+[tool.setuptools]
+package-dir = {""="src"}
+packages = ["KiMoPack"]
+
+
+
