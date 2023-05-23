@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.12"
+version = "7.0.13"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -16,9 +16,9 @@ if 1: #Hide imports
 	import matplotlib.image as mpimg
 	from matplotlib.gridspec import GridSpec
 	from matplotlib.ticker import FuncFormatter
-	from matplotlib.colors import BoundaryNorm
+	from matplotlib.colors import BoundaryNorm,Normalize,SymLogNorm
 	from matplotlib.patches import Rectangle
-	from matplotlib.ticker import MaxNLocator
+	from matplotlib.ticker import MaxNLocator,LinearLocator
 	from matplotlib.offsetbox import AnchoredText	
 	from matplotlib.ticker import AutoMinorLocator
 	from matplotlib.patches import Rectangle
@@ -1516,26 +1516,34 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 					   
 			if log_scale:print('I highly recommend to make a symmetric intensity distribution for logarithmic scale, the colorbar might look strange otherwise')
 	if log_scale: 
-		bounds0 = list(-1*np.logspace(np.log10(-intensity_range[0]), np.log10(-intensity_range[0]/(levels/2)), levels))
-		bounds1 = np.logspace(np.log10(intensity_range[1]/(levels/2)),np.log10(intensity_range[1]),	 levels)
-		bounds0.append(0)
-		for a in bounds1:
-			bounds0.append(a)
-		norm = colors.BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
-		mid_color=colm(k=range(levels),cmap=cmap)[int((levels-levels%2)/2)]
-		#norm=colors.SymLogNorm(levels,linthresh=1e-5, linscale=1e-5,vmin=intensity_range[0], vmax=intensity_range[1])
+		if 0:# old manual symlog
+			bounds0 = list(-1*np.logspace(np.log10(-intensity_range[0]), np.log10(-intensity_range[0]/(levels/2)), levels))
+			bounds1 = np.logspace(np.log10(intensity_range[1]/(levels/2)),np.log10(intensity_range[1]),	 levels)
+			bounds0.append(0)
+			for a in bounds1:
+				bounds0.append(a)
+			norm = BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
+			mid_color=colm(k=range(levels),cmap=cmap)
+		else:
+			norm=SymLogNorm(abs(max(intensity_range)-min(intensity_range))/100, linscale=1.0, vmin=min(intensity_range), vmax=max(intensity_range), clip=True, base=10)
+			mid_color=cmap(0.5)
 	else:
-		nbins=levels
-		levels = MaxNLocator(nbins=levels).tick_values(intensity_range[0], intensity_range[1])
-		norm = BoundaryNorm(levels,clip=True,ncolors=cmap.N)
-		mid_color_index=find_nearest_index(0,levels)
-		mid_color=colm(k=range(nbins),cmap=cmap)
-		mid_color=mid_color[mid_color_index]
+		if 0:
+			nbins=levels
+			levels = LinearLocator(numticks=levels).tick_values(vmin=min(intensity_range), vmax=max(intensity_range))
+			norm = BoundaryNorm(levels,clip=True,ncolors=cmap.N)
+			mid_color_index=find_nearest_index(0,levels)
+			mid_color=colm(k=range(nbins),cmap=cmap)
+			mid_color=mid_color[mid_color_index]
+		else:
+			norm = Normalize(vmin=min(intensity_range),vmax=max(intensity_range))
+			mid_color=cmap(0.5)
 	#print(ds.head())
 	x = ds.columns.values.astype('float')
 	y = ds.index.values.astype('float')
 	X, Y = np.meshgrid(x, y)
 	img=ax.pcolormesh(X,Y,ds.values,norm=norm,cmap=cmap,shading=shading)
+	#img=ax.pcolormesh(X,Y,ds.values,cmap=cmap,shading=shading)
 	if ignore_time_region is None:
 		pass
 	elif isinstance(ignore_time_region[0], numbers.Number):
@@ -1595,7 +1603,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	if use_colorbar:
 		mid=(intensity_range[1]+intensity_range[0])/2
 		if log_scale:
-			values=[intensity_range[0],mid-abs(intensity_range[0]-mid)/10,mid,mid+abs(intensity_range[1]-mid)/10,intensity_range[1]]
+			values=[intensity_range[0],mid-abs(intensity_range[0]-mid)/10,mid-abs(intensity_range[0]-mid)/100,mid,mid+abs(intensity_range[1]-mid)/100,mid+abs(intensity_range[1]-mid)/10,intensity_range[1]]
 		else:
 			values=[intensity_range[0],intensity_range[0]+abs(intensity_range[0]-mid)/2,mid,intensity_range[1]-abs(intensity_range[1]-mid)/2,intensity_range[1]]
 																				  
@@ -3482,6 +3490,9 @@ def Species_Spectra(ta=None,conc=None,das=None):
 		if (conc is None) or (das is None):
 			print('If the ta object is None, then we need both the conc and the das')
 			return False			
+		else:
+			time=conc.index.values
+			WL=das.index.values
 	results={}
 	for i in range(len(conc.columns)):
 		A,B=np.meshgrid(conc.iloc[:,i].values,das.iloc[:,i].values)
@@ -3772,6 +3783,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 			* 'resolution' = instrument response function, mandatory
 			* 'background',optional = if this keyword is present a flat constant background is created (=1 over the whole time)
 			* 'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
+			* 'explicit_GS',optional = if this keyword is present the pulse function (= ground state) is added explicitly to the data
 			* 'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
 
 	Examples
@@ -3800,9 +3812,15 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 			n_decays+=1
 		else:
 			infinite=False
+
 		decays=param
 		c=np.zeros((len(times),n_decays),dtype='float')
 		g=gauss(times,sigma=resolution/FWHM,mu=t0)
+		if 'explicit_GS' in list(pardf.index.values):
+			GS=True
+			gs=np.zeros((len(times),1),dtype='float')
+		else:
+			GS=False
 		for i in range(1,len(times)):
 			dc=np.zeros((n_decays,1),dtype='float')
 			dt=(times[i]-times[i-1])/(sub_steps)
@@ -3823,8 +3841,12 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 						else:
 							dc[l]=g[i]*dt-decays[l]*dt*c_temp[l]
 				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])
+					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])					
 			c[i,:] =c_temp
+			if GS and not infinite:
+				gs[i]=-c[i,:].sum()
+			elif GS:
+				gs[i]=-c[i,:-1].sum()
 		c=pandas.DataFrame(c,index=times)
 		c.index.name='time'
 		if infinite:
@@ -3835,6 +3857,8 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 		else:
 			if 'background' in list(pardf.index.values):
 				c['background']=1
+		if GS:
+			c['GS']=gs
 	return c
 
 
