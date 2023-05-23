@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.5"
+version = "7.0.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4786,13 +4786,14 @@ class TA():	# object wrapper for the whole
 		'''
 		
 		
-		
-		self.path=check_folder(path=path,current_path=os.getcwd())
 		self.filename=filename
+		self.path=check_folder(path=path,current_path=os.getcwd())
 		if ds is not None:
 			if filename is None:
 				filename = 'external'
-				self.filename='external'
+				self.filename=filename
+			else:
+				filename = 'external'
 		if filename == 'gui':
 			root_window = tkinter.Tk()			
 			root_window.withdraw()
@@ -4828,7 +4829,6 @@ class TA():	# object wrapper for the whole
 				self.filename=filename
 				with open('recent.dat','w') as f:
 					f.write(complete_path)
-
 		if filename == 'external':#use a provided dataframe (ds) instead
 			if data_type is not None:
 				self.data_type = data_type
@@ -5313,7 +5313,7 @@ class TA():	# object wrapper for the whole
 			if os.path.isfile(check_folder(path=self.path,filename=self.filename.split('.')[0] + '_chirp.dat')):
 				self.chirp_file=self.filename.split('.')[0] + '_chirp.dat'
 			else:
-				self.chirp_file=False
+				self.chirp_file=None
 		try:#self.figure_path
 			self.figure_path
 		except:
@@ -5702,20 +5702,24 @@ class TA():	# object wrapper for the whole
 				print('fitcoeff is currently:' + fitcoeff)
 		else:
 			try:
-				self.ds=Fix_Chirp(self.ds_ori,cmap=cmap,save_file=check_folder(path=path,filename=chirp_file),scattercut=self.scattercut,bordercut=self.bordercut,intensity_range=self.intensity_range,wave_nm_bin=10,shown_window=shown_window,fitcoeff=fitcoeff,max_points=max_points)
+				if chirp_file is None:
+					save_file=None
+				else:
+					save_file=check_folder(path = path, filename = chirp_file)
+				self.ds = Fix_Chirp(self.ds_ori, cmap = cmap, save_file = save_file,
+									filename = self.filename, path = self.path,
+									scattercut = self.scattercut, bordercut = self.bordercut, 
+									intensity_range = self.intensity_range, wave_nm_bin = 10, shown_window = shown_window, 
+									fitcoeff = fitcoeff, max_points = max_points)
+				if save_file is None:
+					if self.filename is None:
+						chirp_file='chirp.dat'
+					else:
+						f=self.filename.split('.')[0]
+						chirp_file=f+'_chirp' + '.dat'
+				self.chirp_file=chirp_file
 				with open(check_folder(path=path,filename=chirp_file),'r') as f:
 					self.fitcoeff=[float(a) for a in f.readline().split(',')]
-			except:
-				print(check_folder(path=self.path,filename=self.filename.split('.')[0] + '_chirp.dat'))
-				if os.path.isfile(check_folder(path=self.path,filename=self.filename.split('.')[0] + '_chirp.dat')):
-					print('somehting is wrong, try deleting old chirp file')
-					raise
-				else:
-					print('No old chirp file')
-					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points)
-					chirp_file=self.chirp_file
-					with open(check_folder(path=path,filename=chirp_file),'r') as f:
-						self.fitcoeff=[float(a) for a in f.readline().split(',')]
 		self.ds.columns.name=self.ds_ori.columns.name
 		self.ds.index.name=self.ds_ori.index.name
 
