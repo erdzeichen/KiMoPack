@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.8"
+version = "7.0.10"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5720,6 +5720,17 @@ class TA():	# object wrapper for the whole
 				self.chirp_file=chirp_file
 				with open(check_folder(path=path,filename=chirp_file),'r') as f:
 					self.fitcoeff=[float(a) for a in f.readline().split(',')]
+			except:
+				print(check_folder(path=self.path,filename=self.filename.split('.')[0] + '_chirp.dat'))
+				if os.path.isfile(check_folder(path=self.path,filename=self.filename.split('.')[0] + '_chirp.dat')):
+					print('somehting is wrong, try deleting old chirp file')
+					raise
+				else:
+					print('No old chirp file')
+					self.Man_Chirp(path=path,cmap=cmap,shown_window=shown_window,max_points=max_points)
+					chirp_file=self.chirp_file
+					with open(check_folder(path=path,filename=chirp_file),'r') as f:
+						self.fitcoeff=[float(a) for a in f.readline().split(',')]		
 		self.ds.columns.name=self.ds_ori.columns.name
 		self.ds.index.name=self.ds_ori.index.name
 
