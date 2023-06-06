@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.13"
+version = "7.0.14"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4013,7 +4013,11 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
 		given in "C(t)" this function will only work for external models. The name of the spectral column 
 		must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
-		be interpolated to the spectral points of the model ds before the substraction. 
+		be interpolated to the spectral points of the model ds before the substraction.
+		a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
+		"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
+		"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
+		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
 
 	'''
 	time_label=ds.index.name
@@ -4299,7 +4303,12 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
 		given in "C(t)" this function will only work for external models. The name of the spectral column 
 		must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
-		be interpolated to the spectral points of the model ds before the substraction. 
+		be interpolated to the spectral points of the model ds before the substraction.
+		a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
+		"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
+		"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
+		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+
 
 	'''									   
 	pardf_changing=par_to_pardf(paras)
@@ -6443,7 +6452,12 @@ class TA():	# object wrapper for the whole
 				(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
 				given in "C(t)" this function will only work for external models. The name of the spectral column 
 				must be same as the name of the column used. If not the spectrum will be ignored. The spectrum will 
-				be interpolated to the spectral points of the model ds before the substraction. 
+				be interpolated to the spectral points of the model ds before the substraction.
+				a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
+				"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
+				"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
+				"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+
 
 		Returns
 		------------------
@@ -6541,6 +6555,12 @@ class TA():	# object wrapper for the whole
 			par['background'].vary=False
 		except:
 			pass
+		try:
+			par['explicit_GS'].value=1
+			par['explicit_GS'].vary=False
+		except:
+			pass
+			
 		try: # this is either freezing or enabling the re-optimization of all other parameter during confidence interval calculation
 			par['error_param_fix'].value=1
 			par['error_param_fix'].vary=False
@@ -7518,9 +7538,10 @@ class TA():	# object wrapper for the whole
 							raise		
 					else:
 						read=f[key][()]
+
 						if isinstance(read,bytes):
 							read=f[key].asstr()[()] 
-						elif isinstance(read,type('hello')):
+						if isinstance(read,str):
 							if (read=='None') or (read=='none'):
 								read=None
 						elif key in ['bordercut','timelimits','fitcoeff','scattercut']:
