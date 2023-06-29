@@ -117,6 +117,14 @@ measured matrix. So if the measured data is in picoseconds, the rates
 are in :math:`ps^-1`. See section :ref:`Data shaping settings that affect the fits` 
 for more information.
 
+A number of extra parameter can be used to change some of the models. to use them add 
+an empty parameter with this name to the fit:
+
+**'background'** if this keyword is present a flat constant background is created (=1 over the whole time)
+**'infinite'** if this keyword is present a new non decaying component is formed with the last decay time.
+**'explicit_GS'** if this keyword is present thenthe ground state (including the bleach) will be added as a explicit component
+
+
 **ta.mod="exponential"** In this model the data is represented by
 independent exponential decays. For each component the a symmetric
 response function is formed (error function) using the the parameter

@@ -3988,8 +3988,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		'resolution' = instrument response function, mandatory
 		'background',optional = if this keyword is present a flat constant background is created (=1 over the whole time)
 		'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
+		'explicit_GS' = if this keyword is present thenthe ground state (including the bleach) will be added as a explicit component
 		'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
-		
 	final : bool, optional
 		this switch decides if just the squared error is returned (for False) (Default) or if the full
 		matrixes are returned, including the r2 are returned.
@@ -4237,6 +4237,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		'resolution' = instrument response function, mandatory
 		'background',optional = if this keyword is present a flat constant background is created (=1 over the whole time)
 		'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
+		'explicit_GS' = if this keyword is present thenthe ground state (including the bleach) will be added as a explicit component
+
 		'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
 		
 		As external model a function is handed to this parameter, this function 
