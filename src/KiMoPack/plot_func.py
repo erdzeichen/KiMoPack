@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.0.14"
+version = "7.1.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4049,7 +4049,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
-				c_temp.drop(col,axis=1,inplace=True)
+				if not "ext_spectra_guide" in list(pardf.index.values):
+					c_temp.drop(col,axis=1,inplace=True)
 			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
 			labels=list(re['DAC'].columns.values)
@@ -4063,15 +4064,17 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			else:
 				if 'infinite' in list(pardf.index.values):
 					labels[-1]='Non Decaying'
-		 
 				else:changed=False
 			if changed:
 				re['DAC'].columns=labels
 				re['c'].columns=labels
 			if not ext_spectra is None:
 				for col in ext_spectra.columns:
-					re['DAC'][col]=ext_spectra.loc[:,col].values
-					re['c'][col]=c.loc[:,col].values
+					if "ext_spectra_guide" in list(pardf.index.values):
+						re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+					else:
+						re['DAC'][col]=ext_spectra.loc[:,col].values
+						re['c'][col]=c.loc[:,col].values
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					re['A']=re['A']+C
@@ -4130,14 +4133,21 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			if not mod in ['paral','exponential','consecutive']:
 				print(re['error'])
 			if dump_shapes:
+				if not ext_spectra is None:
+					for col in ext_spectra.columns:
+						if "ext_spectra_guide" in list(pardf.index.values):
+							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+						else:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
 				re['c'].to_csv(path_or_buf=filename + '_c')
 				re['DAC'].to_csv(path_or_buf=filename + '_DAC')
 			return re['error']
-	else:
+	else:# Nope we used an external model (sorry for the duplication)
 		c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
 		if ext_spectra is None:
 			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
-		else: 
+		else:
 			ext_spectra.sort_index(inplace=True)
 			if 'ext_spectra_shift' in list(pardf.index.values):
 				ext_spectra.index=ext_spectra.index.values+pardf.loc['ext_spectra_shift','value']
@@ -4151,7 +4161,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
-				c_temp.drop(col,axis=1,inplace=True)
+				if not "ext_spectra_guide" in list(pardf.index.values):
+					c_temp.drop(col,axis=1,inplace=True)
 			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
 			if len(re.keys())<3:#
@@ -4164,8 +4175,11 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				re['DAC'].columns=c_temp.columns.values
 				re['c'].columns=c_temp.columns.values
 				for col in ext_spectra.columns:
-					re['DAC'][col]=ext_spectra.loc[:,col].values
-					re['c'][col]=c.loc[:,col].values
+					if "ext_spectra_guide" in list(pardf.index.values):
+						re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+					else:
+						re['DAC'][col]=ext_spectra.loc[:,col].values
+						re['c'][col]=c.loc[:,col].values
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					re['A']=re['A']+C
@@ -4199,6 +4213,13 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				pardf.to_csv('dump_paras.par')
 			print(re['error'])
 			if dump_shapes:
+				if not ext_spectra is None:
+					for col in ext_spectra.columns:
+						if "ext_spectra_guide" in list(pardf.index.values):
+							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+						else:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
 				re['c'].to_csv(path_or_buf=filename + '_c')
 				re['DAC'].to_csv(path_or_buf=filename + '_DAC')
 			return re['error']
@@ -4357,7 +4378,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					ds=ds-C
-					c_temp.drop(col,axis=1,inplace=True)
+					if not "ext_spectra_guide" in list(pardf.index.values):
+						c_temp.drop(col,axis=1,inplace=True)
 			if not weights is None:
 				if len(weights)==len(multi_project)-1:
 					weights=list(weights)
@@ -4425,8 +4447,11 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					re['c'].columns=labels
 				if not ext_spectra is None:
 					for col in ext_spectra.columns:
-						re['DAC'][col]=ext_spectra.loc[:,col].values
-						re['c'][col]=c.loc[:,col].values
+						if "ext_spectra_guide" in list(pardf.index.values):
+							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+						else:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						re['A']=re['A']+C
@@ -4434,8 +4459,11 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			else:
 				if not ext_spectra is None:
 					for col in ext_spectra.columns:
-						re['DAC'][col]=ext_spectra.loc[:,col].values
-						re['c'][col]=c.loc[:,col].values
+						if "ext_spectra_guide" in list(pardf.index.values):
+							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+						else:
+							re['DAC'][col]=ext_spectra.loc[:,col].values
+							re['c'][col]=c.loc[:,col].values
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						re['A']=re['A']+C
@@ -4522,8 +4550,11 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 							re['c'].columns=labels
 						if not ext_spectra is None:
 							for col in ext_spectra.columns:
-								re['DAC'][col]=ext_spectra.loc[:,col].values
-								re['c'][col]=c.loc[:,col].values
+								if "ext_spectra_guide" in list(pardf.index.values):
+									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+								else:
+									re['DAC'][col]=ext_spectra.loc[:,col].values
+									re['c'][col]=c.loc[:,col].values
 								A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 								C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 								re['A']=re['A']+C
@@ -4533,6 +4564,13 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 				else:
 					if dump_shapes:
+						if not ext_spectra is None:
+							for col in ext_spectra.columns:
+								if "ext_spectra_guide" in list(pardf.index.values):
+									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+								else:
+									re['DAC'][col]=ext_spectra.loc[:,col].values
+									re['c'][col]=c.loc[:,col].values
 						re['c'].to_csv(path_or_buf=ta.filename + '_c')
 						re['DAC'].to_csv(path_or_buf=ta.filename + '_DAC')
 					error_listen.append(re['error'])
@@ -4547,7 +4585,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						ds=ds-C
-						c_temp.drop(col,axis=1,inplace=True)
+						if not "ext_spectra_guide" in list(pardf.index.values):
+							c_temp.drop(col,axis=1,inplace=True)
 					re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 				if final:
 					if i==0:
@@ -4555,8 +4594,11 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['c'].columns=c.columns.values
 						if not ext_spectra is None:
 							for col in ext_spectra.columns:
-								re['DAC'][col]=ext_spectra.loc[:,col].values
-								re['c'][col]=c.loc[:,col].values
+								if "ext_spectra_guide" in list(pardf.index.values):
+									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+								else:
+									re['DAC'][col]=ext_spectra.loc[:,col].values
+									re['c'][col]=c.loc[:,col].values
 								A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 								C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 								re['A']=re['A']+C
@@ -4566,6 +4608,13 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 				else:
 					if dump_shapes:
+						if not ext_spectra is None:
+							for col in ext_spectra.columns:
+								if "ext_spectra_guide" in list(pardf.index.values):
+									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
+								else:
+									re['DAC'][col]=ext_spectra.loc[:,col].values
+									re['c'][col]=c.loc[:,col].values
 						re['c'].to_csv(path_or_buf=filename + '_c')
 						re['DAC'].to_csv(path_or_buf=filename + '_DAC')
 					error_listen.append(re['error'])

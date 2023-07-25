@@ -272,6 +272,12 @@ the begin of the fit function, here all "rates" are identified that have
 the name "ki" with i =0-99 and then their lower limit is set to zero
 (unless they have already a lower limit >0).
 
+KiMoPack also uses parameters without values to give specific instructions 
+to the model building and fitting routine. Currently implemented are names
+like "background" that adds a new background state to be fitted for all 
+timepoints "infinite" that lets the final state be different from the original 
+and "explicit_GS", which adds the ground state bleach as an explicit component.
+
 The parameter are handled as a lmfit Parameter object. Inside the
 fitting function this object is converted into a pandas Dataframe that
 is handed to the function generating the time dependent
