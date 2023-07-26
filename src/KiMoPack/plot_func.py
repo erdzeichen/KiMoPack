@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.1"
+version = "7.1.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5041,6 +5041,28 @@ class TA():	# object wrapper for the whole
 			self.__make_standard_parameter()
 			if len(self.ds.columns.values)<2:
 				self.rel_wave=[self.ds.columns.values[0]]									
+	def __call__(self):
+		print('''
+		Hello, this is a transient absorption project, 
+		this project contains all the parameter and
+		the main functions you can use to analyze data.
+		-----------------------------------------------
+		The main functions are:
+		Plotting: ta.Plot_RAW(), ta.Plot_Interactive(), ta.Plot_fit_output()
+		Comparing: ta.Compare_at_time(), ta.Compare_at_wave(), ta.Compare_DAC()
+		Saving: ta.Save_Powerpoint(), ta.Save_project(), ta.Save_data(), ta.Save_Plots()
+		Fitting: ta.Fit_Global()
+		Shaping: ta.Background(), ta.Cor_Chirp(), ta.Man_Chirp()
+		Parameter: call "ta.__dict__.keys()" to see all implemented shaping parameter
+		-------------------------------------------------------------------------------
+		you can get help and inspiration how to use each function by typing the function 
+		name followed by a question mark like "ta.Fit_Global?"
+		or by going to the documentation webpage:
+		https://kimopack.readthedocs.io/en/latest
+		--------------------------------------------------------------------------------
+		In general I recommend to start by using one of the workflow notebooks that you can 
+		download by calling pf.download_notebooks() or by going to 
+		https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools''')
 
 
 	def __read_ascii_data(self, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
