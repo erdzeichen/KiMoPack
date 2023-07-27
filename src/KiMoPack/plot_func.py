@@ -7324,7 +7324,7 @@ class TA():	# object wrapper for the whole
 		if save_Fit:
 			try:
 				self.save_figures_to_folder=True
-				#self.Plot_fit_output(savetype = 'png', scale_type = scale_type, title = title, patches = patches, cmap = cmap , path = path)
+				self.Plot_fit_output(savetype = 'png', scale_type = scale_type, title = title, patches = patches, cmap = cmap , path = path)
 				plt.close('all')
 			except:
 				save_Fit = False
@@ -7365,9 +7365,7 @@ class TA():	# object wrapper for the whole
 					if same_DAS:
 						Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
 			
-				Result_string=Result_string.replace('lower_limit','low_lim')
-				Result_string=Result_string.replace('upper_limit','up_lim')
-				Result_string.replace('===','=')
+			
 			except Exception as e:
 				print(e)
 		if ('pdf' in savetype) or ('png' in savetype) or ('svg' in savetype):
@@ -7387,9 +7385,9 @@ class TA():	# object wrapper for the whole
 						print("saving in" + entry +"failed")
 			if save_Fit:
 				G = GridSpec(4, 8)
-				fig1=plt.figure(figsize=(8,10))
-				ax1=fig1.add_subplot(G[0,:5])
-				ax2=fig1.add_subplot(G[1,:5])
+				fig1=plt.figure(figsize=(10,7.5))
+				ax1=fig1.add_subplot(G[0,:6])
+				ax2=fig1.add_subplot(G[1,:6])
 				ax3=fig1.add_subplot(G[2,:6])
 				ax4=fig1.add_subplot(G[3,:6])
 				ax5=fig1.add_subplot(G[0:2,5:])
@@ -7399,7 +7397,7 @@ class TA():	# object wrapper for the whole
 				ax3.imshow(mpimg.imread(str(fit_names[3])))
 				ax4.imshow(mpimg.imread(str(fit_names[4])))
 				ax5.imshow(mpimg.imread(str(fit_names[0])))
-				ax6.text(0,0,Result_string.replace('===','='),font='Haettenschweiler',fontsize=6,fontweight='normal')
+				ax6.text(0,0,Result_string,fontsize=7,fontweight='normal')
 				ax1.axis('off');ax2.axis('off');ax3.axis('off');ax4.axis('off');ax5.axis('off');ax6.axis('off')
 				for entry in savetype:
 					if entry == "pptx": continue
@@ -7429,15 +7427,15 @@ class TA():	# object wrapper for the whole
 				try:
 					slide2 = prs.slides.add_slide(blank_slide_layout)
 					left = top = Inches(0.1)
-					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(7.3), top=top, height=Inches(3.4))#Matrix
+					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(7.3), top=top, height=Inches(2.9))#Matrix
 					pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
 					pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
 					pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
 					pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
-					text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(2.3), width=Inches(4.5), height=Inches(4.5))
+					text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(1.6), width=Inches(4.5), height=Inches(5.4))
 					text1.text = '{}'.format(Result_string.replace('===','='))
 					try:
-						text1.text_frame.fit_text(font_family='Haettenschweiler', max_size=7, bold=False, italic=False)
+						text1.text_frame.fit_text(font_family='Onyx', max_size=8, bold=False, italic=False)
 					except:
 						text1.text_frame.fit_text(font_family='Arial', max_size=5.0, bold=False, italic=False)
 
