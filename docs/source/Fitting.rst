@@ -274,9 +274,9 @@ the name "ki" with i =0-99 and then their lower limit is set to zero
 
 KiMoPack also uses parameters without values to give specific instructions 
 to the model building and fitting routine. Currently implemented are names
-like "background" that adds a new background state to be fitted for all 
-timepoints "infinite" that lets the final state be different from the original 
-and "explicit_GS", which adds the ground state bleach as an explicit component.
+like **background** that adds a new background state to be fitted for all 
+timepoints **infinite** that lets the final state be different from the original 
+and **explicit_GS**, which adds the ground state bleach as an explicit component.
 
 The parameter are handled as a lmfit Parameter object. Inside the
 fitting function this object is converted into a pandas Dataframe that

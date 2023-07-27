@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.2"
+version = "7.1.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6786,9 +6786,9 @@ class TA():	# object wrapper for the whole
 										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,
 																										'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
 									if len(pardf[pardf.vary].index)>3:
-										results_sub = mini_sub.minimize('Nelder',options={'maxiter':1e5,'adaptive':True})
+										results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01,'adaptive':True})
 									else:
-										results_sub = mini_sub.minimize('Nelder',options={'maxiter':1e5})
+										results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01})
 									local_error=(results_sub.residual[0]-target_s2)**2
 									return local_error
 								else:
@@ -6914,19 +6914,24 @@ class TA():	# object wrapper for the whole
 			Result_string+='The minimum global R2-value is:{:.8e}\n'.format(re['r2_total'])
 		if confidence_level is not None:
 			Result_string+='\nIn Rates with confidence interval to level of %.1f\n\n'%((confidence_level)*100)
-			Result_string+=pardf.to_string(columns=['value','lower_limit','upper_limit','init_value','vary','min','max','expr'])
+			Result_string+=pardf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 			Result_string+='\n\nThe rates converted to times with unit %s with confidence interval to level of %.1f\n\n'%(self.baseunit,(confidence_level)*100)
-			Result_string+=timedf.to_string(columns=['value','lower_limit','upper_limit','init_value','vary','min','max','expr'])
+			Result_string+=timedf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 		else:
 			Result_string+='\nIn Rates\n\n'
-			Result_string+=pardf.to_string(columns=['value','init_value','vary','min','max','expr'])
+			Result_string+=pardf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 			Result_string+='\n\nThe rates converted to times with unit %s\n\n'%self.baseunit
-			Result_string+=timedf.to_string(columns=['value','init_value','vary','min','max','expr'])
+			Result_string+=timedf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 		if same_DAS:
 			Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
 			
 		print(Result_string)
-		
+		if same_DAS:
+			for i,re_local in enumerate(re_listen):
+				re_listen[i]['Result_string']=Result_string
+		else:
+			re['Result_string']=Result_string
+			
 		if dump_paras:
 			with open("Fit_results_print.par", "w") as text_file:
 				text_file.write(Result_string)
@@ -7319,33 +7324,50 @@ class TA():	# object wrapper for the whole
 		if save_Fit:
 			try:
 				self.save_figures_to_folder=True
-				self.Plot_fit_output(savetype = 'png', scale_type = scale_type, title = title, patches = patches, cmap = cmap , path = path)
+				#self.Plot_fit_output(savetype = 'png', scale_type = scale_type, title = title, patches = patches, cmap = cmap , path = path)
 				plt.close('all')
 			except:
 				save_Fit = False
 				print('run into problems with adding the fit results. Have you fitted something?')
 			try:
-				Result_string='\nFit Results:\n'
-				if isinstance(self.mod,type('hello')):
-					Result_string+='Model Used: %s\n\n'%self.mod
-				else:
-					Result_string+='Model Used: External function\n\n'
-				if self.ignore_time_region is not None:
-					Result_string+='the time between %.3f %s and %.3f %s \n was excluded from the optimization\n'%(self.ignore_time_region[0],self.baseunit,self.ignore_time_region[1],self.baseunit)	
-				Result_string+='The minimum error is:{:.8e}\n'.format(self.re['error'])
-				Result_string+='The minimum R2-value is:{:.8e}\n'.format(self.re['r2'])
-				if 'confidence' in self.re:
-					Result_string+='\nIn Rates with confidence interval to level of %s\n'%self.re['confidence']['target-level']
-					Result_string+=self.re['fit_results_rates'].to_string(columns=['value','lower_limit','upper_limit','init_value','vary','min','max','expr'])
-					Result_string+='\n\nThe rates converted to times with unit %s\n with confidence interval to level of %s\n'%(self.baseunit,self.re['confidence']['target-level'])
-					Result_string+=self.re['fit_results_times'].to_string(columns=['value','lower_limit','upper_limit','init_value','vary','min','max','expr'])
-				else:
-					Result_string+='\nIn Rates\n'
-					Result_string+=self.re['fit_results_rates'].to_string(columns=['value','init_value','vary','min','max','expr'])
-					Result_string+='\n\nThe rates converted to times with unit %s\n'%self.baseunit
-					Result_string+=self.re['fit_results_times'].to_string(columns=['value','init_value','vary','min','max','expr'])
-			except:
-				pass
+				if 'Result_string' in self.re:
+					Result_string=self.re['Result_string']
+				else:# to allow the use of old saved results. Will be deprecated in a few versions
+					Result_string='\nFit Results:\n'
+					if isinstance(mod,type('hello')):
+						Result_string+='Model Used: %s\n\n'%mod
+					else:
+						Result_string+='Model Used: External function\n\n'					
+					if self.ignore_time_region is not None:
+						try:
+							Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(self.ignore_time_region[0],self.baseunit,self.ignore_time_region[1],self.baseunit)
+						except:#we got a list
+							for entry in self.ignore_time_region:
+								Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(entry[0],self.baseunit,entry[1],self.baseunit)
+					Result_string+='The minimum error is:{:.8e}\n'.format(re['error'])
+					try:
+						Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
+					except:
+						pass
+					if same_DAS:
+						Result_string+='The minimum global error is:{:.8e}\n'.format(re['error_total'])
+						Result_string+='The minimum global R2-value is:{:.8e}\n'.format(re['r2_total'])
+					if confidence_level is not None:
+						Result_string+='\nIn Rates with confidence interval to level of %.1f\n\n'%((confidence_level)*100)
+						Result_string+=pardf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
+						Result_string+='\n\nThe rates converted to times with unit %s with confidence interval to level of %.1f\n\n'%(self.baseunit,(confidence_level)*100)
+						Result_string+=timedf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
+					else:
+						Result_string+='\nIn Rates\n\n'
+						Result_string+=pardf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
+						Result_string+='\n\nThe rates converted to times with unit %s\n\n'%self.baseunit
+						Result_string+=timedf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
+					if same_DAS:
+						Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
+			
+			
+			except Exception as e:
+				print(e)
 		if ('pdf' in savetype) or ('png' in savetype) or ('svg' in savetype):
 			if save_RAW:
 				fig,ax=plt.subplots(nrows=2,ncols=2,figsize=(10,7.5))
@@ -7384,13 +7406,15 @@ class TA():	# object wrapper for the whole
 						fig1.savefig(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '_Fit-summary.%s'%entry),dpi=600)
 					except:
 						print("saving in" + entry +"failed")
+		
 		if ('pptx' in savetype) or ('ppt' in savetype):
 			left=Inches(0.2)
 			top=Inches(0.2)
 			prs = Presentation()
 			blank_slide_layout = prs.slide_layouts[6]
-			slide = prs.slides.add_slide(blank_slide_layout)
+			
 			if save_RAW:
+				slide = prs.slides.add_slide(blank_slide_layout)
 				left = top = Inches(0.5)
 				pic = slide.shapes.add_picture(str(raw_names[0].resolve()), left=left+Inches(4.5), top=top, width=Inches(4.5))
 				pic = slide.shapes.add_picture(str(raw_names[1].resolve()), left=left, top=top, width=Inches(4.5))
@@ -7403,17 +7427,21 @@ class TA():	# object wrapper for the whole
 				try:
 					slide2 = prs.slides.add_slide(blank_slide_layout)
 					left = top = Inches(0.1)
-					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(5.5), top=top, height=Inches(3.5))#Matrix
+					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(7.3), top=top, height=Inches(2.9))#Matrix
 					pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
 					pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
 					pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
 					pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
-					
-					text1 = slide2.shapes.add_textbox(left=left+Inches(5.5), top=top+Inches(3.5), width=Inches(4.5), height=Inches(4))
-					text1.text = Result_string
-					text1.text_frame.fit_text(font_family=u'Arial', max_size=8, bold=False, italic=False)
-				except:
+					text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(1.6), width=Inches(4.5), height=Inches(5.4))
+					text1.text = '{}'.format(Result_string.replace('===','='))
+					try:
+						text1.text_frame.fit_text(font_family='Onyx', max_size=8, bold=False, italic=False)
+					except:
+						text1.text_frame.fit_text(font_family='Arial', max_size=5.0, bold=False, italic=False)
+
+				except Exception as e:
 					print('exited when saving the fit plots')
+					print(e)
 				
 
 			plt.close('all')
@@ -7421,7 +7449,15 @@ class TA():	# object wrapper for the whole
 			prs.save(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '.pptx'))
 			print('All data was saved to %s'%check_folder(path=path,current_path=self.path))
 		
-	
+	def Print_Results(self):
+		if 're' in self.__dict__:
+			try:
+				print('{}'.format(self.re['Result_string'].decode('utf-8')))
+			except:
+				try:
+					print('{}'.format(self.re['Result_string']))
+				except:
+					print('printing of results failed.')
 
 
 	def Save_project(self, filename=None,path=None):
@@ -7480,18 +7516,30 @@ class TA():	# object wrapper for the whole
 					re_switch = True
 					for key2 in self.__dict__['re']:
 						if key2 == 'fit_output':continue
-						data = self.__dict__['re'][key2]
+						
 						if key2 == 'error':
+							data = self.__dict__['re'][key2]
 							try:
 								f.create_dataset(name='re_error', data=data)
 							except:
 								print('saving of ' + key2 + ' failed' )
-						elif isinstance(data, pandas.DataFrame):
+						elif key2 == 'confidence':
+							for key3 in self.__dict__['re']['confidence'].keys():
+								try:
+									f.create_dataset(name='re_confidence_%s_upper'%key3, data=self.__dict__['re'][key2][key3]['upper'])
+									f.create_dataset(name='re_confidence_%s_lower'%key3, data=self.__dict__['re'][key2][key3]['lower'])
+								except:
+									try:
+										f.create_dataset(name='re_confidence_%s'%key3, data=self.__dict__['re'][key2][key3])
+									except:
+										print('saving of' + key3 + 'in confidence failed')
+						elif isinstance(self.__dict__['re'][key2], pandas.DataFrame):
 							pass
 						else:
 							try:
-								f.create_dataset(name='re_' + key2, data=data)
+								f.create_dataset(name='re_' + key2, data=self.__dict__['re'][key2])
 							except:
+								
 								print('saving of ' + key2 + ' failed' )
 				elif key == 'cmap':
 					pass
@@ -7587,7 +7635,21 @@ class TA():	# object wrapper for the whole
 					if "re_" in key[:3]:
 						if not 're' in self.__dict__.keys():
 							self.__dict__['re']={}
-						self.__dict__['re'][key[3:]]=f[key][()]
+						if 're_confidence_' in key:#_upper, _lower
+							if not 'confidence' in self.__dict__['re']:
+								self.__dict__['re']['confidence']={}
+							if '_upper' in key[-6:]:
+								if not key[14:-6] in self.__dict__['re']['confidence']:
+									self.__dict__['re']['confidence'][key[14:-6]]={}
+								self.__dict__['re']['confidence'][key[14:-6]]['upper']=f[key][()]
+							elif '_lower' in key[-6:]:
+								if not key[14:-6] in self.__dict__['re']['confidence']:
+									self.__dict__['re']['confidence'][key[14:-6]]={}
+								self.__dict__['re']['confidence'][key[14:-6]]['lower']=f[key][()]
+							else:
+								self.__dict__['re']['confidence'][key[14:]]=f[key][()]
+						else:
+							self.__dict__['re'][key[3:]]=f[key][()]
 					elif "back" in key[:4]:
 						rea=f[key][()]
 						self.__dict__['background_par']=[None,-1,False]
@@ -7716,6 +7778,11 @@ class TA():	# object wrapper for the whole
 				self.figure_path=None
 		except:
 			pass
+		try:
+			self.re['Result_string']=self.re['Result_string'].decode('utf-8')
+		except:
+			pass
+		
 
 	def Copy(self):
 		'''returns a deep copy of the object.
