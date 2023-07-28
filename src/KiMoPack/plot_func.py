@@ -2162,7 +2162,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		DAC_copy=DAC.copy()
 		normed=(DAC/DAC.abs().max())
 		for i,col in enumerate(DAC_copy):
-			DAC_copy.iloc[:,i]=DAC_copy.iloc[:,i].values*re['c'].max().iloc[i]
+			DAC_copy.iloc[:,i]=DAC_copy.iloc[:,i].values*re['c'].abs().max().iloc[i]
 		if scattercut is None:	
 			DAC.plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap))
 			normed.plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap))
