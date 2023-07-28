@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.9"
+version = "7.1.10"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7102,7 +7102,7 @@ class TA():	# object wrapper for the whole
 			else:
 				title=filename
 		if not hasattr(plotting,"__iter__"):plotting=[plotting]
-		plot_fit_output(self.re, self.ds, cmap = self.cmap, plotting = plotting, title = title, 
+		plot_fit_output(self.re, self.ds, cmap = cmap, plotting = plotting, title = title, 
 						path = path, f = filename, intensity_range = self.intensity_range, 
 						log_scale = self.log_scale, baseunit = self.baseunit, timelimits = self.timelimits, 
 						scattercut = self.scattercut, bordercut = self.bordercut, 
