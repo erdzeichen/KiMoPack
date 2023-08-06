@@ -4,10 +4,10 @@ import numpy as np
 from numpy import power,log10,shape
 FWHM=2.35482
 
-def gauss(t,sigma=0.1,mu=0):
+def gauss(t,sigma=0.1,mu=0,scale=1):
 	y=np.exp(-0.5*((t-mu)**2)/sigma**2)
 	y/=sigma*np.sqrt(2*np.pi)
-	return y
+	return y*scale
 
 def manual_consecutive(times,pardf):								
 	'''we have 1MLCT,3MLCT,3MC state with 
@@ -349,11 +349,11 @@ def P32(times,pardf):
 		
 def P33(times,pardf):								
 	'''P33'''
-	c=np.zeros((len(times),4),dtype='float') 						#creation of matrix that will hold the concentrations
+	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
 	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -361,12 +361,46 @@ def P33(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]-pardf['k3']*dt*c_temp[1]
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k3']*dt*c_temp[1]+pardf['k2']*dt*c_temp[2]
+			dc[4]=+g[i]*dt-pardf['k3']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			for b in range(c.shape[1]):
 				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
-	c.columns=['A','B','C','Inf']									#this is optional but very useful. The species get names that represent some particular states
+	c.columns=['A','B','C','Inf','GS']									#this is optional but very useful. The species get names that represent some particular states
+	c.loc[:,'GS']=c.loc[:,'GS'].values*(-1)
+	if not 'explicit_GS' in list(pardf.index.values):
+		c.drop('GS',axis=1,inplace=True)
+	if 'background' in list(pardf.index.values):					#optional but usefull, allow the keyword "background" to be used to fit the background in the global analysis
+		c['background']=1											#background always there (flat)
+	if 'infinite' in list(pardf.index.values):
+		return c													
+	else:
+		c.drop('Inf',axis=1,inplace=True)
+		return c
+
+def P33mod(times,pardf):								
+	'''P33'''
+	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
+	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
+	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	for i in range(1,len(times)):									#iterate over all timepoints
+		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
+		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
+		for j in range(int(sub_steps)):
+			dc[0]=-pardf['k0']*dt*c_temp[0]+g[i]*dt					
+			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]-pardf['k3']*dt*c_temp[1]
+			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
+			dc[3]=pardf['k2']*dt*c_temp[2]**1.2
+			dc[4]=g[i]*dt-pardf['k3']*dt*c_temp[1]
+			for b in range(c.shape[1]):
+				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
+	c=pandas.DataFrame(c,index=times)								#write back the right indexes
+	c.index.name='time'												#and give it a name
+	c.columns=['A','B','C','Inf','GS']	#this is optional but very useful. The species get names that represent some particular states
+	c.GS=c.GS*-1
 	if 'background' in list(pardf.index.values):					#optional but usefull, allow the keyword "background" to be used to fit the background in the global analysis
 		c['background']=1											#background always there (flat)
 	if 'infinite' in list(pardf.index.values):

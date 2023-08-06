@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.10"
+version = "7.1.11"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7963,9 +7963,13 @@ class TA():	# object wrapper for the whole
 			objects=len(rel_time)*(1+len(other))
 			colors=colm(cmap=cmap,k=range(objects))
 			_=plot_time(re['A'], ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
-						baseunit = self.baseunit, lines_are = 'data', cmap = colors[:len(rel_time)], title = '', linewidth = linewidth, subplot= True, scattercut = self.scattercut)
+						baseunit = self.baseunit, lines_are = 'data', cmap = colors[:len(rel_time)], 
+						title = '', linewidth = linewidth, subplot= True, scattercut = self.scattercut,
+						plot_second_as_energy = plot_second_as_energy)
 			_=plot_time(re['AC'], ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
-						baseunit = self.baseunit, lines_are = 'fitted', cmap = colors[:len(rel_time)], title = '', subplot = False, linewidth = linewidth, scattercut = self.scattercut)
+						baseunit = self.baseunit, lines_are = 'fitted', cmap = colors[:len(rel_time)], 
+						title = '', subplot = False, linewidth = linewidth, scattercut = self.scattercut,
+						plot_second_as_energy = plot_second_as_energy)
 			handles, labels=ax.get_legend_handles_labels()
 			lab=['%g %s'%(ent,self.baseunit) + '_' + str(self.filename) for ent in rel_time]
 			han=handles[:len(rel_time)*2]
@@ -7983,8 +7987,10 @@ class TA():	# object wrapper for the whole
 						try:
 							scaling=(rel_scale/ref_scale)
 							ax=plot_time(re['AC']/scaling, cmap = colors, ax = ax, rel_time = rel_time, 
-										time_width_percent = time_width_percent, title = '', lines_are = 'fitted', 
-										subplot = True, color_offset = len(rel_time)*(i+1), linewidth = linewidth, scattercut = o.scattercut)
+										time_width_percent = time_width_percent, title = '', 
+										lines_are = 'fitted', subplot = True, 
+										color_offset = len(rel_time)*(i+1), linewidth = linewidth, 
+										scattercut = o.scattercut,plot_second_as_energy = plot_second_as_energy)
 							handles, labels=ax.get_legend_handles_labels()
 							for ent in rel_time:
 								lab.append('%g %s fit'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -7995,7 +8001,8 @@ class TA():	# object wrapper for the whole
 								ax=plot_time(re['A']/scaling, cmap = self.cmap, ax = ax, rel_time = rel_time, 
 											time_width_percent = time_width_percent, title = o.filename, 
 											baseunit = self.baseunit, lines_are = 'data', subplot = True, 
-											color_offset = len(rel_time)*(i+1), linewidth = linewidth, scattercut = o.scattercut)
+											color_offset = len(rel_time)*(i+1), linewidth = linewidth, 
+											scattercut = o.scattercut,plot_second_as_energy = plot_second_as_energy)
 								handles, labels=ax.get_legend_handles_labels()
 								for ent in rel_time:
 									lab.append('%g %s'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -8008,8 +8015,10 @@ class TA():	# object wrapper for the whole
 					else: norm_failed=True	
 					if norm_failed:
 						ax=plot_time(re['AC'], cmap = colors, ax = ax, rel_time = rel_time, 
-										time_width_percent = time_width_percent, title = '', lines_are = 'fitted', 
-										subplot = True, color_offset = len(rel_time)*(i+1), linewidth = linewidth, scattercut = o.scattercut)
+										time_width_percent = time_width_percent, title = '', 
+										lines_are = 'fitted', subplot = True, 
+										color_offset = len(rel_time)*(i+1), linewidth = linewidth, 
+										scattercut = o.scattercut, plot_second_as_energy = plot_second_as_energy)
 						handles, labels=ax.get_legend_handles_labels()
 						for ent in rel_time:
 							lab.append('%g %s fit'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -8020,7 +8029,9 @@ class TA():	# object wrapper for the whole
 							ax=plot_time(re['A'], cmap = self.cmap, ax = ax, rel_time = rel_time, 
 										time_width_percent = time_width_percent, title = o.filename, 
 										baseunit = self.baseunit, lines_are = 'data', subplot = True, 
-										color_offset = len(rel_time)*(i+1), linewidth = linewidth, scattercut = o.scattercut)
+										color_offset = len(rel_time)*(i+1), 
+										linewidth = linewidth, scattercut = o.scattercut, 
+										plot_second_as_energy = plot_second_as_energy)
 							handles, labels=ax.get_legend_handles_labels()
 							for ent in rel_time:
 								lab.append('%g %s'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -8039,11 +8050,16 @@ class TA():	# object wrapper for the whole
 			colors=colm(cmap=cmap,k=range(objects))
 			fig,ax=plt.subplots(figsize=(10,6),dpi=100)
 			_=plot_time(self.ds, ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
-						title = title, lines_are = 'data', scattercut = self.scattercut, bordercut = self.bordercut, 
-						wave_nm_bin = self.wave_nm_bin, cmap = colors, subplot = True, linewidth = linewidth, baseunit=self.baseunit)
+						title = title, lines_are = 'data', scattercut = self.scattercut, 
+						bordercut = self.bordercut, wave_nm_bin = self.wave_nm_bin, cmap = colors, 
+						subplot = True, linewidth = linewidth, baseunit=self.baseunit, 
+						plot_second_as_energy = plot_second_as_energy)
 			if 1:
 				_=plot_time(self.ds, ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
-							title = title, lines_are = 'smoothed', scattercut = self.scattercut, bordercut = self.bordercut,wave_nm_bin = self.wave_nm_bin, cmap = colors, subplot = False, linewidth = linewidth, baseunit = self.baseunit)
+							title = title, lines_are = 'smoothed', scattercut = self.scattercut, 
+							bordercut = self.bordercut,wave_nm_bin = self.wave_nm_bin, cmap = colors, 
+							subplot = False, linewidth = linewidth, baseunit = self.baseunit,
+							plot_second_as_energy = plot_second_as_energy)
 			handles, labels=ax.get_legend_handles_labels()
 			lab=['%g %s'%(ent,self.baseunit) + '_' + str(self.filename) for ent in rel_time]
 			han=handles[:len(rel_time)]
@@ -8054,9 +8070,12 @@ class TA():	# object wrapper for the whole
 						try:
 							scaling = (rel_scale/ref_scale)
 							ax=plot_time(o.ds/scaling, cmap = colors, ax = ax, rel_time = rel_time, 
-										time_width_percent = time_width_percent, title = title, lines_are = 'data', 
-										scattercut = o.scattercut, bordercut = o.bordercut, linewidth = linewidth, 
-										wave_nm_bin = o.wave_nm_bin, subplot = True, color_offset = len(rel_time)*(i+1))
+										time_width_percent = time_width_percent, title = title, 
+										lines_are = 'data', scattercut = o.scattercut, 
+										bordercut = o.bordercut, linewidth = linewidth, 
+										wave_nm_bin = o.wave_nm_bin, subplot = True, 
+										color_offset = len(rel_time)*(i+1),
+										plot_second_as_energy = plot_second_as_energy)
 							handles, labels=ax.get_legend_handles_labels()
 							for ent in rel_time:
 								lab.append('%g %s'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -8065,9 +8084,12 @@ class TA():	# object wrapper for the whole
 
 							if data_and_fit:
 								ax=plot_time(o.ds/scaling, cmap = colors, ax = ax, rel_time = rel_time, 
-										time_width_percent = time_width_percent, title = title, lines_are = 'smoothed', 
-										scattercut = o.scattercut, bordercut = o.bordercut, linewidth = linewidth, 
-										wave_nm_bin = o.wave_nm_bin, subplot = True, color_offset = len(rel_time)*(i+1))
+										time_width_percent = time_width_percent, title = title, 
+										lines_are = 'smoothed', scattercut = o.scattercut, 
+										bordercut = o.bordercut, linewidth = linewidth, 
+										wave_nm_bin = o.wave_nm_bin, subplot = True, 
+										color_offset = len(rel_time)*(i+1),
+										plot_second_as_energy = plot_second_as_energy)
 							scaling_failed=False
 						except:
 							print('scaling Failed!')
@@ -8076,9 +8098,12 @@ class TA():	# object wrapper for the whole
 						scaling_failed=True
 					if scaling_failed:
 						ax=plot_time(o.ds, cmap = colors, ax = ax, rel_time = rel_time, 
-									time_width_percent = time_width_percent, title = title, lines_are = 'data', 
-									scattercut = o.scattercut, bordercut = o.bordercut, linewidth = linewidth, 
-									wave_nm_bin = o.wave_nm_bin, subplot = True, color_offset = len(rel_time)*(i+1))
+									time_width_percent = time_width_percent, title = title, 
+									lines_are = 'data', scattercut = o.scattercut, 
+									bordercut = o.bordercut, linewidth = linewidth, 
+									wave_nm_bin = o.wave_nm_bin, subplot = True, 
+									color_offset = len(rel_time)*(i+1),
+									plot_second_as_energy = plot_second_as_energy)
 						handles, labels=ax.get_legend_handles_labels()
 						for ent in rel_time:
 							lab.append('%g %s'%(ent,o.baseunit) + '_' + str(o.filename))
@@ -8086,9 +8111,12 @@ class TA():	# object wrapper for the whole
 							han.append(a)
 						if data_and_fit:
 							ax=plot_time(o.ds, cmap = colors, ax = ax, rel_time = rel_time, 
-									time_width_percent = time_width_percent, title = title, lines_are = 'smoothed', 
-									scattercut = o.scattercut, bordercut = o.bordercut, linewidth = linewidth, 
-									wave_nm_bin = o.wave_nm_bin, subplot = True, color_offset = len(rel_time)*(i+1))
+									time_width_percent = time_width_percent, title = title, 
+									lines_are = 'smoothed', scattercut = o.scattercut, 
+									bordercut = o.bordercut, linewidth = linewidth, 
+									wave_nm_bin = o.wave_nm_bin, subplot = True, 
+									color_offset = len(rel_time)*(i+1),
+									plot_second_as_energy = plot_second_as_energy)
 									
 			if not scaling_failed:
 				ax.set_title('compare measured and smoothed data at given times\n scaled to t=%g ps : %g ps , wl= %g nm: %g nm'%(norm_window[0],norm_window[1],norm_window[2],norm_window[3]))
