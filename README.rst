@@ -80,7 +80,7 @@ If you are working with a very old installation it is usually a good idea to als
 
 .. code-block:: text
 
-	$ conda create --name KiMoPack python=3.9 ipython matplotlib numpy pandas jupyterlab scipy
+	$ conda create --name KiMoPack python=3.9 ipython jupyterlab
 	$ conda activate KiMoPack
 
 into this environment KiMoPack can then be installed. We also recommend (optional) to install python-pptx to create power point slides and nbopen (which allows to automatically open a local server) into the environments. If one of the installs complains (error) that the user does not has sufficient rights, this installation can be done attaching "--user" to the following commands
@@ -101,6 +101,13 @@ Finally, while still in the environement, activate nbopen. There are different c
 	python3 -m nbopen.install_xdg
 	Clone the repository and run ./osx-install.sh
 
+Error: pytables:
+	in some versions I have been running in a problem with pytables when loading saved data. 
+	Using the conda forge version solved this problem for me 
+
+.. code-block:: text
+	
+	conda install -c conda-forge pytables  
 
 Best usage
 -----------
