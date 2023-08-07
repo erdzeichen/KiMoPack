@@ -8,5 +8,3 @@ lmfit>=1.0
 python-pptx>=0.6.18
 scipy>=1.5
 pathlib
-
-
