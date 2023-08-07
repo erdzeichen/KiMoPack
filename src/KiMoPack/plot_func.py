@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.14"
+version = "7.1.15"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7716,10 +7716,12 @@ class TA():	# object wrapper for the whole
 					self.__dict__[key]=pandas.read_hdf(saved_project,key=key,mode='r',data_columns=True)
 				else:
 					print("missing key:" + key)
-			except:
+			except Exception as e:
 				if key == 'par' and old_switch:pass # we have read it before already and the error is ok
 		 
-				else:print("error in key:" + key)
+				else:
+					print("error in key:" + key)
+					print(e)
 		
 		try:
 			self.__dict__['re']['fit_results_rates']=self.__dict__['par_fit']

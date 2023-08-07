@@ -33,13 +33,15 @@ Under Linuxs: open a console
 
 	$ conda create --name KiMoPack
 	$ conda activate KiMoPack
+	$ conda install pytables
 	
 If you are working with a very old installation it is usually a good idea to also install an updated python 
 
 .. code-block:: text
 
-	$ conda create --name KiMoPack python=3.9 ipython matplotlib numpy pandas jupyterlab scipy
+	$ conda create --name KiMoPack python=3.10 ipython jupyterlab jupyter
 	$ conda activate KiMoPack
+	$ conda install pytables
 
 into this environment KiMoPack can then be installed. We also recommend (optional) to install 
 python-pptx to create power point slides and nbopen (which allows to automatically open a local server) 
