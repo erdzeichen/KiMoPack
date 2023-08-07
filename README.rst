@@ -80,7 +80,7 @@ If you are working with a very old installation it is usually a good idea to als
 
 .. code-block:: text
 
-	$ conda create --name KiMoPack python=3.9 ipython jupyterlab
+	$ conda create -n KiMoPack python=3.10 jupyterlab ipython
 	$ conda activate KiMoPack
 
 into this environment KiMoPack can then be installed. We also recommend (optional) to install python-pptx to create power point slides and nbopen (which allows to automatically open a local server) into the environments. If one of the installs complains (error) that the user does not has sufficient rights, this installation can be done attaching "--user" to the following commands
