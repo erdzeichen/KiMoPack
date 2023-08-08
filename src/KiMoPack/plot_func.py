@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.15"
+version = "7.1.18"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -542,7 +542,8 @@ def Frame_golay(df, window=5, order=2,transpose=False):
 			try:
 				df.loc[:,col]=savitzky_golay(df.loc[:,col].values, window, order)
 			except:
-				print(col + 'was not smoothed')
+				print(col)
+				print('was not smoothed')
 		if transpose:
 			df=df.T
 		return df
@@ -3232,6 +3233,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 			stringen=leg.get_title().get_text()
 			texten=text_in_legend
 			leg.set_title(texten + '\n' +stringen)
+		
 	x=ds.index.values.astype('float')
 	#limits and ticks
 	if timelimits is None:timelimits=[min(x),max(x)]
@@ -3259,7 +3261,6 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		ax1.set_xscale('log')
 	elif "lin" in plot_type:
 		ax1.set_xlim(timelimits[0],timelimits[1])
-
 	if intensity_range is None:
 		ax1.autoscale(axis='y',tight=True)
 	else:
@@ -3277,7 +3278,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		if "symlog" in plot_type:
 			ax1.plot([lintresh,lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
 			ax1.plot([-lintresh,-lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
-			
+				
 	ax1.set_xlabel(ds.index.name)
 	ax1.set_ylabel(data_type)		
 	#ax1.set_xlabel('time in %s'%baseunit)
@@ -3498,6 +3499,12 @@ def Species_Spectra(ta=None,conc=None,das=None):
 		A,B=np.meshgrid(conc.iloc[:,i].values,das.iloc[:,i].values)
 		C=pandas.DataFrame((A*B).T,index=time,columns=WL)
 		results[conc.columns[i]]=C
+	try:
+		for key in results.keys():
+			results[key].index.name=ta.re['c'].index.name
+			results[key].columns.name=ta.re['DAC'].index.name
+	except Exception as e:
+		print(e) 
 	return results
 
 
@@ -7438,7 +7445,8 @@ class TA():	# object wrapper for the whole
 					text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(2.5), width=Inches(4.5), height=Inches(4.5))
 					text1.text = '{}'.format(Result_string.replace('===','='))
 					try:
-						text1.text_frame.fit_text(font_family='Haettenschweiler', max_size=6, bold=False, italic=False)
+						text1.text_frame.fit_text(font_family='Garamond', max_size=6, bold=True, italic=False)
+						#text1.text_frame.fit_text(font_family='Haettenschweiler', max_size=6, bold=False, italic=False)
 					except:
 						text1.text_frame.fit_text(font_family='Arial', max_size=5.0, bold=False, italic=False)
 
