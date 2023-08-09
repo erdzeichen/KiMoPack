@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.18"
+version = "7.1.19"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -2393,8 +2393,6 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 			ax4.set_xlim(bordercut)
 		except:
 			pass
-		if print_click_position:
-			plt.connect('button_press_event', mouse_move)
 		fig4.tight_layout()
 	if 4 in plotting:#---matrix with fit and error, as figures----------
 		fig5 = plot2d_fit(re, cmap = cmap, intensity_range = intensity_range, baseunit = baseunit, 
@@ -2455,6 +2453,8 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 							use_images = False, scale_type = scale_type,  data_type = data_type)								
 	plt.ion()
 	plt.show()
+	if print_click_position:
+		plt.connect('button_press_event', mouse_move)
 	if save_figures_to_folder:
 		if path is None:path=os.path.dirname(os.path.realpath(__file__))
 		figure_path=check_folder(path=path)
@@ -2693,11 +2693,13 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		_ = plot1d(ds = ds, ax = ax2, subplot = True, cmap = cmap, width = width, wavelength = rel_wave,
 					title = title, lines_are = 'data' ,	  plot_type = plot_type, lintresh = lintresh, 
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
-					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, units = units)
+					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
+					units = units)
 		_ = plot1d(ds = ds, ax = ax2, subplot = False, cmap = cmap, width = width, wavelength = rel_wave,
 					title = title, lines_are = 'smoothed', plot_type = plot_type, lintresh = lintresh, 
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
-					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, units = units )
+					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
+					units = units )
 		if debug:print('plotted kinetics')
 	if 2 in plotting:#Spectra
 		fig3,ax3 = plt.subplots(figsize = (10,6),dpi = 100)
@@ -2706,21 +2708,23 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 						rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 						baseunit = baseunit, lines_are = 'data'	  , scattercut = scattercut, 
 						wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-						ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
+						ignore_time_region = ignore_time_region, data_type = data_type, units = units, 
+						equal_energy_bin = equal_energy_bin)
 		if plot_second_as_energy:
 			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = True, cmap = cmap, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-					ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
+					ignore_time_region = ignore_time_region, data_type = data_type, units = units, 
+					equal_energy_bin = equal_energy_bin)
 		else:
 			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = False, cmap = cmap, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
-					ignore_time_region = ignore_time_region, data_type = data_type, units = units, equal_energy_bin = equal_energy_bin)
-		if print_click_position:
-			plt.connect('button_press_event', mouse_move)
+					ignore_time_region = ignore_time_region, data_type = data_type, units = units, 
+					equal_energy_bin = equal_energy_bin)
+
 		fig3.tight_layout()
 		if debug:print('plotted Spectra')
 	if 3 in plotting:		#---plot at set time----------
@@ -2732,6 +2736,8 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		except:
 			print("SVD failed with:",sys.exc_info()[0])
 		if debug:print('plotted SVD')
+	if print_click_position:
+		plt.connect('button_press_event', mouse_move)
 	plt.show()
 	if save_figures_to_folder:
 		fi=filename.split('.')[0]
@@ -7378,6 +7384,55 @@ class TA():	# object wrapper for the whole
 				Result_string.replace('===','=')
 			except Exception as e:
 				print(e)
+		
+		if ('pptx' in savetype) or ('ppt' in savetype):
+			try:
+				left=Inches(0.2)
+				top=Inches(0.2)
+				prs = Presentation()
+				blank_slide_layout = prs.slide_layouts[6]
+				
+				if save_RAW:
+					slide = prs.slides.add_slide(blank_slide_layout)
+					left = top = Inches(0.5)
+					pic = slide.shapes.add_picture(str(raw_names[0].resolve()), left=left+Inches(4.5), top=top, width=Inches(4.5))
+					pic = slide.shapes.add_picture(str(raw_names[1].resolve()), left=left, top=top, width=Inches(4.5))
+					pic = slide.shapes.add_picture(str(raw_names[2].resolve()), left=left, top=top+Inches(3), width=Inches(4.5))
+					try:
+						pic = slide.shapes.add_picture(str(raw_names[3].resolve()), left=left+Inches(4.5), top=top+Inches(3), height=Inches(3.4))
+					except:
+						pass
+				if save_Fit:
+					try:
+						slide2 = prs.slides.add_slide(blank_slide_layout)
+						left = top = Inches(0.1)
+						pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(7.0), top=top, height=Inches(3.4))#Matrix
+						pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
+						pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
+						pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
+						pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
+						text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(2.5), width=Inches(4.5), height=Inches(4.5))
+						text1.text = '{}'.format(Result_string.replace('===','='))
+						try:
+							text1.text_frame.fit_text(font_family='Garamond', max_size=6, bold=True, italic=False)
+							#text1.text_frame.fit_text(font_family='Haettenschweiler', max_size=6, bold=False, italic=False)
+						except:
+							text1.text_frame.fit_text(font_family='Arial', max_size=5.0, bold=False, italic=False)
+
+					except Exception as e:
+						print('exited when saving the fit plots')
+						print(e)
+			except Exception as e:
+				print('Error in powerpoint generation. Most likely a module is missing.')
+				print('We need python-pptx to create a powerpoint file.  Either use "pip install python-pptx" or "conda install -c conda-forge python-pptx" ')
+				print('We will save the results as pdf format for now. Check th error if somehting else went wrong')
+				print(e)
+				savetype.append('pdf')
+			plt.close('all')
+			self.save_figures_to_folder=origin
+			prs.save(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '.pptx'))
+			print('The images and a powerpoint was saved to %s'%check_folder(path=path,current_path=self.path))
+			
 		if ('pdf' in savetype) or ('png' in savetype) or ('svg' in savetype):
 			if save_RAW:
 				fig,ax=plt.subplots(nrows=2,ncols=2,figsize=(10,7.5))
@@ -7407,7 +7462,7 @@ class TA():	# object wrapper for the whole
 				ax3.imshow(mpimg.imread(str(fit_names[3])))
 				ax4.imshow(mpimg.imread(str(fit_names[4])))
 				ax5.imshow(mpimg.imread(str(fit_names[0])))
-				ax6.text(0,0,Result_string.replace('===','='),font='Haettenschweiler',fontsize=6,fontweight='normal')
+				ax6.text(0,0,Result_string.replace('===','='),font='Garamond',fontsize=6,fontweight='bold')
 				ax1.axis('off');ax2.axis('off');ax3.axis('off');ax4.axis('off');ax5.axis('off');ax6.axis('off')
 				for entry in savetype:
 					if entry == "pptx": continue
@@ -7416,49 +7471,6 @@ class TA():	# object wrapper for the whole
 						fig1.savefig(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '_Fit-summary.%s'%entry),dpi=600)
 					except:
 						print("saving in" + entry +"failed")
-		
-		if ('pptx' in savetype) or ('ppt' in savetype):
-			left=Inches(0.2)
-			top=Inches(0.2)
-			prs = Presentation()
-			blank_slide_layout = prs.slide_layouts[6]
-			
-			if save_RAW:
-				slide = prs.slides.add_slide(blank_slide_layout)
-				left = top = Inches(0.5)
-				pic = slide.shapes.add_picture(str(raw_names[0].resolve()), left=left+Inches(4.5), top=top, width=Inches(4.5))
-				pic = slide.shapes.add_picture(str(raw_names[1].resolve()), left=left, top=top, width=Inches(4.5))
-				pic = slide.shapes.add_picture(str(raw_names[2].resolve()), left=left, top=top+Inches(3), width=Inches(4.5))
-				try:
-					pic = slide.shapes.add_picture(str(raw_names[3].resolve()), left=left+Inches(4.5), top=top+Inches(3), height=Inches(3.4))
-				except:
-					pass
-			if save_Fit:
-				try:
-					slide2 = prs.slides.add_slide(blank_slide_layout)
-					left = top = Inches(0.1)
-					pic = slide2.shapes.add_picture(str(fit_names[0].resolve()), left=left+Inches(7.0), top=top, height=Inches(3.4))#Matrix
-					pic = slide2.shapes.add_picture(str(fit_names[1].resolve()), left=left, top=top, height=Inches(2))
-					pic = slide2.shapes.add_picture(str(fit_names[2].resolve()), left=left, top=top+Inches(2), height=Inches(2))
-					pic = slide2.shapes.add_picture(str(fit_names[3].resolve()), left=left, top=top+Inches(3.9), height=Inches(1.4))
-					pic = slide2.shapes.add_picture(str(fit_names[4].resolve()), left=left, top=top+Inches(5.4), height=Inches(2))
-					text1 = slide2.shapes.add_textbox(left=left+Inches(5.2), top=top+Inches(2.5), width=Inches(4.5), height=Inches(4.5))
-					text1.text = '{}'.format(Result_string.replace('===','='))
-					try:
-						text1.text_frame.fit_text(font_family='Garamond', max_size=6, bold=True, italic=False)
-						#text1.text_frame.fit_text(font_family='Haettenschweiler', max_size=6, bold=False, italic=False)
-					except:
-						text1.text_frame.fit_text(font_family='Arial', max_size=5.0, bold=False, italic=False)
-
-				except Exception as e:
-					print('exited when saving the fit plots')
-					print(e)
-				
-
-			plt.close('all')
-			self.save_figures_to_folder=origin
-			prs.save(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '.pptx'))
-			print('All data was saved to %s'%check_folder(path=path,current_path=self.path))
 		
 	def Print_Results(self):
 		if 're' in self.__dict__:
