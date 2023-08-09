@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.19"
+version = "7.1.20"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5692,7 +5692,93 @@ class TA():	# object wrapper for the whole
 				return new_fitcoeff,self.combined_fitcoeff
 		else:
 			raise Warning('Man Chirp interrupted')
+	def Check_Chirp(self, chirp_file = None, fitcoeff = None, cmap = cm.prism, path=None, ds=None, 
+					shown_window = [-1, 1]):
+		'''*Check_Chirp* is a function to check a provided chirp correction. It is is intended as 
+		an option when Cor_Chirp fails due to lacking GUI. 
+		A 4th order polynomial is plotted over the data, printed and returned.
+		The intended use is that the components of this polynomial can be adjusted and then handed to 
+		Cor_chirp.
+		
+		If neither a chirp_file not fitcoeff are provided a general purpose chrip correction is suggested
+		as starting value. The function does not alter anything.
+		use the internal intensity range to adjust for an optimum representation. ta.intensity_range=1e-3
+		
+		Parameters
+		-------------
+		
+		chirp-file : None or str, optional
+		   If a raw file was read(e.g. "data.SIA") and the chirp correction was
+		   completed, a file with the attached word "chirp" is created and
+		   stored in the same location. ("data_chirp.dat") This file contains
+		   the 5 values of the chirp correction. By selecting such a file
+		   (e.g. from another raw data) a specific chirp is applied. If a
+		   specific name is given with **chirp_file** (and optional **path**)
+		   then this file is used.\n
+		   GUI\n
+		   The word *'gui'* can be used instead of a filename to open a gui that
+		   allows the selection of a chrip file
+		   
+		path : str or path object (optional)
+			if path is a string without the operation system dependent separator, it is treated as a relative path, 
+			e.g. data will look from the working directory in the sub director data. Otherwise this has to be a 
+			full path in either strong or path object form.
+		
+		shown_window : list (with two floats), optional
+			Defines the window that is shown during chirp correction. If the t=0 is not visible, adjust this parameter
+			to suit the experiment. If problems arise, I recomment to use Plot_Raw to check where t=0 is located
+			
+		fitcoeff : list or vector (5 floats), optional
+			One can give a vector/list with 5 numbers representing the parameter
+			of a 4th order polynomial (in the order
+			:math:`(a4*x^4 + a3*x^3+a2*x^2+a1*x1+a0)`. 
 
+		cmap : matplotlib colourmap, optional
+			Colourmap to be used for the chirp correction. While there is a large selection here I recommend to choose
+			a different map than is used for the normal 2d plotting.\n
+			cm.prism (Default) has proofen to be very usefull
+
+		Examples
+		----------
+		
+		In most cases:
+		
+		>>> import plot_func as pf
+		>>> ta = pf.TA('test1.SIA') #open the original project, 
+		>>> fitcoeff=ta.Check_Chirp() # if no specific correction is found
+		>>> fitcoeff[1]+=0.1e-8
+		>>> ta.Check_Chirp(fitcoeff=fitcoeff)
+		
+		'''
+		
+		if ds is None:ds=self.ds
+		if (chirp_file is None) and (fitcoeff is None):
+			fitcoeff=[-3.384e-12,1.456e-08,-2.366e-05,0.0172,-4.306]
+		elif chirp_file is not None:
+			if 'gui' in chirp_file:
+				root_window = tkinter.Tk()
+				root_window.withdraw()
+				root_window.attributes('-topmost',True)
+				root_window.after(1000, lambda: root_window.focus_force())
+				complete_path = filedialog.askopenfilename(initialdir=os.getcwd())
+				listen=os.path.split(complete_path)
+				path=os.path.normpath(listen[0])
+				chirp_file=listen[1]
+			path=check_folder(path,self.path)
+			with open(check_folder(path=path,filename=chirp_file),'r') as f:
+				fitcoeff=[float(a) for a in f.readline().split(',')]
+		fig,ax=plt.subplots()
+		ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = self.wave_nm_bin, scattercut = self.scattercut, bordercut = self.bordercut, 
+					timelimits = shown_window, intensity_range = self.intensity_range, 
+					title = 'This plot shows the set chirp', use_colorbar = False, 
+					plot_type = "linear", log_scale = False)
+		correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
+		ax.plot(ds.columns.values.astype('float'),correcttimeval)	
+		print('used fitcoeff:')
+		print(fitcoeff)
+		return fitcoeff
+			
+			
 
 	def Cor_Chirp(self, chirp_file = None, path = None, shown_window = [-1, 1], fitcoeff = None, max_points = 40, cmap = cm.prism):
 		'''*Cor_Chirp* is a powerful Function to correct for a different arrival times of 
