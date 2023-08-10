@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.20"
+version = "7.1.21"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7477,7 +7477,6 @@ class TA():	# object wrapper for the whole
 				top=Inches(0.2)
 				prs = Presentation()
 				blank_slide_layout = prs.slide_layouts[6]
-				
 				if save_RAW:
 					slide = prs.slides.add_slide(blank_slide_layout)
 					left = top = Inches(0.5)
@@ -7508,16 +7507,17 @@ class TA():	# object wrapper for the whole
 					except Exception as e:
 						print('exited when saving the fit plots')
 						print(e)
+				plt.close('all')
+				self.save_figures_to_folder=origin
+				prs.save(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '.pptx'))
+				print('The images and a powerpoint was saved to %s'%check_folder(path=path,current_path=self.path))
 			except Exception as e:
 				print('Error in powerpoint generation. Most likely a module is missing.')
 				print('We need python-pptx to create a powerpoint file.  Either use "pip install python-pptx" or "conda install -c conda-forge python-pptx" ')
 				print('We will save the results as pdf format for now. Check th error if somehting else went wrong')
 				print(e)
 				savetype.append('pdf')
-			plt.close('all')
-			self.save_figures_to_folder=origin
-			prs.save(check_folder(path=path,current_path=self.path,filename=self.filename.split('.')[0] + '.pptx'))
-			print('The images and a powerpoint was saved to %s'%check_folder(path=path,current_path=self.path))
+			
 			
 		if ('pdf' in savetype) or ('png' in savetype) or ('svg' in savetype):
 			if save_RAW:
