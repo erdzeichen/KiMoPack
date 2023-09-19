@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.6"
+version = "7.2.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6836,7 +6836,7 @@ class TA():	# object wrapper for the whole
 			fit_chirp=False #chirp fitting currently only works for single problems
 			if pardf.vary.any():#ok we have something to optimize lets return the spectra
 				multi_project.insert(0,self)
-				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),iter_cb=iter_cb
+				mini = lmfit.Minimizer(err_func_multi,pardf_to_par(pardf),iter_cb=iter_cb,
 										fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
 										'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 										'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
