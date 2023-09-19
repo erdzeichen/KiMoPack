@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.1"
+version = "7.2.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4257,7 +4257,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
 					unique_parameter = None, weights = None, dump_paras = False, filename = None, 
-					ext_spectra = None, dump_shapes = False, same_DAS = False
+					ext_spectra = None, dump_shapes = False, same_DAS = False,
 					write_paras = True):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
