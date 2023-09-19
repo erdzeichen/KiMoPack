@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.3"
+version = "7.2.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -40,6 +40,10 @@ if 1: #Hide imports
 	import time as tm #sorry i use time in my code
 	import lmfit
 	import h5py
+	try:
+		import keyboard
+	except:
+		print('the keyboard module was not imported. on Windows this allows to stop the fit by pressing q/n you can install it with "pip install keyboard" ')
 	
 	try:
 		import PyQt5
@@ -202,9 +206,6 @@ def clean_double_string(filename, path=None):
 def mouse_move(event):
     x, y = event.xdata, event.ydata
     print(x, y)
-
-#def iter_cb(params, iteration, resid):
-	
 
 def flatten(mainlist):
     return [entry for sublist in mainlist for entry in sublist]
@@ -6795,12 +6796,26 @@ class TA():	# object wrapper for the whole
 		############################################################################
 		#----Global optimisation------------------------------------------------------
 		############################################################################
-		
+		try:
+			keyboard.__package__
+			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, write_paras=None):
+				if keyboard.is_pressed("q"):
+					print('---------------------------------------------')
+					print('---------  Interupted by user          ------')
+					print('---------------------------------------------')
+					print('-----------   Last fitted parameter    ------')
+					print(par_to_pardf(params))
+					return True
+				else: 
+					return None
+		except:
+			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, write_paras=None):
+				return None
 		if multi_project is None:
 			#check if there is any concentration to optimise
 			if (filename is None) and dump_shapes: filename = self.filename
 			if pardf.vary.any():#ok we have something to optimize
-				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),
+				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),iter_cb=iter_cb,
 										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
 												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
 												'dump_shapes':dump_shapes, 'write_paras':write_paras})
@@ -6830,7 +6845,7 @@ class TA():	# object wrapper for the whole
 					results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
 				else:
 					results = mini.minimize('nelder',options={'maxiter':1e5})
-					
+
 		#######################################################################
 		#----Fit chirp----------------------------------------------------------------------------------
 		####################################################################
@@ -7054,8 +7069,8 @@ class TA():	# object wrapper for the whole
 			Result_string+=timedf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 		if same_DAS:
 			Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
-			
-		print(Result_string)
+		if not results.aborted:
+			print(Result_string)
 		if same_DAS:
 			for i,re_local in enumerate(re_listen):
 				re_listen[i]['Result_string']=Result_string
