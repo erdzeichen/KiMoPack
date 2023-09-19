@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.2"
+version = "7.2.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6510,7 +6510,7 @@ class TA():	# object wrapper for the whole
 		
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
 					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
-					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None
+					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
 					write_paras=False):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
