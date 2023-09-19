@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.7"
+version = "7.2.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -7070,7 +7070,10 @@ class TA():	# object wrapper for the whole
 			Result_string+=timedf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
 		if same_DAS:
 			Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
-		if not results.aborted:
+		try:
+			if not results.aborted:
+				print(Result_string)
+		except:
 			print(Result_string)
 		if same_DAS:
 			for i,re_local in enumerate(re_listen):
