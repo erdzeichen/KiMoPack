@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.1.21"
+version = "7.2.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -40,6 +40,7 @@ if 1: #Hide imports
 	import time as tm #sorry i use time in my code
 	import lmfit
 	import h5py
+	
 	try:
 		import PyQt5
 		print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
@@ -201,6 +202,9 @@ def clean_double_string(filename, path=None):
 def mouse_move(event):
     x, y = event.xdata, event.ydata
     print(x, y)
+
+#def iter_cb(params, iteration, resid):
+	
 
 def flatten(mainlist):
     return [entry for sublist in mainlist for entry in sublist]
@@ -3962,7 +3966,7 @@ def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 	return re
 
 
-def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, filename = None, ext_spectra = None, dump_shapes = False):
+def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, write_paras = True, filename = None, ext_spectra = None, dump_shapes = False):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting a single dataset.
 	
@@ -4030,7 +4034,12 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
 		"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
 		"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
-		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides 
+		and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the 
+		difference and return as DAS the provided spectra plus the difference spectra
+		
+	write_paras : bool, optional 
+		if True(Default) writes the currently varried values to screen
 
 	'''
 	time_label=ds.index.name
@@ -4144,7 +4153,11 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					store_name='dump_paras_%s.par'%filename
 				pardf.to_csv(store_name)
 			if not mod in ['paral','exponential','consecutive']:
-				print(re['error'])
+				if write_paras:
+					print('----------------------------------')
+					print(pardf)
+				else:
+					print(re['error'])
 			if dump_shapes:
 				if not ext_spectra is None:
 					for col in ext_spectra.columns:
@@ -4224,7 +4237,11 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				except:
 					pass
 				pardf.to_csv('dump_paras.par')
-			print(re['error'])
+			if write_paras:
+				print('----------------------------------')
+				print(pardf)
+			else:
+				print(re['error'])
 			if dump_shapes:
 				if not ext_spectra is None:
 					for col in ext_spectra.columns:
@@ -4240,7 +4257,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
 					unique_parameter = None, weights = None, dump_paras = False, filename = None, 
-					ext_spectra = None, dump_shapes = False, same_DAS = False):
+					ext_spectra = None, dump_shapes = False, same_DAS = False
+					write_paras = True):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
 	
@@ -4343,7 +4361,12 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
 		"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
 		"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
-		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+		"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are 
+		used as guides and not exclusively. This means the code will assume that these spectra are correct and 
+		substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+		
+	write_paras : bool, optional 
+		if True(Default) writes the currently varried values to screen
 
 
 	'''									   
@@ -4507,7 +4530,11 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					pass
 				return_listen.append(re_local)
 		if not mod in ['paral','exponential','consecutive']:
-			print(re['error'])
+			if write_paras:
+				print('----------------------------------')
+				print(pardf)
+			else:
+				print(re['error'])
 		if final:
 			return return_listen
 		else:
@@ -6483,7 +6510,8 @@ class TA():	# object wrapper for the whole
 		
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
 					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
-					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None):
+					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None
+					write_paras=False):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -6577,6 +6605,9 @@ class TA():	# object wrapper for the whole
 			dump_shapes : bool, optional
 				this option dumps the concentratoin matrix and the DAS onto disk for each round of optimization,
 				mostly useful for multi-project fitting that wants to use the spectral or temporal intensity
+			
+			write_paras : bool, optional 
+				if True(Default) writes the currently varried values to screen
 			
 			filename : None or str, optional
 				Only used in conjunction with 'dump_paras'. The program uses this filename to dump the 
@@ -6772,7 +6803,7 @@ class TA():	# object wrapper for the whole
 				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),
 										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
 												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-												'dump_shapes':dump_shapes})
+												'dump_shapes':dump_shapes, 'write_paras':write_paras})
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
