@@ -530,3 +530,4 @@ ext_spectra that is available in the Fit_Global can be used to assign a specific
 The ext_spectra needs to be a pandas dataframe with the wavelength (or energy) as index and the name of species that is suppose to be replaced by the provided spectrum as column name.
 If the parameter set contains a parameter  "ext_spectra_shift" this external spectrum will be moved by that parameter. As this is an external parameter, this can be optimized the usual way.
 Similarly the parameter "ext_spectra_scale" is multiplied to all spectra given.
+The parameter **'explicit_GS'** is a keyword that if present adds the ground state (including the bleach) an explicit component

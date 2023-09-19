@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.8"
+version = "7.2.10"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3959,6 +3959,10 @@ def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 		AE.index.name=time_label
 		AE.columns.name=energy_label
 		DAC.index.name=energy_label
+		try:
+			DAC.columns=c.columns.values
+		except:
+			pass
 		re={'A':A,'AC':AC,'AE':AE,'DAC':DAC,'error':fit_error,'c':c}
 	elif return_shapes:
 		re={'DAC':DAC,'error':fit_error,'c':c}
@@ -6544,6 +6548,8 @@ class TA():	# object wrapper for the whole
 				are written in the dictionary "ta.re" together with a few result representations 
 				and other fit outputs. The optimized parameter are also written into ta.par_fit 
 				(as an parameter object) that can be re-used as input into further optimization steps.
+			8.	Under Windows we load the keyboard library and the Fit can be interrupted by pressing 
+				the "q" key. Consider using the parameter write_paras or dump_paras to observe details during the fit.
 				
 		All mandatory parameters are in general taken from the internal oject (self) The optional parameter control the behaviour of the fitting function  
 		
