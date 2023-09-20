@@ -521,6 +521,15 @@ A small but often useful function is :meth:`pf.Species_Spectra()<plot_func.Speci
 	#contribution of "1" and "2"
 	ta.Plot_RAW(ds=ta.re['A']-dicten[1]-dicten[2])  
 	
+Ending the Fit 
+-------------------
+	From version 7.2 onwards we locally import he keyboard module. This modules catches if you press q (for a while) and interrupts the fit. In this case the parameters 
+	that are in the project are still the starting parameter!
+	otherwise the fit ends when one of the following conditions are met:
+	
+	df < tol or  the tolerance value that is handed to the optimizer (absolute) for nelder-mead with the name fatol
+	number_of_function_evaluations < maxfev (default 200 * n variables)
+	number_of_iterations < maxiter           (default 200 * n variables)
 	
 External Spectra
 -------------------

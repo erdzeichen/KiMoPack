@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.11"
+version = "7.2.13"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6516,7 +6516,7 @@ class TA():	# object wrapper for the whole
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
 					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
 					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
-					write_paras=False):
+					write_paras=False, tol = 1e-5):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -6666,7 +6666,15 @@ class TA():	# object wrapper for the whole
 				a number of parameters can be defined to aid this process. These parameter are defined as normal parameters.
 				"ext_spectra_scale" multiplies all spectra by this value (e.g. -1 to put the steady state absorption spectra in)
 				"ext_spectra_shift" shifts all spectra by this value to compensate for calibration differences
-				"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are used as guides and not exclusively. This means the code will assume that these spectra are correct and substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+				"ext_spectra_guide" (from version 7.1.0) This is a switch, if this keyword is present, then the spectra are 
+				used as guides and not exclusively. This means the code will assume that these spectra are correct and substract 
+				them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
+				
+			tol : float, optional
+				the tolerance value that is handed to the optimizer (absolute) for nelder-mead the moment this means:
+				df < tol  (corresponds to fatol)
+				number_of_function_evaluations < maxfev (default 200 * n variables)
+				number_of_iterations < maxiter           (default 200 * n variables)
 
 
 		Returns
@@ -6832,11 +6840,11 @@ class TA():	# object wrapper for the whole
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
-						results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
+						results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
 					else:
-						results = mini.minimize('nelder',options={'maxiter':1e5})
+						results = mini.minimize('nelder',options={'fatol':tol})
 				else:
-					results = mini.minimize('ampgo',**{'local':'Nelder-Mead'})
+					results = mini.minimize('ampgo',**{'local':'Nelder-Mead','fatol':tol})
 					
 		############################################################################
 		#----Multi project	Global optimisation----------------------------------------
@@ -6853,9 +6861,9 @@ class TA():	# object wrapper for the whole
 																					'dump_shapes':dump_shapes,'same_DAS':same_DAS})
 				if len(pardf[pardf.vary].index)>3:
 					print('we use adaptive mode for nelder')
-					results = mini.minimize('nelder',options={'maxiter':1e5,'adaptive':True})
+					results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
 				else:
-					results = mini.minimize('nelder',options={'maxiter':1e5})
+					results = mini.minimize('nelder',options={'fatol':tol})
 
 		#######################################################################
 		#----Fit chirp----------------------------------------------------------------------------------
