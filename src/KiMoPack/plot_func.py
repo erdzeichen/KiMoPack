@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.10"
+version = "7.2.11"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6804,7 +6804,9 @@ class TA():	# object wrapper for the whole
 		############################################################################
 		try:
 			keyboard.__package__
-			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, write_paras=None):
+			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
+												write_paras=None,multi_project=None,unique_parameter=None,
+												weights=None,same_DAS=None):
 				if keyboard.is_pressed("q"):
 					print('---------------------------------------------')
 					print('---------  Interupted by user          ------')
@@ -6815,7 +6817,9 @@ class TA():	# object wrapper for the whole
 				else: 
 					return None
 		except:
-			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, write_paras=None):
+			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
+												write_paras=None,multi_project=None,unique_parameter=None,
+												weights=None,same_DAS=None):
 				return None
 		if multi_project is None:
 			#check if there is any concentration to optimise
