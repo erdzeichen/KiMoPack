@@ -20,5 +20,6 @@ Welcome to KiMoPack's documentation!
    Fitting
    Comparing
    Saving
+   Changelog
    genindex
    plot_func

@@ -95,7 +95,8 @@ For more information on the use of these notebooks  see the publication https://
 
 Links
 -----
-
+	* Overview talk: I gave a recent overview talk at the LaserLab Europe meeting: https://youtu.be/z9QqVLFWYrs
+	* Tutorial videos: https://www.youtube.com/channel/UCmhiK0P9wXXjs_PJaitx8BQ
 	* Documentation: https://kimopack.readthedocs.io/
 	* PyPI Releases: https://pypi.org/project/KiMoPack/
 	* Source Code: https://github.com/erdzeichen/KiMoPack

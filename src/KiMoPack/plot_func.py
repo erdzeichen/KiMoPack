@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.14"
+version = "7.2.15"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6840,9 +6840,11 @@ class TA():	# object wrapper for the whole
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
-						results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
+						#results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
+						results = mini.minimize('nelder',tol=tol,options={'adaptive':True})
 					else:
-						results = mini.minimize('nelder',options={'fatol':tol})
+						results = mini.minimize('nelder',tol=tol)
+						#results = mini.minimize('nelder',tol=tol,options={'fatol':tol})
 				else:
 					results = mini.minimize('ampgo',**{'local':'Nelder-Mead','fatol':tol})
 					
