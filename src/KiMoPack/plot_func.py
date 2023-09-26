@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.2.15"
+version = "7.2.17"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3763,7 +3763,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 		return ds_new
 
 
-def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
+def build_c(times, mod = 'paral', pardf = None, sub_steps = 10, sub_sample=None):
 	'''
 	Build concentration matrix after model the parameters are:
 	resolution is the width of the rise time (at sigma 50% intensity) 
@@ -3803,7 +3803,11 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 			* 'infinite',optional = if this keyword is present a new non decaying component is formed with the last decay time.
 			* 'explicit_GS',optional = if this keyword is present the pulse function (= ground state) is added explicitly to the data
 			* 'k0,k1,...' = with increasing integers are taken as decay times. te number of these components is used to determine how many shall be generated.
-
+	sub_sample: bool or integer
+		Default(None) does nothing
+		This switch turns on a additional sampling of the kinetics, meaning that we add the number of steps between each measured steps for the model formation 
+		usage: sub_sample=10
+	
 	Examples
 	---------
 
@@ -3823,8 +3827,23 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 			c['background']=1
 		if 'infinite' in list(pardf.index.values):
 			c['infinite']=rise(x=times,sigma=resolution,begin=t0)
+		return c
 	if model == 1:#consecutive decays
 		n_decays=len(param)
+		g=gauss(times,sigma=resolution/FWHM,mu=t0)
+		times_ori=times.copy()
+		if g.sum()<1-1e-3:
+			pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20)
+			connection_region=np.arange(pump_region[-1],times_ori.min(),resolution/10)
+			times=np.unique(np.sort(np.hstack((pump_region,connection_region,times_ori))))
+			g=gauss(times,sigma=resolution/FWHM,mu=t0)
+		if sub_sample is not None:
+			listen=[times]
+			for i in range(1,sub_sample,1):
+				listen.append(times_ori[:-1]+((times_ori[1:]-times_ori[:-1])*i/sub_sample))
+			times=np.unique(np.hstack(listen))
+			times.sort()
+			g=gauss(times,sigma=resolution/FWHM,mu=t0)
 		if 'infinite' in list(pardf.index.values):
 			infinite=True
 			n_decays+=1
@@ -3833,7 +3852,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 
 		decays=param
 		c=np.zeros((len(times),n_decays),dtype='float')
-		g=gauss(times,sigma=resolution/FWHM,mu=t0)
+		
 		if 'explicit_GS' in list(pardf.index.values):
 			GS=True
 			gs=np.zeros((len(times),1),dtype='float')
@@ -3877,7 +3896,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = 10):
 				c['background']=1
 		if GS:
 			c['GS']=gs
-	return c
+		return c.loc[times_ori,:]
 
 
 def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
@@ -3971,7 +3990,7 @@ def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 	return re
 
 
-def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, write_paras = True, filename = None, ext_spectra = None, dump_shapes = False):
+def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, write_paras = True, filename = None, ext_spectra = None, dump_shapes = False,sub_sample=None):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting a single dataset.
 	
@@ -4053,12 +4072,14 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 	if log_fit:
 		pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
 	if isinstance(mod,type('hello')):#did we use a build in model?
+		times=ds.index.values.astype('float')
+		# fixing time flow
 		if final:#for final we really want the model
-			c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
+			c=build_c(times=times,mod=mod,pardf=pardf,sub_sample=sub_sample)
 		elif 'full_consecutive' in mod:# here we force the full consecutive modelling
-			c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
+			c=build_c(times=times,mod=mod,pardf=pardf,sub_sample=sub_sample)
 		else:#here we "bypass" the full consecutive and optimize the rates with the decays
-			c=build_c(times=ds.index.values.astype('float'),mod='paral',pardf=pardf)
+			c=build_c(times=times,mod='paral',pardf=pardf,sub_sample=sub_sample)
 		c.index.name=time_label
 		if ext_spectra is None:
 			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
@@ -4263,7 +4284,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
 					unique_parameter = None, weights = None, dump_paras = False, filename = None, 
 					ext_spectra = None, dump_shapes = False, same_DAS = False,
-					write_paras = True):
+					write_paras = True,sub_sample=None):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
 	
@@ -4401,7 +4422,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			if log_fit:
 				pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
 			if isinstance(mod,type('hello')):#did we use a build in model?
-				c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
+				c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf,sub_sample=sub_sample)
 			else:
 				c=mod(times=ds.index.values.astype('float'),pardf=pardf.loc[:,'value'])
 			if ext_spectra is None:
@@ -4563,7 +4584,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
 
 			if isinstance(mod,type('hello')):#did we use a build in model?
-				c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf)
+				c=build_c(times=ds.index.values.astype('float'),mod=mod,pardf=pardf,sub_sample=sub_sample)
 				if ext_spectra is None:
 					re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
 				else:
@@ -6516,7 +6537,7 @@ class TA():	# object wrapper for the whole
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
 					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
 					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
-					write_paras=False, tol = 1e-5):
+					write_paras=False, tol = 1e-5, sub_sample=None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -6814,7 +6835,7 @@ class TA():	# object wrapper for the whole
 			keyboard.__package__
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
 												write_paras=None,multi_project=None,unique_parameter=None,
-												weights=None,same_DAS=None):
+												weights=None,same_DAS=None,sub_sample=None):
 				if keyboard.is_pressed("q"):
 					print('---------------------------------------------')
 					print('---------  Interupted by user          ------')
@@ -6827,7 +6848,7 @@ class TA():	# object wrapper for the whole
 		except:
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
 												write_paras=None,multi_project=None,unique_parameter=None,
-												weights=None,same_DAS=None):
+												weights=None,same_DAS=None,sub_sample=None):
 				return None
 		if multi_project is None:
 			#check if there is any concentration to optimise
@@ -6836,15 +6857,15 @@ class TA():	# object wrapper for the whole
 				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),iter_cb=iter_cb,
 										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
 												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-												'dump_shapes':dump_shapes, 'write_paras':write_paras})
+												'dump_shapes':dump_shapes, 'write_paras':write_paras,'sub_sample':sub_sample})
 				if not use_ampgo:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
 						#results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
-						results = mini.minimize('nelder',tol=tol,options={'adaptive':True})
+						results = mini.minimize('nelder',tol=tol,options={'adaptive':True})												 
 					else:
 						results = mini.minimize('nelder',tol=tol)
-						#results = mini.minimize('nelder',tol=tol,options={'fatol':tol})
+						#results = mini.minimize('nelder',options={'fatol':tol})
 				else:
 					results = mini.minimize('ampgo',**{'local':'Nelder-Mead','fatol':tol})
 					
@@ -6860,7 +6881,7 @@ class TA():	# object wrapper for the whole
 										fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
 										'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 										'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-																					'dump_shapes':dump_shapes,'same_DAS':same_DAS})
+										'dump_shapes':dump_shapes,'same_DAS':same_DAS,'sub_sample':sub_sample})
 				if len(pardf[pardf.vary].index)>3:
 					print('we use adaptive mode for nelder')
 					results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
@@ -6894,17 +6915,17 @@ class TA():	# object wrapper for the whole
 			print('ATTENTION: we have not optimized anything but just returned the parameters')
 			self.par_fit=self.par
 		if multi_project is None:
-			re=err_func(paras=self.par_fit,ds=fit_ds,mod=self.mod,final=True,log_fit=self.log_fit,ext_spectra=ext_spectra)
+			re=err_func(paras=self.par_fit,ds=fit_ds,mod=self.mod,final=True,log_fit=self.log_fit,ext_spectra=ext_spectra,sub_sample=sub_sample)
 		else:
 			if same_DAS:
 				re_listen = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
 									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
-									ext_spectra = ext_spectra)
+									ext_spectra = ext_spectra,sub_sample=sub_sample)
 				re=re_listen[0]
 			else:
 				re = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
 									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
-									ext_spectra = ext_spectra)
+									ext_spectra = ext_spectra,sub_sample=sub_sample)
 		
 		############################################################################
 		#----Estimate errors---------------------------------------------------------------------
