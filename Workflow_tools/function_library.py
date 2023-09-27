@@ -15,7 +15,10 @@ def manual_consecutive(times,pardf):
 	'''
 	c=np.zeros((len(times),3),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -38,7 +41,10 @@ def Square_dependence(times,pardf):
 	'''initial A then two paths to C one over B and one direct, last paramter is the ratio'''
 	c=np.zeros((len(times),3),dtype='float')						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0'])*pardf['f0']	#creating the gaussian pulse that will "excite" our sample. Note the additional fraction with "f0". This fraction is breaking the normalization but allows the pump fluence to be added
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -67,7 +73,10 @@ def gaussian_distribution(times,pardf):
 		spread=np.zeros(spread_shape.shape) 															#initially there is nothing in the spread matrix
 		c=np.zeros((len(times),decays),dtype='float') 													#here I define number of concentrations
 		g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0'])									#this is my pump
-		sub_steps=10																					#We sample with 10 steps per measured timestep
+		if 'sub_steps' in list(pardf.index.values):
+			sub_steps=pardf['sub_steps']
+		else:
+			sub_steps=10 																					#We sample with 10 steps per measured timestep
 		for i in range(1,len(times)):
 			dc=np.zeros((c.shape[1],1),dtype='float')													# this contains the usual concentration differences
 			c_temp=c[i-1,:]																				#load the previous concentrations (absolute)
@@ -95,7 +104,10 @@ def P12(times,pardf):
 	'''P12'''
 	c=np.zeros((len(times),3),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -122,7 +134,10 @@ def P13(times,pardf):
 	'''P13'''
 	c=np.zeros((len(times),4),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -150,7 +165,10 @@ def P14(times,pardf):
 	'''P14'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -179,7 +197,10 @@ def P21(times,pardf):
 	'''P21'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -208,7 +229,10 @@ def P22(times,pardf):
 	'''P22'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -237,7 +261,10 @@ def P23(times,pardf):
 	'''P23'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -266,7 +293,10 @@ def P24(times,pardf):
 	'''P24'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -295,7 +325,10 @@ def P31(times,pardf):
 	'''P31'''
 	c=np.zeros((len(times),4),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -323,7 +356,10 @@ def P32(times,pardf):
 	'''P32'''
 	c=np.zeros((len(times),4),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -351,7 +387,10 @@ def P33(times,pardf):
 	'''P33'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -383,7 +422,10 @@ def P33mod(times,pardf):
 	'''P33'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -413,7 +455,10 @@ def P34(times,pardf):
 	'''P33'''
 	c=np.zeros((len(times),3),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -440,7 +485,10 @@ def P41(times,pardf):
 	'''P41'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -469,7 +517,10 @@ def P42(times,pardf):
 	'''P42'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -498,7 +549,10 @@ def P43(times,pardf):
 	'''P43'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -527,7 +581,10 @@ def P44(times,pardf):
 	'''P44'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -556,7 +613,10 @@ def P45(times,pardf):
 	'''P45'''
 	c=np.zeros((len(times),5),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
@@ -586,7 +646,10 @@ def ABC_model(times,pardf):
 	note that the recombination looses 2 excitations (so B might be slightly different), C is auger recombination where the single charge has spectrum if a parameter with name [Auger] is present, which is invisible if not. Both Background and an non decaying (damaged) spectrum are implented and triggered by including of 'infinite' and 'background' as parameter '''
 	c=np.zeros((len(times),3),dtype='float') 						#creation of matrix that will hold the concentrations
 	g=gauss(times,sigma=pardf['resolution']/FWHM,mu=pardf['t0']) 	#creating the gaussian pulse that will "excite" our sample
-	sub_steps=10 													#defining how many extra steps will be taken between the main time_points
+	if 'sub_steps' in list(pardf.index.values):
+		sub_steps=pardf['sub_steps']
+	else:
+		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
 		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
