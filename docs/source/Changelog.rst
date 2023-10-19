@@ -11,6 +11,7 @@ In this changelog I will only mention the new capabilities. All other version ju
 introduced: sub_sample, pulse_sample  into the fitting (not yet documented) but they allow to temporarily add time points to the model (that willl then be removed again) 
 			Pulse_sample is needed when the pulse is not in the modelled data (e.g. when the time_limit or ignore_time_regions is set
 			sub_sample divided the times and is useful if the measure data is to sparse in time.
+			if the parameter "sub_steps" is present this will be used to define the number of sub_steps in the iterative sampling
 
 
 7.2.17

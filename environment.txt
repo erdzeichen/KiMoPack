@@ -1,7 +1,5 @@
 python>=3.8
-pandas>=1.4
-tabulate
-pytables>=3.7
+pandas[pytables,tabulate]>=1.4
 h5py>=3.1
 matplotlib>=3.3
 numpy>=1.19
