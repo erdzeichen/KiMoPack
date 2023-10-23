@@ -28,14 +28,16 @@ classifiers =[
     "Topic :: Scientific/Engineering :: Physics",
     "Framework :: Jupyter"]
 dependencies =[
-	"pandas[pytables,tabulate]>=1.4",
-	"h5py>=3.1",
-	"matplotlib>=3.3",
-	"numpy>=1.19",
-	"lmfit>=1.0",
-	"scipy>=1.5",
-	"pathlib",
-	"urllib3"]
+    "pandas>=1.4",
+    "tables",
+    "tabulate",
+    "h5py>=3.1",
+    "matplotlib>=3.3",
+    "numpy>=1.19",
+    "lmfit>=1.0",
+    "scipy>=1.5",
+    "pathlib",
+    "urllib3"]
 
 [project.urls]
 "Bug Tracker"="https://github.com/erdzeichen/KiMoPack/issues"
