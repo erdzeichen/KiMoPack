@@ -4,6 +4,10 @@ Changelog
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
 .. _release-7.3.0:
+7.3.6
+========
+Introduced that Print_results can dump the result parameter into a file.
+
 
 7.3.0
 ========

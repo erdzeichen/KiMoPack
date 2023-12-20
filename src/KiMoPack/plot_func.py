@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.3.5"
+version = "7.3.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6975,7 +6975,7 @@ class TA():	# object wrapper for the whole
 						results = mini.minimize('nelder',tol=tol)
 						#results = mini.minimize('nelder',options={'fatol':tol})
 				else:
-					results = mini.minimize('ampgo',**{'local':'Nelder-Mead','fatol':tol})
+					results = mini.minimize('ampgo',**{'local':'Nelder-Mead'})
 					
 		############################################################################
 		#----Multi project	Global optimisation----------------------------------------
@@ -7757,7 +7757,7 @@ class TA():	# object wrapper for the whole
 					except:
 						print("saving in" + entry +"failed")
 		
-	def Print_Results(self):
+	def Print_Results(self,to_file=False):
 		if 're' in self.__dict__:
 			try:
 				print('{}'.format(self.re['Result_string'].decode('utf-8')))
@@ -7766,6 +7766,9 @@ class TA():	# object wrapper for the whole
 					print('{}'.format(self.re['Result_string']))
 				except:
 					print('printing of results failed.')
+		if to_file:
+			with open(self.filename+'_fitting_results','w') as f:
+				f.write('{}'.format(self.re['Result_string']))
 
 
 	def Save_project(self, filename=None,path=None):

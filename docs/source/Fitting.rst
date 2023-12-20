@@ -531,7 +531,7 @@ Ending the Fit
 	number_of_function_evaluations < maxfev (default 200 * n variables)
 	number_of_iterations < maxiter           (default 200 * n variables)
 	
-External Spectra
+External Spectra and Guidance Spectra
 -------------------
 
 While the species development can be used to generate a spectra development that is then substracted from the matrix, the option 
@@ -539,4 +539,11 @@ ext_spectra that is available in the Fit_Global can be used to assign a specific
 The ext_spectra needs to be a pandas dataframe with the wavelength (or energy) as index and the name of species that is suppose to be replaced by the provided spectrum as column name.
 If the parameter set contains a parameter  "ext_spectra_shift" this external spectrum will be moved by that parameter. As this is an external parameter, this can be optimized the usual way.
 Similarly the parameter "ext_spectra_scale" is multiplied to all spectra given.
-The parameter **'explicit_GS'** is a keyword that if present adds the ground state (including the bleach) an explicit component
+The parameter **'explicit_GS'** is a keyword that if present adds the ground state (including the bleach) an explicit component.
+If a parameter with name **ext_spectra_guide** is present the external spectra will not be used as absolute spectra but as guides. 
+This means that the spectra is substracted. Then during the spectral fitting phase (in the function fill_int) a new spectra is fitted 
+that is then the difference that is "missing" the returned DAC is then the sum of the two spectra and the "real spectrum". 
+This is very useful as it allows to e.g. provide the ground state spectrum without making it exclusive, meaning not all features need 
+to be present. The inclusion of this feature was inspired by Glotaran, but implemented in my own way.
+I recommend to check the documentation to e.g. err_func for more details.
+
