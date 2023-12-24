@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.3.7"
+version = "7.3.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -45,7 +45,7 @@ if 1: #Hide imports
 	except:
 		print('the keyboard module was not imported. on Windows this allows to stop the fit by pressing q/n you can install it with "pip install keyboard" ')
 	
-	try:
+	try:8
 		import PyQt5
 		print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 	except:
