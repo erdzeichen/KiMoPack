@@ -49,4 +49,5 @@ dependencies =[
 package-dir = {""="src"}
 include = ["KiMoPack*"]  # package names should match these glob patterns (["*"] by default)
 exclude = ["KiMoPack.Tutorial_Notebooks*"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false
 
