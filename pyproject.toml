@@ -47,5 +47,5 @@ dependencies =[
 
 [tool.setuptools]
 package-dir = {""="src"}
-packages=find_packages(include=["KiMoPack"], exclude=["KiMoPack.Tutorial_Notebooks" ])
+packages=find_packages(include=["KiMoPack"],exclude=["KiMoPack.Tutorial_Notebooks"])
 
