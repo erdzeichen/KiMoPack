@@ -48,5 +48,4 @@ dependencies =[
 [tool.setuptools]
 package-dir = {""="src"}
 packages=["KiMoPack"]
-exclude = ["KiMoPack.Tutorial_Notebooks"]  # exclude packages matching these glob patterns (empty by default)
 
