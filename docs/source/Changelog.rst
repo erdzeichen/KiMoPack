@@ -4,7 +4,7 @@ Changelog
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
 .. _release-7.4.0:
-7.4.0
+7.4.9
 ========
 Cleaned up previous updates.
 
