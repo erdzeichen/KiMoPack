@@ -46,6 +46,6 @@ dependencies =[
 "Documentation"="https://kimopack.readthedocs.io/"
 
 [tool.setuptools]
+include-package-data = false
 package-dir = {""="src"}
-packages=["KiMoPack"]
-
+packages = ["KiMoPack"]

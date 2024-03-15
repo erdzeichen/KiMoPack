@@ -99,6 +99,7 @@ def download_notebooks():
 			shutil.copyfileobj(r, out)
 def download_all():
 	''' function loads workflow notebooks and example files and tutorials'''
+	download_notebooks()
 	http = urllib3.PoolManager()
 	list_of_tools=['TA_Advanced_Fit.ipynb',
 					'TA_comparative_plotting_and_data_extraction.ipynb',
@@ -109,12 +110,6 @@ def download_all():
 					'function_library.py',
 					'import_library.py']
 	print('Now downloading the workflow tools and tutorials')
-	for f in list_of_tools:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
-		print('Downloading Workflow Tools/%s'%f)
-		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -128,14 +123,11 @@ def download_all():
 		with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
-	list_of_tutorials=['Tutorial_Notebooks_for_local_use.zip']
-	print('Now downloading the tutorials')
-	for f in list_of_tools:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
-		print('Downloading Tutorial Notebooks/%s'%f)
-		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
+	print('Now downloading zipfile with tutorials')
+	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks_online/Tutorial_Notebooks_for_local_use.zip"
+	with open(check_folder(path = 'Tutorials', current_path = os.getcwd(), filename = "Tutorial_Notebooks_for_local_use.zip"), 'wb') as out:
+		r = http.request('GET', url, preload_content=False)
+		shutil.copyfileobj(r, out)
 
 def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, LARGE_SIZE=18):
 	'''
