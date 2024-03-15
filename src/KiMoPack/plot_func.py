@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.4.2"
+version = "7.4.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
