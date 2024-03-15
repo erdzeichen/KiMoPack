@@ -47,5 +47,7 @@ dependencies =[
 
 [tool.setuptools]
 include-package-data = false
-package-dir = {""="src"}
-packages = ["KiMoPack"]
+
+[tool.setuptools.packages.find]
+include = ["src"]
+exclude = ["Tutorial_Notebooks*","Workflow_tools*","docs*"]
