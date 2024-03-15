@@ -14,7 +14,7 @@ name = "KiMoPack"
 authors = [{name = "Jens Uhlig", email = "jens.uhlig@chemphys.lu.se"}]
 description = "A comprehensive package for the analysis of kinetic data."
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 dynamic= ["version"]
 
 classifiers =[
