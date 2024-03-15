@@ -124,7 +124,7 @@ def download_all():
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
 	print('Now downloading zipfile with tutorials')
-	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks_online/Tutorial_Notebooks_for_local_use.zip"
+	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Tutorial_Notebooks_for_local_use.zip"
 	with open(check_folder(path = 'Tutorials', current_path = os.getcwd(), filename = "Tutorial_Notebooks_for_local_use.zip"), 'wb') as out:
 		r = http.request('GET', url, preload_content=False)
 		shutil.copyfileobj(r, out)
