@@ -46,8 +46,5 @@ dependencies =[
 "Documentation"="https://kimopack.readthedocs.io/"
 
 [tool.setuptools]
-include-package-data = false
-
-[tool.setuptools.packages.find]
-include = ["src"]
-exclude = ["Tutorial_Notebooks*","Workflow_tools*","docs*"]
+package-dir = {""="src"}
+packages = ["KiMoPack"]
