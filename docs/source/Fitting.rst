@@ -35,8 +35,7 @@ Parameter
    have a flexible and fast Parameter handling toolset. The general
    steps are: create a Parameter object (or use an existing parameter
    object) set starting values and (optional) limits, relative
-   expressions and vary = True (if the parameter is to be optimised) (see below
-   for more details
+   expressions and vary = True (if the parameter is to be optimised) (see below for more details)
 
 Trigger the fitting
 ----------------------
@@ -383,14 +382,15 @@ iterations are hard-coded to be max 10000. I have not needed more than
 1000 for any well defined problem. The optimizer can be changes to
 "Ampgo" that offers an advanced "tunneling" algorithm for checking for
 global minima. Important for this to work properly all optimizing
-parameter need "min" and "max" definitions. Parameter can additionally
-be given via the parameter and module input at this stage, but in
-general it is better to define them as part of the ta object. The
-pf.err_func and pf.err_func_multi recognise if an internal or an
+parameter need "min" and "max" definitions. To use AMPGO set the parameter use_ampgo=True.
+
+Parameter can additionally be given via the parameter and module input at this stage, but in general it is better to define them as part of the ta object. 
+
+The pf.err_func and pf.err_func_multi recognise if an internal or an
 external fitting model is to be used by checking if "ta.mod" (or the
 here given "mod") are strings or something else (in which case it
-assumes it is an external function). Additional modules from https://lmfit.github.io/lmfit-py/fitting.html 
-can be easily implemented.
+assumes it is an external function). 
+
 
 See section 
 :ref:`external kinetic models as defined in example file "plot_func_function_library.py"`
@@ -403,6 +403,9 @@ directory a file with the current fitting parameter and the optimum
 achieved fitting parameter. This is intended for long and slow
 optimizations to keep a record of the fits even if the fitting process
 did not finish.
+
+Additional modules from https://lmfit.github.io/lmfit-py/fitting.html 
+can be easily implemented. The string given under **other_optimizers** is handed to the lmfit minimizer and can be used to switch the optimizer. Useful choices are e.g. **least_squares** or similar words. This is particularly useful if the problem does not lend to be solved with nelder-mead. This includes e.g. osciallations.
 
 :meth:`self.Fit_Global()<plot_func.TA.Fit_Global>`
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.4.13"
+version = "7.4.16"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4279,7 +4279,10 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 						pardf.to_csv('minimal_dump_paras.par')
 				except:
 					pass
-				pardf.to_csv('dump_paras.par')
+				try:
+					pardf.to_csv('dump_paras.par')
+				except:
+					print(pardf)
 			return re
 		else:
 			if dump_paras:
@@ -4291,9 +4294,14 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					min_df=pandas.read_csv('minimal_dump_paras.par',sep=',',header=None,skiprows=1)
 					if float(min_df.iloc[-1,1])>float(re['error']):
 						pardf.to_csv('minimal_dump_paras.par')
-				except:
+				except Exception as e:
+					print(e)
 					pass
-				pardf.to_csv('dump_paras.par')
+				try:
+					pardf.to_csv('dump_paras.par')
+				except Exception as e:
+					print(e)
+					print(pardf)
 			if write_paras:
 				print('----------------------------------')
 				print(pardf)
@@ -6635,9 +6643,7 @@ class TA():	# object wrapper for the whole
 		return results, fit_ds
 		
 		
-	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, fit_chirp = False, fit_chirp_iterations = 10, 
-					multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
-					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
+	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, other_optimizers=None, fit_chirp = False,					fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, same_DAS = False,					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
 					write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
@@ -6706,6 +6712,10 @@ class TA():	# object wrapper for the whole
 				Typically takes 10-40x longer than a standard optimization, but can due to its 
 				tunneling algorithm more reliably find global minima. 
 				see:https://lmfit.github.io/lmfit-py/fitting.html for further details
+			
+			other_optimizers : str, optional
+				(Default) is None
+				if this is changed from None to a string that exists in lmfit, then this optimizer will be used instead. Useful choices are e.g. **least_squares** or similar words. This is particularly useful if the problem does not lend to be solved with nelder-mead. This includes e.g. osciallations.
 			
 			fit_chirp : bool, optional
 				(Default) is False
@@ -6940,9 +6950,10 @@ class TA():	# object wrapper for the whole
 		############################################################################
 		try:
 			keyboard.__package__
-			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
-												write_paras=None,multi_project=None,unique_parameter=None,
-												weights=None,same_DAS=None,sub_sample=None,pulse_sample=None):
+			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,
+						filename=None,ext_spectra=None,dump_shapes=None, 
+						write_paras=None,multi_project=None,unique_parameter=None,
+						weights=None,same_DAS=None,sub_sample=None,pulse_sample=None):
 				if keyboard.is_pressed("q"):
 					print('---------------------------------------------')
 					print('---------  Interupted by user          ------')
@@ -6965,16 +6976,19 @@ class TA():	# object wrapper for the whole
 										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
 												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
 												'dump_shapes':dump_shapes, 'write_paras':write_paras,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
-				if not use_ampgo:
-					if len(pardf[pardf.vary].index)>3:
-						print('we use adaptive mode for nelder')
-						#results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
-						results = mini.minimize('nelder',tol=tol,options={'adaptive':True})												 
+				if other_optimizers is None:
+					if not use_ampgo:
+						if len(pardf[pardf.vary].index)>3:
+							print('we use adaptive mode for nelder')
+							#results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
+							results = mini.minimize('nelder',tol=tol,options={'adaptive':True})												 
+						else:
+							results = mini.minimize('nelder',tol=tol)
+							#results = mini.minimize('nelder',options={'fatol':tol})
 					else:
-						results = mini.minimize('nelder',tol=tol)
-						#results = mini.minimize('nelder',options={'fatol':tol})
+						results = mini.minimize('ampgo',**{'local':'Nelder-Mead'})
 				else:
-					results = mini.minimize('ampgo',**{'local':'Nelder-Mead'})
+					results = mini.minimize(other_optimizers)
 					
 		############################################################################
 		#----Multi project	Global optimisation----------------------------------------
@@ -6989,11 +7003,14 @@ class TA():	# object wrapper for the whole
 										'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 										'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
 										'dump_shapes':dump_shapes,'same_DAS':same_DAS,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
-				if len(pardf[pardf.vary].index)>3:
-					print('we use adaptive mode for nelder')
-					results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
+				if other_optimizers is None:
+					if len(pardf[pardf.vary].index)>3:
+						print('we use adaptive mode for nelder')
+						results = mini.minimize('nelder',options={'adaptive':True,'fatol':tol})
+					else:
+						results = mini.minimize('nelder',options={'fatol':tol})
 				else:
-					results = mini.minimize('nelder',options={'fatol':tol})
+					results = mini.minimize(other_optimizers)
 
 		#######################################################################
 		#----Fit chirp----------------------------------------------------------------------------------
@@ -7079,10 +7096,13 @@ class TA():	# object wrapper for the whole
 									else:
 										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,
 																										'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
-									if len(pardf[pardf.vary].index)>3:
-										results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01,'adaptive':True})
+									if other_optimizers is None:
+										if len(pardf[pardf.vary].index)>3:
+											results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01,'adaptive':True})
+										else:
+											results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01})
 									else:
-										results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01})
+										results_sub = mini_sub.minimize(other_optimizers)
 									local_error=(results_sub.residual[0]-target_s2)**2
 									return local_error
 								else:
@@ -7097,7 +7117,10 @@ class TA():	# object wrapper for the whole
 																							'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})							
 								one_percent_precission=(target-1)*0.01*re['error']
 								#results_local = mini_local.minimize('least_squares',ftol=one_percent_precission)
-								results_local = mini_local.minimize(method='nelder',options={'maxiter':100,'fatol':one_percent_precission})
+								if other_optimizers is None:
+									results_local = mini_local.minimize(method='nelder',options={'maxiter':100,'fatol':one_percent_precission})
+								else:
+									results_local = mini_local.minimize(method=other_optimizers,options={'maxiter':100,'fatol':one_percent_precission})
 								iterative_calls+=results_local.nfev
 								if results_local.success:
 									conf_limits[fixed_par][i]=results_local.params[fixed_par].value
