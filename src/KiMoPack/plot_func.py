@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.4.16"
+version = "7.4.18"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3628,32 +3628,36 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				intensity_range=maxim
 			elif intensity_range is None:
 				intensity_range=ds.abs().max().max()
-			intensities=(2**np.arange(-6.,4,1.))*intensity_range
+			intensities=(2**np.arange(-6.,4.,1.))*intensity_range
 			window_difference=np.abs(shown_window[1]-shown_window[0])*0.1
+			cutoff_window=np.abs(shown_window[1]-shown_window[0])
 			timelimits=shown_window+np.asarray([-window_difference,window_difference])
 			for repeat in range(30):
-				fig,ax=plt.subplots()
+				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut,
 							timelimits = timelimits, intensity_range = intensity_range, 
 							title = 'select intensity where we can work,\n  if happy,  choose confirm or abort', 
 							use_colorbar = False, plot_type = "linear", log_scale = False)
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
-				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]),w,0.5,facecolor='white'))
+				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]-0.1),w,0.1,facecolor='white'))
 				for i,ent in enumerate(intensities):
-					ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1],'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=8)
-				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],timelimits[0]),w/4.,0.2,facecolor='white'))
-				ax.text(ax.get_xlim()[0],timelimits[0],'Accept',fontsize=15)
-				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3./4.,timelimits[0]),w/4.,0.2,facecolor='white'))
-				ax.text(ax.get_xlim()[0]+w*3./4.,timelimits[0],'Cancel all',fontsize=15)
+					ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=20)
+				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[0]),w/4.,0.1,facecolor='white'))
+				ax.text(ax.get_xlim()[0],shown_window[0],'Accept',fontsize=20)
+				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3./4.,shown_window[0]),w/4.,0.1,facecolor='white'))
+				ax.text(ax.get_xlim()[0]+w*3./4.,shown_window[0],'Cancel all',fontsize=20)
+				ax.set_ylim(shown_window)
+				fig.tight_layout()
 				choice =plt.ginput(1,timeout=15)
 				factor=int((choice[0][0]-ax.get_xlim()[0])/(w/10.))
-				if choice[0][1] > shown_window[1]/2:
+				
+				if choice[0][1] > (shown_window[0]+window_difference):
 					intensity_range=intensities[factor]
 					print((2**np.arange(-6.,4,1.))[factor])
 					intensity_range=[-intensity_range,intensity_range]
 					plt.close(fig)
 					continue		
-				elif choice[0][1] < shown_window[0]/2.:#we choice to finish the choices
+				elif choice[0][1] < (shown_window[0]+window_difference):#we choice to finish the choices
 					if choice[0][0] < ax.get_xlim()[0]+w/2:#
 						print('accept')
 						plt.close(fig)
@@ -3666,20 +3670,22 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 					plt.close(fig)
 					continue
 			for repeat in range(10):
-				fig,ax=plt.subplots()
+				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							timelimits = shown_window, intensity_range = intensity_range, 
 							title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
 							use_colorbar = False, plot_type = "linear", log_scale = False)
+				fig.tight_layout()
 				polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
 				plt.close(fig)
-				fig,ax=plt.subplots()
+				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							timelimits = shown_window, intensity_range = intensity_range, 
 							title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
 							plot_type = "linear", log_scale = False)
 				#Fit a polynomial of the form p(x) = p[2] + p[1] + p[0]
 				fitcoeff= np.polyfit(polypts[:, 0], polypts[:, 1], 4, full=False)
+				
 				correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
 				ax.plot(ds.columns.values.astype('float'),correcttimeval)
 				 
@@ -3688,6 +3694,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
 								   
 				ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=20)
+				fig.tight_layout()
 				satisfied =plt.ginput(1)
 				plt.close(fig)
 				if satisfied[0][0] < ax.get_xlim()[0]+w/2:
@@ -3709,23 +3716,25 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				fitcoeff[-2]-=fitcoeff[-1]
 				fitcoeff=fitcoeff[:5]
 		time=ds.index.values.astype('float')#extract the time
+		print(fitcoeff)
 		ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
-				  
 		if save_file is None:
 			#finding where zero time is
 			for repeat in range(10):
-				fig,ax=plt.subplots()
+				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits = timelimits, intensity_range = intensity_range, 
-							title = 'uncorrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
+							lintresh = np.max(timelimits), timelimits =[-cutoff_window*0.3,cutoff_window*0.3], intensity_range = intensity_range, 
+							title = 'corrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
+				#ax.set_ylim(-cutoff_window,cutoff_window)
+				fig.tight_layout()
 				fittingto = np.array(plt.ginput(1)[0])[1]
 				print(fittingto)
 				fitcoeff[-1]+=fittingto
 				ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
 							
 				plt.close(fig)
-				fig,ax=plt.subplots()
+				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = np.max(timelimits), timelimits = timelimits, intensity_range = intensity_range, 
 							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
@@ -4852,6 +4861,8 @@ def par_to_pardf(par):
 	for key in par.keys():
 		out_dicten[key]={'value':par[key].value}
 		if key[0] == 'k':#its a time parameter
+			out_dicten[key]['is_rate']=True
+		elif key[:2] == 'tk':#its a time parameter
 			out_dicten[key]['is_rate']=True
 		else:
 			out_dicten[key]['is_rate']=False
