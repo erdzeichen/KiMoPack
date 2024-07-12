@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.4.18"
+version = "7.5.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -39,7 +39,11 @@ if 1: #Hide imports
 	import tkinter
 	import time as tm #sorry i use time in my code
 	import lmfit
-	import h5py
+	
+	try:
+		import h5py
+	except:
+		print('the h5py module was not imported that allows to save the projects files on windows you can install that with pip install h5py')
 	try:
 		import keyboard
 	except:
@@ -3860,7 +3864,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
 		else:
 			GS=False
 		for i in range(1,len(times)):
-			dc=np.zeros((n_decays,1),dtype='float')
+			dc=np.zeros(n_decays,dtype='float')
 			dt=(times[i]-times[i-1])/(sub_steps)
 			c_temp=c[i-1,:]
 			for j in range(int(sub_steps)):
@@ -3878,8 +3882,10 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
 							dc[l]=g[i]*dt
 						else:
 							dc[l]=g[i]*dt-decays[l]*dt*c_temp[l]
-				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])					
+				c_temp=c_temp+dc
+				c_temp[c_temp<0]=0
+				#for b in range(c.shape[1]):
+				#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])					
 			c[i,:] =c_temp
 			if GS and not infinite:
 				gs[i]=-c[i,:].sum()
@@ -4113,7 +4119,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			if "ext_spectra_scale" in list(pardf.index.values):
 				ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 			c_temp=c.copy()
-			for col in ext_spectra.columns:
+			for col in ext_spectra.columns.values:
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
@@ -4137,7 +4143,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				re['DAC'].columns=labels
 				re['c'].columns=labels
 			if not ext_spectra is None:
-				for col in ext_spectra.columns:
+				for col in ext_spectra.columns.values:
 					if "ext_spectra_guide" in list(pardf.index.values):
 						re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 					else:
@@ -4206,7 +4212,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					print(re['error'])
 			if dump_shapes:
 				if not ext_spectra is None:
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 						else:
@@ -4249,7 +4255,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			if "ext_spectra_scale" in list(pardf.index.values):
 				ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 			c_temp=c.copy()
-			for col in ext_spectra.columns:
+			for col in ext_spectra.columns.values:
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
@@ -4266,7 +4272,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			else:
 				re['DAC'].columns=c_temp.columns.values
 				re['c'].columns=c_temp.columns.values
-				for col in ext_spectra.columns:
+				for col in ext_spectra.columns.values:
 					if "ext_spectra_guide" in list(pardf.index.values):
 						re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 					else:
@@ -4318,7 +4324,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				print(re['error'])
 			if dump_shapes:
 				if not ext_spectra is None:
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 						else:
@@ -4508,7 +4514,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				if "ext_spectra_scale" in list(pardf.index.values):
 					ext_spectra=ext_spectra*pardf.loc['ext_spectra_scale','value']
 				c_temp=c.copy()
-				for col in ext_spectra.columns:
+				for col in ext_spectra.columns.values:
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					ds=ds-C
@@ -4580,7 +4586,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					re['DAC'].columns=labels
 					re['c'].columns=labels
 				if not ext_spectra is None:
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 						else:
@@ -4592,7 +4598,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['AC']=re['AC']+C
 			else:
 				if not ext_spectra is None:
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 						else:
@@ -4685,7 +4691,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				else:
 					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 					c_temp=c.copy()
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						ds=ds-C
@@ -4710,7 +4716,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 							re['DAC'].columns=labels
 							re['c'].columns=labels
 						if not ext_spectra is None:
-							for col in ext_spectra.columns:
+							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 								else:
@@ -4726,7 +4732,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				else:
 					if dump_shapes:
 						if not ext_spectra is None:
-							for col in ext_spectra.columns:
+							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 								else:
@@ -4765,7 +4771,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				else:
 					ext_spectra=rebin(ext_spectra,ds.columns.values.astype(float))
 					c_temp=c.copy()
-					for col in ext_spectra.columns:
+					for col in ext_spectra.columns.values:
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						ds=ds-C
@@ -4777,7 +4783,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['DAC'].columns=c.columns.values
 						re['c'].columns=c.columns.values
 						if not ext_spectra is None:
-							for col in ext_spectra.columns:
+							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 								else:
@@ -4793,7 +4799,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				else:
 					if dump_shapes:
 						if not ext_spectra is None:
-							for col in ext_spectra.columns:
+							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
 								else:
@@ -6654,8 +6660,10 @@ class TA():	# object wrapper for the whole
 		return results, fit_ds
 		
 		
-	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, other_optimizers=None, fit_chirp = False,					fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, same_DAS = False,					dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
-					write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None):
+	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, other_optimizers=None, fit_chirp = False,
+						fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
+						dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
+					    write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -7013,7 +7021,7 @@ class TA():	# object wrapper for the whole
 										fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
 										'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 										'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-										'dump_shapes':dump_shapes,'same_DAS':same_DAS,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+										'dump_shapes':dump_shapes,'write_paras':write_paras,'same_DAS':same_DAS,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
 				if other_optimizers is None:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')

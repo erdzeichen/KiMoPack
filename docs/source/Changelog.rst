@@ -3,6 +3,11 @@ Changelog
 *********
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
+.. _release-7.5.0:
+7.5.0
+========
+Changed the dimension of the dc in all the models. This sped up the speed by nearly a factor of 10. There has been so many smaller changes over the last versions that I go to 7.5
+
 .. _release-7.4.0:
 7.4.9
 ========

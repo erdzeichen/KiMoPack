@@ -20,15 +20,18 @@ def manual_consecutive(times,pardf):
 	else:
 		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		#dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(3,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
 			dc[0]=-pardf['k0']*dt*c_temp[0]+g[i]*dt					#excite a small fraction with g[i] and decay with 'k0'
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]	#form with "k0" and decay with "k1"
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]	#form with "k1" and decay with "k2"
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -46,15 +49,17 @@ def Square_dependence(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(3,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
 			dc[0]=-pardf['k0']*dt*c_temp[0]-2*pardf['k2']*dt*c_temp[0]**2+g[i]*dt #excite a small fraction with g[i] and decay with 'k0' linear, two state decay with the square dependence and "k2"
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]	#form with "k0" and decay with "k1"
 			dc[2]=pardf['k2']*dt*c_temp[0]**2						#one single part of c[2] is formed from the non linear combination of two c[0]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -78,7 +83,7 @@ def gaussian_distribution(times,pardf):
 		else:
 			sub_steps=10 																					#We sample with 10 steps per measured timestep
 		for i in range(1,len(times)):
-			dc=np.zeros((c.shape[1],1),dtype='float')													# this contains the usual concentration differences
+			dc=np.zeros(c.shape[1],dtype='float')													# this contains the usual concentration differences
 			c_temp=c[i-1,:]																				#load the previous concentrations (absolute)
 			dt=(times[i]-times[i-1])/(sub_steps)														#create the momentary timestep	
 			for j in range(int(sub_steps)):
@@ -88,8 +93,10 @@ def gaussian_distribution(times,pardf):
 																										#each unit has its own flowing out rate
 				dc[1]=0																					#set to 0 because we do use the matrix later to record the change
 				dc[2]=(spread_shape*rate_spread*dt).sum()												#whatever flows out of the C1 (the distrubution) is collected into 
-				for b in range(c.shape[1]):
-					c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])										#check that nothing will be below 0 (concentrations)
+				c_temp=c_temp+dc
+				c_temp[c_temp<0]=0
+				#for b in range(c.shape[1]):
+				#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])										#check that nothing will be below 0 (concentrations)
 			c[i,:] =c_temp
 			c[i,1] =spread.sum()																		#here we fill the record matrix with the sum of the units
 		c=pandas.DataFrame(c,index=times)
@@ -109,15 +116,17 @@ def P12(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(3,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
 			dc[0]=-pardf['k0']*dt*c_temp[0]-pardf['k2']*dt*c_temp[0]+g[i]*dt					
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k1']*dt*c_temp[1]+pardf['k2']*dt*c_temp[0]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -139,7 +148,7 @@ def P13(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(4,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -147,8 +156,10 @@ def P13(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k4']*dt*c_temp[0]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -170,7 +181,7 @@ def P14(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -179,8 +190,10 @@ def P14(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k4']*dt*c_temp[0]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k6']*dt*c_temp[0]+pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -202,7 +215,7 @@ def P21(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -211,8 +224,10 @@ def P21(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k4']*dt*c_temp[0]+pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k5']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -234,7 +249,7 @@ def P22(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -243,8 +258,10 @@ def P22(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[1]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k4']*dt*c_temp[1]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -266,7 +283,7 @@ def P23(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -275,8 +292,10 @@ def P23(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[1]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k4']*dt*c_temp[1]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k1']*dt*c_temp[0]+pardf['k3']*dt*c_temp[2]+pardf['k5']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -298,7 +317,7 @@ def P24(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -307,8 +326,10 @@ def P24(times,pardf):
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]-pardf['k5']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[0]+pardf['k5']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -330,7 +351,7 @@ def P31(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(4,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -338,8 +359,10 @@ def P31(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[0]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -361,7 +384,7 @@ def P32(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((4,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(4,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -369,8 +392,10 @@ def P32(times,pardf):
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k1']*dt*c_temp[1]+pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
 			dc[3]=pardf['k3']*dt*c_temp[2]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -392,7 +417,7 @@ def P33(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -401,8 +426,10 @@ def P33(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k3']*dt*c_temp[1]+pardf['k2']*dt*c_temp[2]
 			dc[4]=+g[i]*dt-pardf['k3']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -427,7 +454,7 @@ def P33mod(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -436,8 +463,10 @@ def P33mod(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]**1.2
 			dc[4]=g[i]*dt-pardf['k3']*dt*c_temp[1]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -460,15 +489,17 @@ def P34(times,pardf):
 	else:
 		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(3,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
 			dc[0]=-pardf['k0']*dt*c_temp[0]+g[i]*dt					
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[1]
 			dc[2]=pardf['k2']*dt*c_temp[1]+pardf['k1']*dt*c_temp[1]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -490,7 +521,7 @@ def P41(times,pardf):
 	else:
 		sub_steps=10 													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -499,8 +530,10 @@ def P41(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]+pardf['k4']*dt*c_temp[0]-pardf['k2']*dt*c_temp[2]-pardf['k5']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k5']*dt*c_temp[2]+pardf['k3']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -522,7 +555,7 @@ def P42(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -531,8 +564,10 @@ def P42(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[1]-pardf['k4']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -554,7 +589,7 @@ def P43(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -563,8 +598,10 @@ def P43(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]+pardf['k3']*dt*c_temp[0]-pardf['k4']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -586,7 +623,7 @@ def P44(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -595,8 +632,10 @@ def P44(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[1]+pardf['k3']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -618,7 +657,7 @@ def P45(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((5,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(5,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
@@ -627,8 +666,10 @@ def P45(times,pardf):
 			dc[2]=pardf['k1']*dt*c_temp[1]-pardf['k2']*dt*c_temp[2]
 			dc[3]=pardf['k2']*dt*c_temp[2]-pardf['k3']*dt*c_temp[3]
 			dc[4]=pardf['k4']*dt*c_temp[0]+pardf['k3']*dt*c_temp[3]
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
@@ -651,15 +692,17 @@ def ABC_model(times,pardf):
 	else:
 		sub_steps=10  													#defining how many extra steps will be taken between the main time_points
 	for i in range(1,len(times)):									#iterate over all timepoints
-		dc=np.zeros((3,1),dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
+		dc=np.zeros(3,dtype='float')							#the initial change for each concentration, the "3" is representative of how many changes there will be
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
 			dc[0]=-pardf['k0']*dt*c_temp[0]-2*pardf['k1']*dt*c_temp[0]^2-3*pardf['k2']*dt*c_temp[0]^3+pardf['k3']*dt*c_temp[1]+g[i]*dt
 			dc[1]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[1]
 			dc[2]=pardf['k0']*dt*c_temp[0]+2*pardf['k1']*dt*c_temp[0]^2+2*pardf['k2']*dt*c_temp[0]^3
-			for b in range(c.shape[1]):
-				c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
+			c_temp=c_temp+dc
+			c_temp[c_temp<0]=0			
+			#for b in range(c.shape[1]):
+			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name

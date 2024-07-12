@@ -1,3 +1,24 @@
+KiMoPack
+==========
+
+KiMoPack is a project for the handling of spectral data measure at
+multiple time-points. The current design is optimised for the use with
+optical transient absorption data, but it has been successfully adapted
+for the use with transient x-ray emission and spectro-electro chemistry
+data.
+
+It focuses on the main tasks an experimentator has:
+Loading and shaping of experiments, plotting of experiments, comparing of experiments,
+analysing experiments with fast and/or advanced fitting routines and saving/exporting/presenting 
+the results. 
+
+For typical use a series of juypter notebooks are provided that guide 
+through the a number of different use scenarios, and are suggesting the 
+parameter that are typically set.
+
+Installation
+--------------
+
 The basis of the program is a module called "plot_func.py" that contains all the necessary functions and classes. 
 We recommend to use a package manager to install the program.  
 
@@ -6,12 +27,6 @@ Install using "pip":
 .. code-block:: text
 
     $ pip install KiMoPack 
-
-Upgrade if already installed:
-
-.. code-block:: text
-
-    $ pip install KiMoPack -U
 
 Install and update using "conda" from the channel erdzeichen:
 
@@ -22,76 +37,77 @@ Install and update using "conda" from the channel erdzeichen:
 Hint: the pip version is usually more recent than the conda version
 The files can also be downloaded from the github directory https://github.com/erdzeichen/KiMoPack or zenodo (see below)
 
-In general it is a good idea to create a local environment to install files in python if you are using python for many tasks. 
-In a local environment only the packages that are needed are installed, which usually avoids that conflicts can appear. 
-It is very easy to do that. 
+These commands are installing only KiMoPack and the absolutely needed dependencies. However, there are several modules that work better if additional packages are installed. In general one should try to install all packages at the same time. Additional packages that I generally recommend are h5py and tables (for saving files), python-pptx (for saving power point slides) and keyboard (Window only, for interrupting the fits). Quite useful is also nbopen that allows you to double click on the notebook files. nbopen requires an activation at the end.
 
-Under Windows: open the anaconda command prompt or power shell (type anaconda in the windows startmenu) 
+(leave away keyboard for Linux!)
+.. code-block:: text
+
+    $ pip install KiMoPack h5py tables nbopen python-pptx 
+	(windows) python -m nbopen.install_win
+	(Linux) python3 -m nbopen.install_xdg
+	(MacOS) Clone the repository and run ./osx-install.sh
+
+Upgrade if already installed:
+
+.. code-block:: text
+
+    $ pip install KiMoPack -U
+
+
+In general it is a good idea to create a local environment to install files in python if you are using python for many tasks. In a local environment only the packages that are needed are installed, which usually avoids that conflicts can appear. It is very easy to do that. 
+
+Under Windows: open the anaconda command prompt or power shell (type anaconda under windows start) 
 Under Linuxs: open a console
 
 .. code-block:: text
 
-	$ conda create --name KiMoPack
-	$ conda activate KiMoPack
-	$ conda install pytables
+	$ conda create --name kimoPack
+	$ conda activate kimokack
+	$ pip install KiMoPack h5py tables keyboard nbopen python-pptx
+
+Or if you also want make sure to have a later version of python	
+
+.. code-block:: text
+
+	$ conda create --name kimopack python=3.11 ipython jupyterlab jupyter
+	$ conda activate kimopack
+	$ pip install KiMoPack h5py tables keyboard nbopen python-pptx
+
+
+Error: insufficient rights: If one of the installs complains (error) that the user does not has sufficient rights, this installation can be done attaching "--user"
+
+.. code-block:: text
+
+	$ conda create --name kimoPack
+	$ conda activate kimokack
+	$ pip install KiMoPack h5py tables keyboard nbopen python-pptx --user
+
+Error: pytables:
+	in some versions I have been running in a problem with pytables when loading saved data. 
+	Using the conda forge version solved this problem for me 
+
+.. code-block:: text
 	
-If you are working with a very old installation it is usually a good idea to also install an updated python 
-
-.. code-block:: text
-
-	$ conda create --name KiMoPack python=3.10 ipython jupyterlab jupyter
-	$ conda activate KiMoPack
-	$ conda install pytables
-
-into this environment KiMoPack can then be installed. We also recommend (optional) to install 
-python-pptx to create power point slides and nbopen (which allows to automatically open a local server) 
-into the environments. If one of the installs complains (error) that the user does not has sufficient rights, 
-this installation can be done attaching "--user" to the following commands
-
-.. code-block:: text
-
-	pip install kimopack
-
-	pip install python-pptx
-	pip install nbopen
-
-	
-Finally, while still in the environement, activate nbopen. There are different commands for Windows/Linux/Mac.
-By doing that in the local environment will open and activate the environment. If you left the environement 
-already you can always go back with "conda activate KiMoPack".
-
-.. code-block:: text
-
-	python -m nbopen.install_win
-	python3 -m nbopen.install_xdg
-	Clone the repository and run ./osx-install.sh
-
+	conda install -c conda-forge pytables  
 
 Best usage
 -----------
 While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
 These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
 
-To do that start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack; KiMoPack.download_all()" This downloads the notebooks and tutorials from github for you. If you instead use "import KiMoPack; KiMoPack.download_notebooks()" then only the workflow tools are downloaded.
-Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
-
-Workflow tools
-----------------
-While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
-These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
-
-To do that start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack.plot_func as pf; pf.download_all()" This downloads the notebooks and tutorials from github for you. If you instead use "import KiMoPack.plot_func as pf; pf.download_notebooks()" then only the workflow tools are downloaded.
-Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
-	
-Under windows this would be:
+You can try either of these "lazy" oneliners
 
 .. code-block:: text
+	ipython -c "import KiMoPack; KiMoPack.download_notebooks()"
+	python -c "import KiMoPack; KiMoPack.download_notebooks()"
+	python3 -c "import KiMoPack; KiMoPack.download_notebooks()"
 
-    $ pip install nbopen
-$ python -m nbopen.install_win 
+If none of these work then start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack; KiMoPack.download_all()" This downloads the notebooks and tutorials from github for you. If you instead use "import KiMoPack; KiMoPack.download_notebooks()" then only the workflow tools are downloaded.
+Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
 	
-For more information on the use of these notebooks  see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
- 
+Citation
+------------
+We have published a paper introducing the toolbox under https://doi.org/10.1021/acs.jpca.2c00907
 
 Links
 -----
