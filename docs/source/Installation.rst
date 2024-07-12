@@ -98,6 +98,7 @@ These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tr
 You can try either of these "lazy" oneliners
 
 .. code-block:: text
+	
 	ipython -c "import KiMoPack; KiMoPack.download_notebooks()"
 	python -c "import KiMoPack; KiMoPack.download_notebooks()"
 	python3 -c "import KiMoPack; KiMoPack.download_notebooks()"
