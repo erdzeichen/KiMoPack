@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.5.1"
+version = "7.5.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3286,9 +3286,9 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		if title is not None:
 			if title:		
 				try:
-					ax2.set_title(title,pad=10)
-				except:
 					ax1.set_title(title,pad=10)
+				except:
+					print('title could not be set')
 		if "symlog" in plot_type:
 			ax1.plot([lintresh,lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
 			ax1.plot([-lintresh,-lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
@@ -4104,7 +4104,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		elif 'full_consecutive' in mod:# here we force the full consecutive modelling
 			c=build_c(times=times,mod=mod,pardf=pardf)
 		elif 'full_sequential' in mod:
-			c=build_c(times=times,mod=mod,pardf=pardf)
+			c=build_c(times=times,mod=mod,pardf=pardf)											 
 		else:#here we "bypass" the full consecutive and optimize the rates with the decays
 			c=build_c(times=times,mod='paral',pardf=pardf)
 		c=c.loc[times_ori,:]
@@ -5618,7 +5618,7 @@ class TA():	# object wrapper for the whole
 			self.figure_path
 		except:
 			if self.save_figures_to_folder:
-				self.figure_path=check_folder(path="result_figures",current_path=path)
+				self.figure_path=check_folder(path="result_figures",current_path=self.path)
 			else:
 				self.figure_path=None
 
@@ -7109,14 +7109,13 @@ class TA():	# object wrapper for the whole
 							else: #go above min
 								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=vary_error_parameter)
 							
-							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False ):
+							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False,sub_sample=None,pulse_sample=None):
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
-										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra})
+										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
 									else:
-										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,
-																										'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
 									if other_optimizers is None:
 										if len(pardf[pardf.vary].index)>3:
 											results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01,'adaptive':True})
@@ -7133,9 +7132,7 @@ class TA():	# object wrapper for the whole
 										return err_func_multi(pardf_local,multi_project=multi_project,unique_parameter=unique_parameter,weights=weights,mod=mod,log_fit=log_fit,ext_spectra=ext_spectra)
 							try:
 								
-								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,
-																							'multi_project':multi_project, 'unique_parameter':unique_parameter,'same_DAS':same_DAS,'weights':weights,
-																							'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})							
+								mini_local = lmfit.Minimizer(sub_problem,par_local,fcn_kws={'varied_par':fixed_par,'pardf_local':pardf_local,'fit_ds':fit_ds,'multi_project':multi_project, 'unique_parameter':unique_parameter,'same_DAS':same_DAS,'weights':weights,								'mod':mod,'log_fit':self.log_fit,'target_s2':target_s2,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})							
 								one_percent_precission=(target-1)*0.01*re['error']
 								#results_local = mini_local.minimize('least_squares',ftol=one_percent_precission)
 								if other_optimizers is None:
@@ -7147,8 +7144,11 @@ class TA():	# object wrapper for the whole
 									conf_limits[fixed_par][i]=results_local.params[fixed_par].value
 								else:
 									print("tried to optimise %i times achieved residual %g with targeted %g"%(results_local.nfev,(np.sqrt(results_local.residual[0])+target_s2),target_s2))
-							except:
+							except Exception as e:
 								#print("Unexpected error:", sys.exc_info()[0])
+								#print('##############################################')
+								#print('The error was:')
+								#print(e)
 								print("error in %s at %s limit"%(fixed_par,i))
 								continue
 				else:
@@ -7671,42 +7671,7 @@ class TA():	# object wrapper for the whole
 				save_Fit = False
 				print('run into problems with adding the fit results. Have you fitted something?')
 			try:
-				if 'Result_string' in self.re:
-					Result_string=self.re['Result_string']
-				else:# to allow the use of old saved results. Will be deprecated in a few versions
-					Result_string='\nFit Results:\n'
-					if isinstance(mod,type('hello')):
-						Result_string+='Model Used: %s\n\n'%mod
-					else:
-						Result_string+='Model Used: External function\n\n'					
-					if self.ignore_time_region is not None:
-						try:
-							Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(self.ignore_time_region[0],self.baseunit,self.ignore_time_region[1],self.baseunit)
-						except:#we got a list
-							for entry in self.ignore_time_region:
-								Result_string+='the time between %.3f %s and %.3f %s was excluded from the optimization\n\n'%(entry[0],self.baseunit,entry[1],self.baseunit)
-					Result_string+='The minimum error is:{:.8e}\n'.format(re['error'])
-					try:
-						Result_string+='The minimum R2-value is:{:.8e}\n'.format(re['r2'])
-					except:
-						pass
-					if same_DAS:
-						Result_string+='The minimum global error is:{:.8e}\n'.format(re['error_total'])
-						Result_string+='The minimum global R2-value is:{:.8e}\n'.format(re['r2_total'])
-					if confidence_level is not None:
-						Result_string+='\nIn Rates with confidence interval to level of %.1f\n\n'%((confidence_level)*100)
-						Result_string+=pardf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
-						Result_string+='\n\nThe rates converted to times with unit %s with confidence interval to level of %.1f\n\n'%(self.baseunit,(confidence_level)*100)
-						Result_string+=timedf.loc[:,['value','lower_limit','upper_limit','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
-					else:
-						Result_string+='\nIn Rates\n\n'
-						Result_string+=pardf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
-						Result_string+='\n\nThe rates converted to times with unit %s\n\n'%self.baseunit
-						Result_string+=timedf.loc[:,['value','init_value','vary','min','max','expr']].to_markdown(tablefmt="grid")
-					if same_DAS:
-						Result_string+='\n\nthe other objects were layed into self.multi_projects as list with the local re on position 0.\n By replacing assuming that self = ta write: \n ta.re = ta.multi_projects[1] and then ta.Plot_fit_output to look on the other fits\n '
-			
-			
+				Result_string=self.re['Result_string']
 				Result_string=Result_string.replace('lower_limit','low_lim')
 				Result_string=Result_string.replace('upper_limit','up_lim')
 				Result_string.replace('===','=')
@@ -8046,7 +8011,7 @@ class TA():	# object wrapper for the whole
 								try:
 									out_listen=[]
 									for listen in read:
-										outlisten.append([float(a) for a in listen])
+										out_listen.append([float(a) for a in listen])
 								except:#no idea lets see what happens
 									pass
 						self.__dict__[key]=read
