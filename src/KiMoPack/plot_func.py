@@ -3830,7 +3830,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
 	elif sub_steps is None:
 		sub_steps=10 
 	
-	choices = {'paral':0,'exponential':0,'consecutive':1,'full_consecutive':1}
+	choices = {'paral':0,'parallel':0,'decays':0,'exponential':0,'consecutive':1,'sequential':1,'full_consecutive':1,'full_sequential':1}
 	model=choices[mod]
 	param=pardf.loc[pardf.is_rate,'value'].values.astype(float)
 	t0=float(pardf.loc['t0','value'])
@@ -4102,6 +4102,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		if final:#for final we really want the model
 			c=build_c(times=times,mod=mod,pardf=pardf)
 		elif 'full_consecutive' in mod:# here we force the full consecutive modelling
+			c=build_c(times=times,mod=mod,pardf=pardf)
+		elif 'full_sequential' in mod:
 			c=build_c(times=times,mod=mod,pardf=pardf)
 		else:#here we "bypass" the full consecutive and optimize the rates with the decays
 			c=build_c(times=times,mod='paral',pardf=pardf)
