@@ -1,22 +1,9 @@
 import pandas
 import scipy
 import numpy as np
-from numpy import power,log10,shape
-FWHM=2.35482
-
-def gauss(t,sigma=0.1,mu=0,scale=1):
-	y=np.exp(-0.5*((t-mu)**2)/sigma**2)
-	y/=sigma*np.sqrt(2*np.pi)
-	return y*scale
-
-import pandas
-import scipy
-import numpy as np
 from numpy import power,log10,shape,exp
 from scipy.special import erf
-import KiMoPack.plot_func as pf
 import warnings 
-  
 # suppress warnings for overflow
 warnings.filterwarnings('ignore') 
 
