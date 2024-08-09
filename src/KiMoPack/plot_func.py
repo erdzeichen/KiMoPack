@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.5.3"
+version = "7.5.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -6698,7 +6698,8 @@ class TA():	# object wrapper for the whole
 				and other fit outputs. The optimized parameter are also written into ta.par_fit 
 				(as an parameter object) that can be re-used as input into further optimization steps.
 			8.	Under Windows we load the keyboard library and the Fit can be interrupted by pressing 
-				the "q" key. Consider using the parameter write_paras or dump_paras to observe details during the fit.
+				the "ctrl+shift+q" key simultaneously (hardcoded). Consider using the parameter write_paras or 
+				dump_paras to observe details during the fit.
 				
 		All mandatory parameters are in general taken from the internal oject (self) The optional parameter control the behaviour of the fitting function  
 		
@@ -6736,7 +6737,9 @@ class TA():	# object wrapper for the whole
 			
 			other_optimizers : str, optional
 				(Default) is None
-				if this is changed from None to a string that exists in lmfit, then this optimizer will be used instead. Useful choices are e.g. **least_squares** or similar words. This is particularly useful if the problem does not lend to be solved with nelder-mead. This includes e.g. osciallations.
+				if this is changed from None to a string that exists in lmfit, then this optimizer will be used instead. 
+				Useful choices are e.g. **least_squares** or similar words. This is particularly useful if the 
+				problem does not lend to be solved with nelder-mead. This includes e.g. osciallations.
 			
 			fit_chirp : bool, optional
 				(Default) is False
@@ -6975,7 +6978,7 @@ class TA():	# object wrapper for the whole
 						filename=None,ext_spectra=None,dump_shapes=None, 
 						write_paras=None,multi_project=None,unique_parameter=None,
 						weights=None,same_DAS=None,sub_sample=None,pulse_sample=None):
-				if keyboard.is_pressed("q"):
+				if keyboard.is_pressed("ctrl+shift+q"):
 					print('---------------------------------------------')
 					print('---------  Interupted by user          ------')
 					print('---------------------------------------------')
