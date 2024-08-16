@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.5.5"
+version = "7.5.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -54,14 +54,10 @@ if 1: #Hide imports
 		print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 	except:
 		try:
-			import PyQt4
+			import qt
 			print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
 		except:
-			try:
-				import qt
-				print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
-			except:
-				print('Qt was not found')
+			print('Qt was not found')
 	try:	
 		from pptx import Presentation
 		from pptx.util import Inches
@@ -970,6 +966,9 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 					vector=np.nanmean(np.nanmean(dataset[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:],axis=0),axis=1)
 					good2=log_and(vector>(np.nanmean(vector) - zscore_filter_level*np.nanstd(vector)),vector<(np.nanmean(vector) + zscore_filter_level*np.nanstd(vector)))
 					good=log_and(good,good2)
+				
+				print(dataset.shape)
+				print(good.shape)
 				dataset[:,:,np.invert(good)]=replace_values
 			else:
 				mean=np.nanmean(dataset,axis=2)
@@ -1864,7 +1863,7 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	return fig
 	
 	
-def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = None, path = None, filename = None, f = 'standard', 
+def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = None, path = None, filename = None, f = 'standard', 
 					intensity_range = 1e-2, baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, 
 					error_matrix_amplification = 20, wave_nm_bin = 5, rel_wave = None, width = 10, rel_time = [1, 5, 10], 
 					time_width_percent = 10, ignore_time_region = None, save_figures_to_folder = True, log_fit = False, mod = None, 
@@ -1948,6 +1947,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 		3 - Spectra\
 		4 - Matrixes\
 		5 - Concentrations (the c-object)\
+		6 - Residuals\ 
 		The plotting takes all parameter from the "ta" object unless otherwise specified
 	
 	path : None, str or path object, optional
@@ -2455,10 +2455,22 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 			ax6[i].set_title('')
 		ax6[5].text(0,0,'This factor represents the temporal evolution\n of the components in the fit.\nThis time dependent factor multiplied with the \nspectral intensity from the SAS/DAS is re[\"AC\"]',fontsize=float(plt.rcParams['legend.fontsize'])-1)
 		fig6.tight_layout()
-	if 6 in plotting:#---matrix with fit and error, as contours----------
-		fig7 = plot2d_fit(re, cmap = cmap, intensity_range = intensity_range, baseunit = baseunit, 
-							error_matrix_amplification = error_matrix_amplification, wave_nm_bin = wave_nm_bin, 
-							use_images = False, scale_type = scale_type,  data_type = data_type)								
+	if 6 in plotting:#---residuals----------
+		fig7,ax7 = plt.subplots(figsize = (15,6),dpi = 100)
+		#fig3,ax3 = plt.subplots(figsize = (8,4),dpi = 100)
+		_=plot1d( ds = re['AE'], cmap = cmap, ax = ax7, width = width, wavelength = rel_wave, 
+					  lines_are = 'smoothed', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
+					  timelimits = timelimits, text_in_legend = time_string, title = 'residuals', 
+					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+		_=plot1d( ds = re['AE'], cmap = cmap,ax = ax7, subplot = True, width = width, 
+					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
+					  baseunit = baseunit , lintresh = lintresh , timelimits = timelimits, 
+					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+		ax7.autoscale(axis = 'y',tight = True)
+		for t in times:
+			if isinstance(t, float):
+				ax7.plot([t, t], ax7.get_ylim(), lw = 0.5, zorder = 10, alpha = 0.5, color = 'black')
+		fig7.tight_layout()							
 	plt.ion()
 	plt.show()
 	if print_click_position:
@@ -2476,7 +2488,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(6), title = N
 			fig4.savefig(check_folder(path=figure_path,filename='%s_SPEC.%s'%(fi,savetype)),bbox_inches='tight')
 			fig5.savefig(check_folder(path=figure_path,filename='%s_FIG_MAT.%s'%(fi,savetype)),bbox_inches='tight')
 			fig6.savefig(check_folder(path=figure_path,filename='%s_concentrations.%s'%(fi,savetype)),bbox_inches='tight')	   
-			fig7.savefig(check_folder(path=figure_path,filename='%s_CONTOUR.%s'%(fi,savetype)),bbox_inches='tight')
+			fig7.savefig(check_folder(path=figure_path,filename='%s_RESIDUAL.%s'%(fi,savetype)),bbox_inches='tight')
 		except:
 			pass	
 
@@ -7281,7 +7293,7 @@ class TA():	# object wrapper for the whole
 				text_file.write(Result_string)
 			
 			
-	def Plot_fit_output(self, plotting = range(6), path = 'result_figures', savetype = 'png', 
+	def Plot_fit_output(self, plotting = range(7), path = 'result_figures', savetype = 'png', 
 						evaluation_style = False, title = None, scale_type = 'symlog', 
 						patches = False, filename = None, cmap = None , print_click_position = False,
 						plot_second_as_energy = True):
@@ -7349,6 +7361,7 @@ class TA():	# object wrapper for the whole
 				3. Spectra
 				4. Matrixes
 				5. Concentrations (the c-object)
+				6. Residuals (the difference between the measured and the fitted data)
 			
 			The plotting takes all parameter from the "ta" object unless otherwise specified
 		
