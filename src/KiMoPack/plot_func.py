@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.5.8"
+version = "7.6.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -89,7 +89,8 @@ def download_notebooks():
 					'TA_single_scan_handling.ipynb',
 					'Function_library_overview.pdf',
 					'function_library.py',
-					'import_library.py']
+					'import_library.py',
+					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools')
 	for f in list_of_tools:
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
@@ -108,14 +109,17 @@ def download_all():
 					'TA_single_scan_handling.ipynb',
 					'Function_library_overview.pdf',
 					'function_library.py',
-					'import_library.py']
+					'import_library.py',
+					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools and tutorials')
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
 							'sample_2.hdf5',
 							'Sample_1.SIA',
-							'Sample_2.SIA']
+							'Sample_2.SIA',
+							'XES_diff.SIA',
+							'XES_on.SIA']
 	print('Now downloading the example files')
 	for f in list_of_example_data:
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
@@ -5392,7 +5396,7 @@ class TA():	# object wrapper for the whole
 		
 		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0)
 		if correct_ascii_errors:
-			if (self.ds_ori.applymap(type) == float).all().all():
+			if (self.ds_ori.map(type) == float).all().all():
 				pass#all columns were converted to float,nice
 			else:
 				print('some data bad, try filtering')
