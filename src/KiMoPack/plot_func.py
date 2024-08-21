@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.1"
+version = "7.6.2"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5396,7 +5396,7 @@ class TA():	# object wrapper for the whole
 		
 		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0)
 		if correct_ascii_errors:
-			if (self.ds_ori.map(type) == float).all().all():
+			if (self.ds_ori.applymap(type) == float).all().all():
 				pass#all columns were converted to float,nice
 			else:
 				print('some data bad, try filtering')
