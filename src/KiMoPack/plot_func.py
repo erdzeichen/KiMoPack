@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.2"
+version = "7.6.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -135,7 +135,8 @@ def download_all():
 						'KiMoPack_tutorial_1_Fitting.ipynb',
 						'KiMoPack_tutorial_2_Fitting.ipynb',
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
-						'KiMoPack_tutorial_4_ScanHandling.ipynb']
+						'KiMoPack_tutorial_4_ScanHandling.ipynb',
+						'KiMoPack_tutorial_5_MultiModal.ipynb']
 	for f in list_of_tutorials:
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
 		print('Downloading tutorial %s'%f)
@@ -147,7 +148,8 @@ def download_all():
 				   'Fitting-1':['TA_Ru-dppz_400nm_ACN.SIA','TA_Ru-dppz_400nm_ACN_chirp.dat','TA_Ru-dppz_400nm_DCM.SIA','TA_Ru-dppz_400nm_DCM_chirp.dat','TA_Ru-dppz_400nm_H2O.SIA','TA_Ru-dppz_400nm_H2O_chirp.dat'],
 					'Fitting-2':['TA_Ru-dppz_400nm_ACN.SIA','TA_Ru-dppz_400nm_ACN_chirp.dat'],
 					'Introduction':['catalysis1.SIA','catalysis2.SIA','con_1.SIA','con_1_solved.hdf5','con_2.SIA','con_2_chirp.dat','con_3.SIA','con_4.SIA','con_5.SIA','con_6.SIA','con_6_chirp.dat','full_consecutive_fit.hdf5','full_consecutive_fit_with_GS.hdf5','sample_1_chirp.dat'],
-					'Scan':['ACN_001.SIA','ACN_002.SIA','ACN_003.SIA','ACN_004.SIA','ACN_005.SIA','ACN_006.SIA','ACN_007.SIA','ACN_008.SIA','ACN_009.SIA','TA_Ru-dppz_400nm_ACN_mean.SIA','TA_Ru-dppz_400nm_ACN_mean_chirp.dat']}
+					'Scan':['ACN_001.SIA','ACN_002.SIA','ACN_003.SIA','ACN_004.SIA','ACN_005.SIA','ACN_006.SIA','ACN_007.SIA','ACN_008.SIA','ACN_009.SIA','TA_Ru-dppz_400nm_ACN_mean.SIA','TA_Ru-dppz_400nm_ACN_mean_chirp.dat'],
+					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
 		for f in tutorial_data[key]:
@@ -4391,7 +4393,8 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_project = None, 
 					unique_parameter = None, weights = None, dump_paras = False, filename = None, 
 					ext_spectra = None, dump_shapes = False, same_DAS = False,
-					write_paras = True,sub_sample=None,pulse_sample=None):
+					write_paras = True,sub_sample=None,pulse_sample=None,
+					same_shape_params=True):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting of multiple datasets
 	
@@ -4506,7 +4509,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	pardf_changing=par_to_pardf(paras)
 	error_listen=[]
 	r2_listen=[]
-	slice_setting_object=multi_project[0].Copy()
+	if same_shape_params:
+		slice_setting_object=multi_project[0].Copy()
+		
 	
 	####### new same DAS, I'm lazy and will doublicate te loop. ###########
 	if same_DAS:
@@ -4515,6 +4520,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		par_stack=[]
 		height_stack=[]
 		for i,ta in enumerate(multi_project):
+			if not same_shape_params:
+				slice_setting_object=ta
 			ds = sub_ds(ds = ta.ds, scattercut = slice_setting_object.scattercut, bordercut = slice_setting_object.bordercut, 
 						timelimits = slice_setting_object.timelimits, wave_nm_bin = slice_setting_object.wave_nm_bin, 
 						time_bin = slice_setting_object.time_bin, ignore_time_region = slice_setting_object.ignore_time_region)
@@ -4700,6 +4707,8 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	else:
 		
 		for i,ta in enumerate(multi_project):
+			if not same_shape_params:
+				slice_setting_object=ta
 			ds = sub_ds(ds = ta.ds, scattercut = slice_setting_object.scattercut, bordercut = slice_setting_object.bordercut, 
 						timelimits = slice_setting_object.timelimits, wave_nm_bin = slice_setting_object.wave_nm_bin, 
 						time_bin = slice_setting_object.time_bin, ignore_time_region = slice_setting_object.ignore_time_region)	
@@ -6718,7 +6727,7 @@ class TA():	# object wrapper for the whole
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, other_optimizers=None, fit_chirp = False,
 						fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
 						dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
-					    write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None):
+					    write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None,same_shape_params=True):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -6885,6 +6894,9 @@ class TA():	# object wrapper for the whole
 				number_of_function_evaluations < maxfev (default 200 * n variables)
 				number_of_iterations < maxiter           (default 200 * n variables)
 
+			same_shape_params: bool, optional
+				This parameter decides if the same shaping parameter (scattercut,rebinning are used in the multiprojects
+				This should be set to False for multimodal fitting.
 
 		Returns
 		------------------
@@ -7030,7 +7042,7 @@ class TA():	# object wrapper for the whole
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,
 						filename=None,ext_spectra=None,dump_shapes=None, 
 						write_paras=None,multi_project=None,unique_parameter=None,
-						weights=None,same_DAS=None,sub_sample=None,pulse_sample=None):
+						weights=None,same_DAS=None,sub_sample=None,pulse_sample=None,same_shape_params=None):
 				if keyboard.is_pressed("ctrl+shift+q"):
 					print('---------------------------------------------')
 					print('---------  Interupted by user          ------')
@@ -7043,7 +7055,7 @@ class TA():	# object wrapper for the whole
 		except:
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,filename=None,ext_spectra=None,dump_shapes=None, 
 												write_paras=None,multi_project=None,unique_parameter=None,
-												weights=None,same_DAS=None,sub_sample=None,pulse_sample=None):
+												weights=None,same_DAS=None,sub_sample=None,pulse_sample=None,same_shape_params=None):
 				return None
 		if multi_project is None:
 			#check if there is any concentration to optimise
@@ -7052,7 +7064,8 @@ class TA():	# object wrapper for the whole
 				mini = lmfit.Minimizer(err_func,pardf_to_par(pardf),iter_cb=iter_cb,
 										fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':self.log_fit,'final':False,
 												'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-												'dump_shapes':dump_shapes, 'write_paras':write_paras,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+												'dump_shapes':dump_shapes, 'write_paras':write_paras,'sub_sample':sub_sample,
+												'pulse_sample':pulse_sample})
 				if other_optimizers is None:
 					if not use_ampgo:
 						if len(pardf[pardf.vary].index)>3:
@@ -7079,7 +7092,8 @@ class TA():	# object wrapper for the whole
 										fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,
 										'weights':weights,'mod':mod,'log_fit':self.log_fit,'final':False,
 										'dump_paras':dump_paras,'filename':filename,'ext_spectra':ext_spectra,
-										'dump_shapes':dump_shapes,'write_paras':write_paras,'same_DAS':same_DAS,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+										'dump_shapes':dump_shapes,'write_paras':write_paras,'same_DAS':same_DAS,'sub_sample':sub_sample,
+										'pulse_sample':pulse_sample,'same_shape_params':same_shape_params})
 				if other_optimizers is None:
 					if len(pardf[pardf.vary].index)>3:
 						print('we use adaptive mode for nelder')
@@ -7121,12 +7135,12 @@ class TA():	# object wrapper for the whole
 			if same_DAS:
 				re_listen = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
 									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
-									ext_spectra = ext_spectra,sub_sample=sub_sample,pulse_sample=pulse_sample)
+									ext_spectra = ext_spectra,sub_sample=sub_sample,pulse_sample=pulse_sample,same_shape_params=same_shape_params)
 				re=re_listen[0]
 			else:
 				re = err_func_multi(paras = self.par_fit, mod = mod, final = True, log_fit = self.log_fit, 
 									multi_project = multi_project, unique_parameter = unique_parameter, same_DAS = same_DAS, weights = weights, 
-									ext_spectra = ext_spectra,sub_sample=sub_sample,pulse_sample=pulse_sample)
+									ext_spectra = ext_spectra,sub_sample=sub_sample,pulse_sample=pulse_sample,same_shape_params=same_shape_params)
 		
 		############################################################################
 		#----Estimate errors---------------------------------------------------------------------
@@ -7171,7 +7185,7 @@ class TA():	# object wrapper for the whole
 									if multi_project is None:
 										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
 									else:
-										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample,'same_shape_params':same_shape_params})
 									if other_optimizers is None:
 										if len(pardf[pardf.vary].index)>3:
 											results_sub = mini_sub.minimize('Nelder',options={'xatol':0.01,'adaptive':True})
