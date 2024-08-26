@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.4"
+version = "7.6.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -618,7 +618,7 @@ def rise(x,sigma=0.1,begin=0):
 		 Based upon an error function from 0 to 1. 
 		 Sigma is the width (after which it has 50%) 
 		 and begin is 10% of height'''
-	return (erf((x-sigma)*np.sqrt(2)/(sigma))+1)/2
+	return (erf((x-begin-sigma)*np.sqrt(2)/(sigma))+1)/2
 
 
 def gauss(t,sigma=0.1,mu=0):
@@ -5134,7 +5134,10 @@ class TA():	# object wrapper for the whole
 				if not isinstance(filename,str):
 					filename = 'external_ds'
 					self.filename=filename
-		if filename == 'gui':
+			ext_data_switch=True
+		else:
+			ext_data_switch=False
+		if filename == 'gui' and not ext_data_switch:
 			root_window = tkinter.Tk()			
 			root_window.withdraw()
 			root_window.attributes('-topmost',True)
@@ -5147,7 +5150,7 @@ class TA():	# object wrapper for the whole
 			self.filename=filename
 			with open('recent.dat','w') as f:
 				f.write(complete_path)
-		elif filename == 'recent':
+		elif not ext_data_switch and filename == 'recent':
 			try:
 				with open('recent.dat','r') as f:
 					complete_path = f.readline()
@@ -5169,7 +5172,7 @@ class TA():	# object wrapper for the whole
 				self.filename=filename
 				with open('recent.dat','w') as f:
 					f.write(complete_path)
-		if filename == 'external':#use a provided dataframe (ds) instead
+		if filename == 'external' or ext_data_switch:#use a provided dataframe (ds) instead
 			if data_type is not None:
 				self.data_type = data_type
 			if units is not None:
