@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.5"
+version = "7.6.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -2415,7 +2415,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		#fig3,ax3 = plt.subplots(figsize = (8,4),dpi = 100)
 		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
 					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
-					  timelimits = timelimits, text_in_legend = time_string, title = '', 
+					  timelimits = timelimits, text_in_legend = time_string, title = title, 
 					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
 		_=plot1d( ds = re['A'], cmap = cmap,ax = ax3, subplot = True, width = width, 
 					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
@@ -2522,17 +2522,12 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		if filename is None:
 			filename='test.fig'
 		fi=filename.split('.')[0]
-		try:
-			fig1.savefig(check_folder(path=figure_path,filename='%s_DAC.%s'%(fi,savetype)),bbox_inches='tight')
-			fig2.savefig(check_folder(path=figure_path,filename='%s_SUM.%s'%(fi,savetype)),bbox_inches='tight')
-			fig3.savefig(check_folder(path=figure_path,filename='%s_SEL.%s'%(fi,savetype)),bbox_inches='tight')
-			fig4.savefig(check_folder(path=figure_path,filename='%s_SPEC.%s'%(fi,savetype)),bbox_inches='tight')
-			fig5.savefig(check_folder(path=figure_path,filename='%s_FIG_MAT.%s'%(fi,savetype)),bbox_inches='tight')
-			fig6.savefig(check_folder(path=figure_path,filename='%s_concentrations.%s'%(fi,savetype)),bbox_inches='tight')	   
-			fig7.savefig(check_folder(path=figure_path,filename='%s_RESIDUAL.%s'%(fi,savetype)),bbox_inches='tight')
-		except:
-			pass	
-
+		name_extension=['DAC','SUM','SEL','SPEC','FIG_MAT','concentrations','RESIDUAL']
+		for a in range(7):
+			try:
+				eval('fig%i'%(a+1)).savefig(check_folder(path=figure_path,filename='%s_%s.%s'%(fi,name_extension[a],savetype)),bbox_inches='tight')
+			except Exception as e:
+				print(e)
 
 def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-2, baseunit = 'ps',
 			timelimits = None, scattercut = None, bordercut = None, wave_nm_bin = None, width = 10,
@@ -2802,17 +2797,12 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 	plt.show()
 	if save_figures_to_folder:
 		fi=filename.split('.')[0]
-		try:
-			fig1.savefig(check_folder(path=path,filename='%s_RAW_MAT.%s'%(fi,savetype)),bbox_inches='tight',dpi=300)
-			   
-			fig2.savefig(check_folder(path=path,filename='%s_RAW_SEL.%s'%(fi,savetype)),bbox_inches='tight',dpi=300)
-			   
-			fig3.savefig(check_folder(path=path,filename='%s_RAW_SPEK.%s'%(fi,savetype)),bbox_inches='tight',dpi=300)
-			   
-			fig4.savefig(check_folder(path=path,filename='%s_RAW_SVD.%s'%(fi,savetype)),bbox_inches='tight',dpi=300)
-			   
-		except:
-			pass
+		name_extension=['RAW_MAT','RAW_SEL','RAW_SPEK','RAW_SVD']
+		for a in range(4):
+			try:
+				eval('fig%i'%(a+1)).savefig(check_folder(path=path,filename='%s_%s.%s'%(fi,name_extension[a],savetype)),bbox_inches='tight',dpi=300)
+			except Exception as e:
+				print(e)
 	if return_plots:
 		return_dicten={}
 		try:
