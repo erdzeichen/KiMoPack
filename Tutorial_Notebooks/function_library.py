@@ -18,7 +18,7 @@ def rise(x,sigma=0.1,begin=0):
 		 Based upon an error function from 0 to 1. 
 		 Sigma is the width (after which it has 50%) 
 		 and begin is 10% of height'''
-	return (erf((x-sigma)*np.sqrt(2)/(sigma))+1)/2
+	return (erf((x-sigma-begin)*np.sqrt(2)/(sigma))+1)/2
 
 def osc_split_sin_cos(times,pardf,comp=0):
 	'''returns a damped osciallation that used the "comp" parameter as index
