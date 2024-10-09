@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.6"
+version = "7.6.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5929,7 +5929,7 @@ class TA():	# object wrapper for the whole
 		else:
 			raise Warning('Man Chirp interrupted')
 	def Check_Chirp(self, chirp_file = None, fitcoeff = None, cmap = cm.prism, path=None, ds=None, 
-					shown_window = [-1, 1]):
+					shown_window = [-2, 2]):
 		'''*Check_Chirp* is a function to check a provided chirp correction. It is is intended as 
 		an option when Cor_Chirp fails due to lacking GUI. 
 		A 4th order polynomial is plotted over the data, printed and returned.
@@ -5987,7 +5987,7 @@ class TA():	# object wrapper for the whole
 		
 		'''
 		
-		if ds is None:ds=self.ds
+		if ds is None:ds=self.ds_ori
 		if (chirp_file is None) and (fitcoeff is None):
 			fitcoeff=[-3.384e-12,1.456e-08,-2.366e-05,0.0172,-4.306]
 		elif chirp_file is not None:
