@@ -1,36 +1,25 @@
 # -*- coding: utf-8 -*-
-version = "7.6.7"
+version = "7.6.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
-	from os import walk
 	import sys
 	import pandas
 	import numpy as np
-	from numpy import power, log10, shape
 	import numbers
 	import matplotlib
-	import matplotlib.colors as colors
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
 	import matplotlib.image as mpimg
 	from matplotlib.gridspec import GridSpec
 	from matplotlib.ticker import FuncFormatter
 	from matplotlib.colors import BoundaryNorm,Normalize,SymLogNorm
-	from matplotlib.patches import Rectangle
-	from matplotlib.ticker import MaxNLocator,LinearLocator
-	from matplotlib.offsetbox import AnchoredText	
-	from matplotlib.ticker import AutoMinorLocator
-	from matplotlib.patches import Rectangle
-	from matplotlib import transforms
+	from matplotlib.ticker import LinearLocator	
 	import re
 	import scipy
 	import scipy.constants
-	import scipy.interpolate as inp
 	from scipy.signal import savgol_filter
-	from scipy.signal import decimate
 	from scipy.special import erf
-	from scipy.optimize import minimize
 	from scipy.stats import binned_statistic
 	import scipy.stats	
 	import pathlib
@@ -48,16 +37,6 @@ if 1: #Hide imports
 		import keyboard
 	except:
 		print('the keyboard module was not imported. on Windows this allows to stop the fit by pressing q/n you can install it with "pip install keyboard" ')
-	
-	try:
-		import PyQt5
-		print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
-	except:
-		try:
-			import qt
-			print('Qt was found consider switching to qt mode with %matplotlib qt (more comfortable)')
-		except:
-			print('Qt was not found')
 	try:	
 		from pptx import Presentation
 		from pptx.util import Inches
@@ -102,16 +81,7 @@ def download_all():
 	''' function loads workflow notebooks and example files and tutorials'''
 	download_notebooks()
 	http = urllib3.PoolManager()
-	list_of_tools=['TA_Advanced_Fit.ipynb',
-					'TA_comparative_plotting_and_data_extraction.ipynb',
-					'TA_Raw_plotting.ipynb',
-					'TA_Raw_plotting_and_Simple_Fit.ipynb',
-					'TA_single_scan_handling.ipynb',
-					'Function_library_overview.pdf',
-					'function_library.py',
-					'import_library.py',
-					'XES_Raw_plotting_and_Simple_Fit.ipynb']
-	print('Now downloading the workflow tools and tutorials')
+	download_notebooks()
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -1002,7 +972,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
 				vector=np.nanmean(np.nanmean(dataset[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:],axis=0),axis=1)
 				good=log_and(vector>(np.nanmean(vector) - zscore_filter_level*np.nanstd(vector)),vector<(np.nanmean(vector) + zscore_filter_level*np.nanstd(vector)))
-				if not window2 is None:
+				if window2 is not None:
 					window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
 					vector=np.nanmean(np.nanmean(dataset[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:],axis=0),axis=1)
 					good2=log_and(vector>(np.nanmean(vector) - zscore_filter_level*np.nanstd(vector)),vector<(np.nanmean(vector) + zscore_filter_level*np.nanstd(vector)))
@@ -1052,7 +1022,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 				window1_index = [find_nearest_index(ds.index.values,window1[0]),find_nearest_index(ds.index.values,window1[1]),find_nearest_index(ds.columns.values,window1[2]),find_nearest_index(ds.columns.values,window1[3])]
 				series1 = pandas.Series(list_of_projects[window1_index[0]:window1_index[1],window1_index[2]:window1_index[3],:].mean(axis = (0,1)))
 				series1.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window1[0],window1[1],baseunit,window1[2],window1[3],units)
-				if not window2 is None:
+				if window2 is not None:
 					window2_index = [find_nearest_index(ds.index.values,window2[0]),find_nearest_index(ds.index.values,window2[1]),find_nearest_index(ds.columns.values,window2[2]),find_nearest_index(ds.columns.values,window2[3])]
 					series2 = pandas.Series(list_of_projects[window2_index[0]:window2_index[1],window2_index[2]:window2_index[3],:].mean(axis = (0,1)))
 					series2.name = '%.3g:%.3g %s at %.1f:%.1f %s'%(window2[0],window2[1],baseunit,window2[2],window2[3],units)
@@ -1115,7 +1085,7 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 	except:
 		print('nanmean failed, assume single wavelength')
 		ds=pandas.DataFrame(np.mean(list_of_projects),index=ds.index,columns=ds.columns)																	  
-	if not save_name is None:
+	if save_name is not None:
 		path = str(check_folder(path=path,filename=save_name))
 		ds.to_csv(path,sep='\t')
 		ta=TA(path)
@@ -1664,7 +1634,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 		a=ax.yaxis.label
 		fontsize=a.get_fontsize()
 		fontsize-=4
-		if not data_type is None:#we use this as a switch to enable a flexible avoidance of the label setting.
+		if data_type is not None:#we use this as a switch to enable a flexible avoidance of the label setting.
 			if log_scale:
 				if ax_ori:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)
 				else:cbar.set_label(data_type + '\nLog-scale', rotation=270,labelpad=20,fontsize=fontsize)		
@@ -4013,8 +3983,8 @@ def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 		return re
 	eps[np.isnan(eps)]=0
 	eps[np.isinf(eps)]=0
-	AC = np.matmul(er,eps);
-	AE = A-AC;
+	AC = np.matmul(er,eps)
+	AE = A-AC
 	fit_error = (AE**2).sum()
 	if final:
 		A=pandas.DataFrame(A,index=time,columns=wl)
@@ -4168,7 +4138,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
-				if not "ext_spectra_guide" in list(pardf.index.values):
+				if "ext_spectra_guide" not in list(pardf.index.values):
 					c_temp.drop(col,axis=1,inplace=True)
 			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
@@ -4187,7 +4157,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			if changed:
 				re['DAC'].columns=labels
 				re['c'].columns=labels
-			if not ext_spectra is None:
+			if ext_spectra is not None:
 				for col in ext_spectra.columns.values:
 					if "ext_spectra_guide" in list(pardf.index.values):
 						re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4249,14 +4219,14 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				else:
 					store_name='dump_paras_%s.par'%filename
 				pardf.to_csv(store_name)
-			if not mod in ['paral','exponential','consecutive']:
+			if mod not in ['paral','exponential','consecutive']:
 				if write_paras:
 					print('----------------------------------')
 					print(pardf)
 				else:
 					print(re['error'])
 			if dump_shapes:
-				if not ext_spectra is None:
+				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4304,7 +4274,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 				C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 				ds=ds-C
-				if not "ext_spectra_guide" in list(pardf.index.values):
+				if "ext_spectra_guide" not in list(pardf.index.values):
 					c_temp.drop(col,axis=1,inplace=True)
 			re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 		if final:
@@ -4368,7 +4338,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			else:
 				print(re['error'])
 			if dump_shapes:
-				if not ext_spectra is None:
+				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4568,9 +4538,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 					C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 					ds=ds-C
-					if not "ext_spectra_guide" in list(pardf.index.values):
+					if "ext_spectra_guide" not in list(pardf.index.values):
 						c_temp.drop(col,axis=1,inplace=True)
-			if not weights is None:
+			if weights is not None:
 				if len(weights)==len(multi_project)-1:
 					weights=list(weights)
 					weights.insert(0,1)
@@ -4635,7 +4605,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				if changed:
 					re['DAC'].columns=labels
 					re['c'].columns=labels
-				if not ext_spectra is None:
+				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4647,7 +4617,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['A']=re['A']+C
 						re['AC']=re['AC']+C
 			else:
-				if not ext_spectra is None:
+				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
 						if "ext_spectra_guide" in list(pardf.index.values):
 							re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4683,7 +4653,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				except:
 					pass
 				return_listen.append(re_local)
-		if not mod in ['paral','exponential','consecutive']:
+		if mod not in ['paral','exponential','consecutive']:
 			if write_paras:
 				print('----------------------------------')
 				print(pardf)
@@ -4767,7 +4737,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						if changed:
 							re['DAC'].columns=labels
 							re['c'].columns=labels
-						if not ext_spectra is None:
+						if ext_spectra is not None:
 							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4783,7 +4753,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 				else:
 					if dump_shapes:
-						if not ext_spectra is None:
+						if ext_spectra is not None:
 							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4827,14 +4797,14 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						A,B=np.meshgrid(c.loc[:,col].values,ext_spectra.loc[:,col].values)
 						C=pandas.DataFrame((A*B).T,index=c.index,columns=ext_spectra.index.values)
 						ds=ds-C
-						if not "ext_spectra_guide" in list(pardf.index.values):
+						if "ext_spectra_guide" not in list(pardf.index.values):
 							c_temp.drop(col,axis=1,inplace=True)
 					re=fill_int(ds=ds,c=c_temp, return_shapes = dump_shapes)
 				if final:
 					if i==0:
 						re['DAC'].columns=c.columns.values
 						re['c'].columns=c.columns.values
-						if not ext_spectra is None:
+						if ext_spectra is not None:
 							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4850,7 +4820,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 					r2_listen.append(1-re['error']/((re['A']-re['A'].mean().mean())**2).sum().sum())
 				else:
 					if dump_shapes:
-						if not ext_spectra is None:
+						if ext_spectra is not None:
 							for col in ext_spectra.columns.values:
 								if "ext_spectra_guide" in list(pardf.index.values):
 									re['DAC'][col]=re['DAC'][col]+ext_spectra.loc[:,col].values
@@ -4860,7 +4830,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 						re['c'].to_csv(path_or_buf=filename + '_c')
 						re['DAC'].to_csv(path_or_buf=filename + '_DAC')
 					error_listen.append(re['error'])
-		if not weights is None:
+		if weights is not None:
 			if len(weights)==len(error_listen)-1:
 				weights=list(weights)
 				weights.insert(0,1)
@@ -4905,7 +4875,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				pardf.to_csv(store_name)
 			except:
 				print('Saving of %s failed'%store_name)
-		if not mod in ['paral','exponential','consecutive']:
+		if mod not in ['paral','exponential','consecutive']:
 			print(combined_error)
 		if final:
 			return re_final
@@ -7207,7 +7177,7 @@ class TA():	# object wrapper for the whole
 									conf_limits[fixed_par][i]=results_local.params[fixed_par].value
 								else:
 									print("tried to optimise %i times achieved residual %g with targeted %g"%(results_local.nfev,(np.sqrt(results_local.residual[0])+target_s2),target_s2))
-							except Exception as e:
+							except Exception:
 								#print("Unexpected error:", sys.exc_info()[0])
 								#print('##############################################')
 								#print('The error was:')
@@ -7966,7 +7936,7 @@ class TA():	# object wrapper for the whole
 									pass
 								else:
 									print('the saving of  %s  failed'%key)
-			if not 'fitcoeff' in f:
+			if 'fitcoeff' not in f:
 				try:
 					f.create_dataset(name='fitcoeff', data=self.fitcoeff)
 				except:
@@ -8016,17 +7986,17 @@ class TA():	# object wrapper for the whole
 			for key in f.keys():
 				try:
 					if "re_" in key[:3]:
-						if not 're' in self.__dict__.keys():
+						if 're' not in self.__dict__.keys():
 							self.__dict__['re']={}
 						if 're_confidence_' in key:#_upper, _lower
-							if not 'confidence' in self.__dict__['re']:
+							if 'confidence' not in self.__dict__['re']:
 								self.__dict__['re']['confidence']={}
 							if '_upper' in key[-6:]:
-								if not key[14:-6] in self.__dict__['re']['confidence']:
+								if key[14:-6] not in self.__dict__['re']['confidence']:
 									self.__dict__['re']['confidence'][key[14:-6]]={}
 								self.__dict__['re']['confidence'][key[14:-6]]['upper']=f[key][()]
 							elif '_lower' in key[-6:]:
-								if not key[14:-6] in self.__dict__['re']['confidence']:
+								if key[14:-6] not in self.__dict__['re']['confidence']:
 									self.__dict__['re']['confidence'][key[14:-6]]={}
 								self.__dict__['re']['confidence'][key[14:-6]]['lower']=f[key][()]
 							else:
