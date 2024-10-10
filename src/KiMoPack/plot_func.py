@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.9"
+version = "7.6.12"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -5368,13 +5368,13 @@ class TA():	# object wrapper for the whole
 		
 		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0)
 		if correct_ascii_errors:
-			if (self.ds_ori.applymap(type) == float).all().all():
+			if (self.ds_ori.map(type) == float).all().all():
 				pass#all columns were converted to float,nice
 			else:
 				print('some data bad, try filtering')
 				try:# try forced conversion
-					self.ds_ori=self.ds_ori.applymap(lambda x:  re.sub('--', '-',x) if type(x) is str else x)
-					self.ds_ori=self.ds_ori.applymap(lambda x: re.sub(r'\.+', '.',x) if type(x) is str else x)
+					self.ds_ori=self.ds_ori.map(lambda x:  re.sub('--', '-',x) if type(x) is str else x)
+					self.ds_ori=self.ds_ori.map(lambda x: re.sub(r'\.+', '.',x) if type(x) is str else x)
 					self.ds_ori=self.ds_ori.astype(np.float64)
 				except Exception as e:
 					print('force cleaning went wrong and the file %s can not be read. Error message is:'%self.filename)
