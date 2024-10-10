@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.8"
+version = "7.6.9"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4010,7 +4010,7 @@ def fill_int(ds,c,final=True,baseunit='ps',return_shapes=False):
 	return re
 
 
-def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, write_paras = True, 
+def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_paras = False, write_paras = False, 
 			filename = None, ext_spectra = None, dump_shapes = False, sub_sample=None,pulse_sample=None):
 	'''function that calculates and returns the error for the global fit. This function is intended for
 	fitting a single dataset.
@@ -7122,7 +7122,6 @@ class TA():	# object wrapper for the whole
 						# we assume that we have the same number of spectal points but are stacking the times
 						total_time_points=np.array([len(t.re['A'].index) for t in multi_project]).sum()					
 						target=s2_vs_smin2(Spectral_points=len(re['A'].columns),Time_points=total_time_points,number_of_species=len(re['DAC'].columns),fitted_kinetic_pars=len(pardf[pardf.vary].index),target_quality=confidence_level)
-					#print(target)
 					target_s2=re['error']*target
 					list_of_variable_parameter=pardf[pardf.vary].index.values
 					conf_limits={}
@@ -7146,7 +7145,7 @@ class TA():	# object wrapper for the whole
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
-										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample})
+										mini_sub = lmfit.Minimizer(err_func,pardf_local,fcn_kws={'ds':fit_ds,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample, 'dump_paras':False})
 									else:
 										mini_sub = lmfit.Minimizer(err_func_multi,pardf_local,fcn_kws={'multi_project':multi_project,'unique_parameter':unique_parameter,'weights':weights,'same_DAS':same_DAS,'mod':mod,'log_fit':log_fit,'ext_spectra':ext_spectra,'sub_sample':sub_sample,'pulse_sample':pulse_sample,'same_shape_params':same_shape_params})
 									if other_optimizers is None:
