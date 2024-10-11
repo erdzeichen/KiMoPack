@@ -210,7 +210,7 @@ def manual_consecutive(times,pardf):
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name
-	c.columns=['1MLCT','3MLCT','3MC']								#this is optional but very useful. The species get names that represent some particular states
+	c.columns=[1,2,3]								#this is optional but very useful. The species get names that represent some particular states
 	if 'explicit_GS' in list(pardf.index.values):
 		c['GS']=-c.sum(axis=1)
 	if 'background' in list(pardf.index.values):					#optional but usefull, allow the keyword "background" to be used to fit the background in the global analysis
