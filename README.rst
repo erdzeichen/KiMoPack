@@ -16,7 +16,7 @@
 	:target: https://anaconda.org/erdzeichen/kimopack
 
 .. image:: https://colab.research.google.com/assets/colab-badge.svg
-	:target: https://colab.research.google.com/github/erdzeichen/KiMoPack/blob/main/Tutorial_Notebooks/KiMoPack_tutorial_0_Introduction_Colab.ipynb
+	:target: https://colab.research.google.com/github/erdzeichen/KiMoPack/blob/main/Tutorial_Notebooks/KiMoPack_tutorial_0_Introduction.ipynb
 
 .. image:: https://mybinder.org/badge_logo.svg		  
 	:target: https://mybinder.org/v2/gh/erdzeichen/KiMoPack/HEAD

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.6.15"
+version = "7.7.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -52,6 +52,7 @@ if 1: #Hide imports
 	FWHM = 2.35482
 	shading = 'auto'  # gouraud
 	standard_map = cm.jet
+	halfsize=False
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
 
@@ -174,6 +175,12 @@ def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, L
 		axis titles, figure titles, axis labels
 
 	'''
+	global halfsize
+	
+	if halfsize:
+		SMALL_SIZE=6 
+		MEDIUM_SIZE=7 
+		LARGE_SIZE=9
 	
 	font_dict = {
 				'standard': {'weight': weight, 'size': SMALL_SIZE, 'family': 'DejaVu Sans'},
@@ -1504,7 +1511,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	from_fit : bool optional
 		it needed this swtich to avoid re-slicing of data in spectal axis for equal energy bins
 	'''
-	
+	global halfsize
 	if cmap is None:
 		cmap=standard_map
 	elif not np.array([isinstance(cmap,type(cm.viridis)),isinstance(cmap,type(cm.jet)),isinstance(cmap,type(cm.Blues)),isinstance(cmap,type(cm.coolwarm)),isinstance(cmap,type(cm.terrain))]).any():#we must have a 
@@ -1512,7 +1519,10 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 
 	if ax is None:
 		ax_ori=False
-		fig,ax=plt.subplots(figsize=(10,6),dpi=100)
+		if halfsize:
+			fig,ax=plt.subplots(figsize=(5,3),dpi=100)
+		else:
+			fig,ax=plt.subplots(figsize=(10,6),dpi=100)
 	else:
 		ax_ori=True
 		fig=ax.get_images()
@@ -1828,9 +1838,12 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 		If a list/vector/DataFrame is given for the colours they will be used in the order provided.
 	
 	'''
-	
+	global halfsize
 	if intensity_range is None:intensity_range=5e-3
-	fig,ax=plt.subplots(3,figsize=(9,11))
+	if halfsize:
+		fig,ax=plt.subplots(3,figsize=(4.5,5.5))
+	else:
+		fig,ax=plt.subplots(3,figsize=(9,11))
 	if patches:			
 		plot2d(re['A'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[0], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
@@ -2136,7 +2149,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 	>>> ta.plot_fit_output(ta.re,ta.ds)
 		
 	'''
-					 
+	global halfsize 
 	if baseunit != 'ps':
 		if baseunit == 'ns':baseunit = 'Time in ns'
 		re['A'].index.name=baseunit
@@ -2176,7 +2189,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		#-------plot DAC------------
 		#for i,col in enumerate(re['DAC']):
 			#re['DAC'].iloc[:,i]=re['DAC'].iloc[:,i].values*re['c'].max().iloc[i]
-		fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=100)
+		if halfsize:
+			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(6,2.5),dpi=100)
+		else:
+			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=100)
 		n_colors=len(re['DAC'].columns)
 		DAC=re['DAC']
 		DAC_copy=DAC.copy()
@@ -2270,7 +2286,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		ax1c.set_ylabel('intensity*max(c) in arb. units')
 		fig1.tight_layout()
 	if 1 in plotting:  #-------plot sum_sum------------
-		fig2 = plt.figure(figsize = (18, 5), dpi = 100)
+		if halfsize:
+			fig2 = plt.figure(figsize = (9, 2.5), dpi = 100)
+		else:
+			fig2 = plt.figure(figsize = (18, 5), dpi = 100)
 		ax2a=[plt.subplot2grid((3, 3), (0, i)) for i in range(3)]
 		ax2=[plt.subplot2grid((3, 3), (1, i), rowspan=2) for i in range(3)]
 		dat = [pandas.DataFrame(re['A'], index = re['A'].index, columns = re['A'].columns).abs().sum(axis = 1)]
@@ -2381,7 +2400,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		ax2a[2].set_xlabel(x_label)
 		fig2.tight_layout()
 	if 2 in plotting:#---plot single wavelength----------
-		fig3,ax3 = plt.subplots(figsize = (15,6),dpi = 100)
+		if halfsize:
+			fig3,ax3 = plt.subplots(figsize = (7.5,3),dpi = 100)
+		else:
+			fig3,ax3 = plt.subplots(figsize = (15,6),dpi = 100)
 		#fig3,ax3 = plt.subplots(figsize = (8,4),dpi = 100)
 		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
 					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
@@ -2397,7 +2419,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 				ax3.plot([t, t], ax3.get_ylim(), lw = 0.5, zorder = 10, alpha = 0.5, color = 'black')
 		fig3.tight_layout()
 	if 3 in plotting:		#---plot at set time----------
-		fig4, ax4 = plt.subplots(figsize = (15, 6), dpi = 100)	
+		if halfsize:
+			fig4, ax4 = plt.subplots(figsize = (7.5, 3), dpi = 100)	
+		else:
+			fig4, ax4 = plt.subplots(figsize = (15, 6), dpi = 100)	
 		_=plot_time(ds=re['A'],cmap=cmap,ax=ax4,subplot=False, rel_time=rel_time, title=title, baseunit=baseunit, 
 					time_width_percent=time_width_percent, lines_are='data', scattercut=scattercut, 
 					bordercut = bordercut, intensity_range = intensity_range,  data_type = data_type, 
@@ -2422,7 +2447,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		plt.ion()
 		plt.show()
 	if 5 in plotting:
-		fig6=plt.figure(figsize=(12,6))
+		if halfsize:
+			fig6=plt.figure(figsize=(6,3))
+		else:
+			fig6=plt.figure(figsize=(12,6))
 		G = GridSpec(4, 4)
 		ax6=[]
 		ax6.append(fig6.add_subplot(G[1:,0]))
@@ -2467,7 +2495,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		ax6[5].text(0,0,'This factor represents the temporal evolution\n of the components in the fit.\nThis time dependent factor multiplied with the \nspectral intensity from the SAS/DAS is re[\"AC\"]',fontsize=float(plt.rcParams['legend.fontsize'])-1)
 		fig6.tight_layout()
 	if 6 in plotting:#---residuals----------
-		fig7,ax7 = plt.subplots(figsize = (15,6),dpi = 100)
+		if halfsize:
+			fig7,ax7 = plt.subplots(figsize = (6,3),dpi = 100)
+		else:
+			fig7,ax7 = plt.subplots(figsize = (12,6),dpi = 100)
 		#fig3,ax3 = plt.subplots(figsize = (8,4),dpi = 100)
 		_=plot1d( ds = re['AE'], cmap = cmap, ax = ax7, width = width, wavelength = rel_wave, 
 					  lines_are = 'smoothed', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
@@ -2693,6 +2724,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		(Default) False, return is ignoriert. For True a dictionary with the handles to the figures is returned  
 		
 	'''
+	global halfsize
 	if ds is None:raise ValueError('We need something to plot!!!')
 	if baseunit != 'ps':
 		if baseunit == 'ns':
@@ -2714,7 +2746,10 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		fig1.tight_layout()
 		if debug:print('plotted Matrix')
 	if 1 in plotting:#kinetics
-		fig2,ax2=plt.subplots(figsize=(10,6),dpi=100)
+		if halfsize:
+			fig2,ax2=plt.subplots(figsize=(5,3),dpi=100)
+		else:
+			fig2,ax2=plt.subplots(figsize=(10,6),dpi=100)
 		
 		_ = plot1d(ds = ds, ax = ax2, subplot = True, cmap = cmap, width = width, wavelength = rel_wave,
 					title = title, lines_are = 'data' ,	  plot_type = plot_type, lintresh = lintresh, 
@@ -2728,7 +2763,10 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 					units = units )
 		if debug:print('plotted kinetics')
 	if 2 in plotting:#Spectra
-		fig3,ax3 = plt.subplots(figsize = (10,6),dpi = 100)
+		if halfsize:
+			fig3,ax3 = plt.subplots(figsize = (5,3),dpi = 100)
+		else:
+			fig3,ax3 = plt.subplots(figsize = (10,6),dpi = 100)
 
 		_ = plot_time(ds, subplot = True, ax = ax3, plot_second_as_energy = False, cmap = cmap, 
 						rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
@@ -2923,6 +2961,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		 
 
 		'''
+	global halfsize
 	if not hasattr(rel_time,'__iter__'):rel_time=[rel_time]
 	rel_time=[a for a in rel_time if a<ds.index.values.astype('float').max()]
 	
@@ -2931,7 +2970,10 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	else:
 		colors=colm(np.arange(color_offset,len(rel_time)+color_offset),cmap=cmap)
 	if ax is None:
-		fig,ax1=plt.subplots(figsize=(10,6),dpi=100)
+		if halfsize:
+			fig,ax1=plt.subplots(figsize=(5,3),dpi=100)
+		else:
+			fig,ax1=plt.subplots(figsize=(10,6),dpi=100)
 	else:
 		ax1=ax
 	ds = sub_ds(ds = ds, times = rel_time, time_width_percent = time_width_percent, 
@@ -3185,10 +3227,14 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		i needed this swtich to avoid re-slicing of data in spectal axis for equal energy bins
 
 	'''
+	global halfsize
 	if not isinstance(ds,pandas.DataFrame):
 		print("input format wrong")
 	if ax is None:
-		fig,ax1=plt.subplots(figsize=(10,6),dpi=100)
+		if halfsize:
+			fig,ax1=plt.subplots(figsize=(5,3),dpi=100)
+		else:
+			fig,ax1=plt.subplots(figsize=(10,6),dpi=100)
 	else:
 		ax1=ax
 	if width is None:width=1
@@ -3410,7 +3456,7 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 		If a list/vector/DataFrame is given for the colours they will be used in the order provided.
 	
 	'''
-	
+	global halfsize
 	if times is None:
 		max_order=6
 	else:
@@ -3421,7 +3467,10 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region)
 	U, s, V = np.linalg.svd(ds.values)
 	if plotting:
-		fig=plt.figure(figsize=(8,8),dpi=100)
+		if halfsize:
+			fig=plt.figure(figsize=(4,4),dpi=100)
+		else:
+			fig=plt.figure(figsize=(8,8),dpi=100)
 		G = GridSpec(2, 6)
 		ax1=fig.add_subplot(G[0,:2])
 		ax2=fig.add_subplot(G[1,:])
@@ -3470,7 +3519,7 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 		#ax3.set_xticks(np.logspace(-1,2,round(np.log())))
 		ax3.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: '%1g'%(x)))
 		ax2.legend(frameon=False,labelspacing=0,borderpad=0,numpoints=1,handlelength=1)
-		ax3.legend(frameon=False,fontsize=11,labelspacing=0,borderpad=0,numpoints=1,handlelength=1)
+		ax3.legend(frameon=False,fontsize=plt.rcParams['legend.fontsize'],labelspacing=0,borderpad=0,numpoints=1,handlelength=1)
 		
 		fig.tight_layout()
 		return fig
@@ -8291,7 +8340,7 @@ class TA():	# object wrapper for the whole
 		>>> 	ta.Compare_at_time(rel_time = t, others = other_project, norm_window = norm_window)
 		
 		'''
-		
+		global halfsize
 		if self.save_figures_to_folder:self.figure_path=check_folder(path='result_figures',current_path=self.path)
 		if time_width_percent is None:time_width_percent=self.time_width_percent
 		if rel_time is None:rel_time=self.rel_time
@@ -8310,7 +8359,11 @@ class TA():	# object wrapper for the whole
 				return False
 			if norm_window is not None:
 				ref_scale=re['A'].loc[norm_window[0]:norm_window[1],norm_window[2]:norm_window[3]].mean().mean()
-			fig,ax=plt.subplots(figsize=(10,6),dpi=100)
+			
+			if halfsize:
+				fig,ax=plt.subplots(figsize=(5,3),dpi=100)
+			else:
+				fig,ax=plt.subplots(figsize=(10,6),dpi=100)
 			objects=len(rel_time)*(1+len(other))
 			colors=colm(cmap=cmap,k=range(objects))
 			_=plot_time(re['A'], ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
@@ -8399,7 +8452,10 @@ class TA():	# object wrapper for the whole
 				ref_scale=self.ds.loc[norm_window[0]:norm_window[1],norm_window[2]:norm_window[3]].mean().mean()
 			objects=len(rel_time)*(1+len(other))
 			colors=colm(cmap=cmap,k=range(objects))
-			fig,ax=plt.subplots(figsize=(10,6),dpi=100)
+			if halfsize:
+				fig,ax=plt.subplots(figsize=(5,3),dpi=100)
+			else:
+				fig,ax=plt.subplots(figsize=(10,6),dpi=100)
 			_=plot_time(self.ds, ax = ax, rel_time = rel_time, time_width_percent = time_width_percent, 
 						title = title, lines_are = 'data', scattercut = self.scattercut, 
 						bordercut = self.bordercut, wave_nm_bin = self.wave_nm_bin, cmap = colors, 
@@ -8613,7 +8669,7 @@ class TA():	# object wrapper for the whole
 		>>> 	ta.Compare_at_wave(rel_wave = wave, others = other_project, norm_window = norm_window)
 		
 		'''	
-		
+		global halfsize
 		if self.save_figures_to_folder:self.figure_path=check_folder(path='result_figures',current_path=self.path)
 		if width is None:width=self.wavelength_bin
 		if rel_wave is None:
@@ -8631,7 +8687,10 @@ class TA():	# object wrapper for the whole
 				return False
 			if norm_window is not None:
 				ref_scale = re['A'].loc[norm_window[0]:norm_window[1], norm_window[2]:norm_window[3]].mean().mean()
-			fig, ax = plt.subplots(figsize = (10, 6), dpi = 100)
+			if halfsize:
+				fig, ax = plt.subplots(figsize = (5,3), dpi = 100)
+			else:
+				fig, ax = plt.subplots(figsize = (10, 6), dpi = 100)
 			colors = colm(cmap = cmap, k = range(len(rel_wave)*(2+len(other))))
 			ax = plot1d(re['A'], ax = ax, wavelength = rel_wave, width = width, lines_are = 'data', 
 						cmap = colors, title = '', plot_type = scale_type, linewidth = linewidth)
@@ -8702,7 +8761,10 @@ class TA():	# object wrapper for the whole
 			ax.set_xlim(re['A'].index.values[0],re['A'].index.values[-1])
 			ax.legend(hand,lab)
 		else:
-			fig, ax = plt.subplots(figsize = (10, 6), dpi = 100)
+			if halfsize:
+				fig, ax = plt.subplots(figsize = (5,3), dpi = 100)
+			else:
+				fig, ax = plt.subplots(figsize = (10, 6), dpi = 100)
 			colors = colm(cmap = cmap, k = range(len(rel_wave)*(2+len(other))))
 			if norm_window is not None:
 				ref_scale = self.ds.loc[norm_window[0]:norm_window[1], norm_window[2]:norm_window[3]].mean().mean()
@@ -8850,7 +8912,7 @@ class TA():	# object wrapper for the whole
 		>>> ta.Compare_DAC(spectra = ext_spec, others = other_project) #compare multiple
 		
 		'''
-		
+		global halfsize
 		if self.save_figures_to_folder:self.figure_path = check_folder(path = 'result_figures', current_path = self.path)
 		if other is not None:
 			if not hasattr(other, '__iter__'):other = [other]
@@ -8876,16 +8938,24 @@ class TA():	# object wrapper for the whole
 		if separate_plots:
 			n_cols = int(np.ceil(len(re['DAC'].columns)/2))
 			col = [colors[0] for a in range(len(re['DAC'].columns))]
-			if self.scattercut is None:	
-				ax = DAC.plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
+			if self.scattercut is None:
+				if halfsize:
+					ax = DAC.plot(subplots = separate_plots, figsize = (6, 5), layout = (n_cols, 2), 
+									legend = False, color = col, sharex = False)
+				else:
+					ax = DAC.plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
 									legend = False, color = col, sharex = False)
 
 				a=ax.ravel()
 				handles,labels=a[0].get_legend_handles_labels()
 				hand.append(handles[-1])
 			elif isinstance(self.scattercut[0],  numbers.Number):
-				ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
-													legend = False, color = col, sharex = False)								
+				if halfsize:
+					ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (6, 5), layout = (n_cols, 2), 
+															legend = False, color = col, sharex = False)
+				else:
+					ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
+															legend = False, color = col, sharex = False)								
 				a=ax.ravel()
 				handles,labels=a[0].get_legend_handles_labels()
 				hand.append(handles[-1])	
@@ -8896,9 +8966,13 @@ class TA():	# object wrapper for the whole
 				scattercut = flatten(self.scattercut)
 				for i in range(len(scattercut)/2+1):
 					if i == 0:
-						ax = DAC.loc[:scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), 
-														layout = (n_cols, 2), legend = False, color = col, sharex = False)
-						
+						if halfsize:
+							ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (6, 5), layout = (n_cols, 2), 
+																		legend = False, color = col, sharex = False)						
+						else:
+							ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (12, 10), layout = (n_cols, 2), 
+																		legend = False, color = col, sharex = False)
+		
 						a=ax.ravel()
 						handles,labels=a[0].get_legend_handles_labels()
 						hand.append(handles[-1])	
@@ -8909,20 +8983,36 @@ class TA():	# object wrapper for the whole
 						for j,am in enumerate(ax):
 							DAC.loc[scattercut[-1]:, :].plot(ax = a[j], legend = False, color = col, label = '_nolegend_')
 		else:
-			if self.scattercut is None:	
-				ax  =  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+			if self.scattercut is None:
+				if halfsize:
+					ax  =  DAC.plot(subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+				else:
+					ax  =  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			elif isinstance(self.scattercut[0], numbers.Number):
-				ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
-				ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+				if halfsize:
+					ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+				else:
+					ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			else:
 				scattercut  =  flatten(self.scattercut)
 				for i in range(len(scattercut)/2+1):
 					if i  ==  0:
-						ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						if halfsize:
+							ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						else:
+							ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					elif i<(len(scattercut)/2):
-						ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						if halfsize:
+							ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						else:
+							ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					else:
-						ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						if halfsize:
+							ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+						else:
+							ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 		if other is not None:
 			for i,o in enumerate(other):
 				try:
@@ -8988,7 +9078,10 @@ class TA():	# object wrapper for the whole
 				spectra.plot(ax=a,subplots=separate_plots)				
 		fig=(ax.ravel())[0].figure
 		if separate_plots:
-			fig.set_size_inches(12,10)
+			if halfsize:
+				fig.set_size_inches(6,5)
+			else:
+				fig.set_size_inches(12,10)
 			axes_number=fig.get_axes()
 			names=[self.filename]
 			if other is not None:
@@ -9015,7 +9108,10 @@ class TA():	# object wrapper for the whole
 				ax.legend(handles,nametemp)
 			except:
 				pass
-			fig.set_size_inches(16,8)
+			if halfsize:
+				fig.set_size_inches(8,4)
+			else:
+				fig.set_size_inches(16,8)
 		fig.tight_layout()
 		if self.save_figures_to_folder:
 			fig.savefig(check_folder(path=self.figure_path,filename='compare_DAC.png'),bbox_inches='tight')

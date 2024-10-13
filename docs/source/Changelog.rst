@@ -3,6 +3,13 @@ Changelog
 *********
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
+.. _release-7.7.0:
+7.7.0
+========
+Added X-ray support
+added novel global variable that permits half size plots (nicer in inline mode)
+
+
 .. _release-7.5.0:
 7.5.0
 ========
