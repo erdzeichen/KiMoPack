@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.9.21"
+version = "7.10.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -53,6 +53,7 @@ if 1: #Hide imports
 	shading = 'auto'  # gouraud
 	standard_map = cm.jet
 	halfsize=False
+	start_time=tm.time()
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
 
@@ -4136,6 +4137,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		if True(Default) writes the currently varried values to screen
 
 	'''
+	global start_time
 	time_label=ds.index.name
 	energy_label=ds.columns.name
 	pardf=par_to_pardf(paras)
@@ -4273,7 +4275,9 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					print('----------------------------------')
 					print(pardf)
 				else:
-					print(re['error'])
+					if np.abs(tm.time()-start_time)>30:
+						start_time=tm.time()
+						print(re['error'])
 			if dump_shapes:
 				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
@@ -4385,7 +4389,9 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				print('----------------------------------')
 				print(pardf)
 			else:
-				print(re['error'])
+				if np.abs(tm.time()-start_time)>30:
+					start_time=tm.time()
+					print(re['error'])
 			if dump_shapes:
 				if ext_spectra is not None:
 					for col in ext_spectra.columns.values:
@@ -4707,7 +4713,9 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				print('----------------------------------')
 				print(pardf)
 			else:
-				print(re['error'])
+				if np.abs(tm.time()-start_time)>30:
+					start_time=tm.time()
+					print(re['error'])
 		if final:
 			return return_listen
 		else:
@@ -6979,7 +6987,6 @@ class TA():	# object wrapper for the whole
 		For more examples please see the complete documentation under :ref:`Fitting, Parameter optimization and Error estimation`
 		or :ref:`Fitting multiple measured files at once`
 		"""
-
 		if par is None:par=self.par
 		if mod is None:mod=self.mod
 		try:
@@ -7049,6 +7056,8 @@ class TA():	# object wrapper for the whole
 		############################################################################
 		#----Global optimisation------------------------------------------------------
 		############################################################################
+		global start_time
+		start_time=start_time-30
 		try:
 			keyboard.__package__
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,
@@ -7069,6 +7078,7 @@ class TA():	# object wrapper for the whole
 												write_paras=None,multi_project=None,unique_parameter=None,
 												weights=None,same_DAS=None,sub_sample=None,pulse_sample=None,same_shape_params=None):
 				return None
+		print('Optimizing, after the starting error the new error values will be displayed every 30s')
 		if multi_project is None:
 			#check if there is any concentration to optimise
 			if (filename is None) and dump_shapes: filename = self.filename
