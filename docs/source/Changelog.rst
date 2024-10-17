@@ -4,6 +4,12 @@ Changelog
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
 .. _release-7.10.0:
+7.11.0
+========
+Add the option to use Cor chirp for only time shifting
+Add Streak camera workflow
+
+.. _release-7.10.0:
 7.10.0
 ========
 Added time delay for printing fit output to avoid overflow of notebook output, has big impact on speed for more complex model fits.
