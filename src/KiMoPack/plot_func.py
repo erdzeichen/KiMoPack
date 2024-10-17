@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.10.0"
+version = "7.11.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -79,11 +79,12 @@ def download_notebooks():
 		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
-def download_all():
+def download_all(single_tutorial=None):
 	''' function loads workflow notebooks and example files and tutorials'''
-	download_notebooks()
 	http = urllib3.PoolManager()
-	download_notebooks()
+	if single_tutorial is None:
+		download_notebooks()
+		print('Now downloading the workflow tools and tutorials')		
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -93,13 +94,14 @@ def download_all():
 							'XES_diff.SIA',
 							'XES_on.SIA']
 	print('Now downloading the example files')
-	for f in list_of_example_data:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
-		print('Downloading Workflow Tools/Data/%s'%f)
-		with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
-	print('Now downloading tutorials')
+	if (single_tutorial is None) or (single_tutorial == 'workflow'): #we do not use this to download data for Colab 
+		for f in list_of_example_data:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
+			print('Downloading Workflow Tools/Data/%s'%f)
+			with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
+	
 	list_of_tutorials=['function_library.py',
 						'Function_library_overview.pdf',
 						'import_library.py',
@@ -109,12 +111,14 @@ def download_all():
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
 						'KiMoPack_tutorial_4_ScanHandling.ipynb',
 						'KiMoPack_tutorial_5_MultiModal.ipynb']
-	for f in list_of_tutorials:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
-		print('Downloading tutorial %s'%f)
-		with open(check_folder(path = 'Tutorial_Notebooks', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
+	if single_tutorial is None: #we do not use this to download data for Colab 
+		print('Now downloading tutorials')
+		for f in list_of_tutorials:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
+			print('Downloading tutorial %s'%f)
+			with open(check_folder(path = 'Tutorial_Notebooks', current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
 	tutorial_data={'Compare':['TA_Ru-dppz_400nm_DCM_paral.hdf5','TA_Ru-dppz_400nm_H2O_paral.hdf5','UVvis_SEC_Rudppz_ACN.dat'],
 				   'Master':['TA_Ru-dppz_400nm_ACN_paral.hdf5'],
 				   'Fitting-1':['TA_Ru-dppz_400nm_ACN.SIA','TA_Ru-dppz_400nm_ACN_chirp.dat','TA_Ru-dppz_400nm_DCM.SIA','TA_Ru-dppz_400nm_DCM_chirp.dat','TA_Ru-dppz_400nm_H2O.SIA','TA_Ru-dppz_400nm_H2O_chirp.dat'],
@@ -124,6 +128,9 @@ def download_all():
 					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
+		if single_tutorial is not None:   #this is a shortcut to download data fror Colab use
+			if not key==single_tutorial:
+				continue
 		for f in tutorial_data[key]:
 			if 'Master' in key:
 				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/Compare/Master/%s"%f
@@ -136,11 +143,13 @@ def download_all():
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)
 	tutorial_images=['Cor_Chirp.gif','Fig1_parallel_model.png','Fig2_consecutive_model.png','Fig3_complex_model.png','Intro_tutorial.png','Model_selection.jpg']
-	for f in tutorial_images:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/img/%s"%f
-		with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
+	if single_tutorial is None:
+		for f in tutorial_images:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/img/%s"%f
+			with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
+
 
 def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, LARGE_SIZE=18):
 	'''
@@ -3586,8 +3595,8 @@ def Species_Spectra(ta=None,conc=None,das=None):
 
 
 def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, bordercut=None,
-				shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
-			cmap = cm.prism):										
+			  shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
+			  cmap = cm.prism, just_shift=False):										
 	'''Manual selecting polynom for chirp. 	This function is opening 
 		a plot and allows the user to select a number of points, which are then 
 		approximated with a 4th order polynomial and finally to select a point 
@@ -3671,6 +3680,9 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 		a different map than is used for the normal 2d plotting.\n
 		cm.prism (Default) has proofen to be very usefull
 	
+	just_shift: bool, optional
+		This will turn of the polynomial part of the fitting and lets you just select the new time zero
+	
 		
 		''' 
 	ds=ds.fillna(0)
@@ -3736,45 +3748,47 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 					print('click better please')
 					plt.close(fig)
 					continue
-			for repeat in range(10):
-				fig,ax=plt.subplots(figsize=(12,12))
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							timelimits = shown_window, intensity_range = intensity_range, 
-							title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
-							use_colorbar = False, plot_type = "linear", log_scale = False)
-				fig.tight_layout()
-				polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-				plt.close(fig)
-				fig,ax=plt.subplots(figsize=(12,12))
-				ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							timelimits = shown_window, intensity_range = intensity_range, 
-							title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
-							plot_type = "linear", log_scale = False)
-				#Fit a polynomial of the form p(x) = p[2] + p[1] + p[0]
-				fitcoeff= np.polyfit(polypts[:, 0], polypts[:, 1], 4, full=False)
-				
-				correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
-				ax.plot(ds.columns.values.astype('float'),correcttimeval)
-				 
-				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-				ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=20)
-				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-								   
-				ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=20)
-				fig.tight_layout()
-				satisfied =plt.ginput(1)
-				plt.close(fig)
-				if satisfied[0][0] < ax.get_xlim()[0]+w/2:
-					print('accepted')
+			if not just_shift:
+				for repeat in range(10):
+					fig,ax=plt.subplots(figsize=(12,12))
+					ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+								timelimits = shown_window, intensity_range = intensity_range, 
+								title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
+								use_colorbar = False, plot_type = "linear", log_scale = False)
+					fig.tight_layout()
+					polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
 					plt.close(fig)
-					break
-				elif repeat<8:
+					fig,ax=plt.subplots(figsize=(12,12))
+					ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+								timelimits = shown_window, intensity_range = intensity_range, 
+								title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
+								plot_type = "linear", log_scale = False)
+					#Fit a polynomial of the form p(x) = p[2] + p[1] + p[0]
+					fitcoeff= np.polyfit(polypts[:, 0], polypts[:, 1], 4, full=False)
+					
+					correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
+					ax.plot(ds.columns.values.astype('float'),correcttimeval)
+					 
+					ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
+					ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=20)
+					ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
+									   
+					ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=20)
+					fig.tight_layout()
+					satisfied =plt.ginput(1)
 					plt.close(fig)
-					continue
-				else:
-					plt.close(fig)
-					return False
-			#stdev = sum(residuals**2)/8
+					if satisfied[0][0] < ax.get_xlim()[0]+w/2:
+						print('accepted')
+						plt.close(fig)
+						break
+					elif repeat<8:
+						plt.close(fig)
+						continue
+					else:
+						plt.close(fig)
+						return False
+			else:
+				fitcoeff=np.array([0,0,0,0,0])
 		else:
 			with open(save_file,'r') as f:
 				fitcoeff=f.readline()
@@ -6043,7 +6057,7 @@ class TA():	# object wrapper for the whole
 			
 			
 
-	def Cor_Chirp(self, chirp_file = None, path = None, shown_window = [-1, 1], fitcoeff = None, max_points = 40, cmap = cm.prism):
+	def Cor_Chirp(self, chirp_file = None, path = None, shown_window = [-1, 1], fitcoeff = None, max_points = 40, cmap = cm.prism, just_shift=False):
 		'''*Cor_Chirp* is a powerful Function to correct for a different arrival times of 
 		different wavelength (sometimes call chirp). 
 		In general if a file is opened for the first time this function is opening 
@@ -6121,6 +6135,9 @@ class TA():	# object wrapper for the whole
 			Colourmap to be used for the chirp correction. While there is a large selection here I recommend to choose
 			a different map than is used for the normal 2d plotting.\n
 			cm.prism (Default) has proofen to be very usefull
+			
+		just_shift: bool, optional
+			This switch turns of the polynomial selection and only permits a shift.
 
 		Examples
 		----------
@@ -6178,7 +6195,7 @@ class TA():	# object wrapper for the whole
 									filename = self.filename, path = self.path,
 									scattercut = self.scattercut, bordercut = self.bordercut, 
 									intensity_range = self.intensity_range, wave_nm_bin = 10, shown_window = shown_window, 
-									fitcoeff = fitcoeff, max_points = max_points)
+									fitcoeff = fitcoeff, max_points = max_points, just_shift=just_shift)
 				if save_file is None:
 					if self.filename is None:
 						chirp_file='chirp.dat'

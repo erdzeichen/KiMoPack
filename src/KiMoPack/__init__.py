@@ -85,20 +85,12 @@ def download_notebooks():
 		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
-def download_all():
+def download_all(single_tutorial=None):
 	''' function loads workflow notebooks and example files and tutorials'''
-	download_notebooks()
 	http = urllib3.PoolManager()
-	list_of_tools=['TA_Advanced_Fit.ipynb',
-					'TA_comparative_plotting_and_data_extraction.ipynb',
-					'TA_Raw_plotting.ipynb',
-					'TA_Raw_plotting_and_Simple_Fit.ipynb',
-					'TA_single_scan_handling.ipynb',
-					'Function_library_overview.pdf',
-					'function_library.py',
-					'import_library.py',
-					'XES_Raw_plotting_and_Simple_Fit.ipynb']
-	print('Now downloading the workflow tools and tutorials')
+	if single_tutorial is None:
+		download_notebooks()
+		print('Now downloading the workflow tools and tutorials')
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -108,13 +100,14 @@ def download_all():
 							'XES_diff.SIA',
 							'XES_on.SIA']
 	print('Now downloading the example files')
-	for f in list_of_example_data:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
-		print('Downloading Workflow Tools/Data/%s'%f)
-		with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
-	print('Now downloading tutorials')
+	if (single_tutorial is None) or (single_tutorial == 'workflow'): #we do not use this to download data for Colab 
+		for f in list_of_example_data:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/Data/%s"%f
+			print('Downloading Workflow Tools/Data/%s'%f)
+			with open(check_folder(path = 'Workflow_tools'+os.sep+'Data', current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
+	
 	list_of_tutorials=['function_library.py',
 						'Function_library_overview.pdf',
 						'import_library.py',
@@ -124,12 +117,14 @@ def download_all():
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
 						'KiMoPack_tutorial_4_ScanHandling.ipynb',
 						'KiMoPack_tutorial_5_MultiModal.ipynb']
-	for f in list_of_tutorials:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
-		print('Downloading tutorial %s'%f)
-		with open(check_folder(path = 'Tutorial_Notebooks', current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
+	if single_tutorial is None: #we do not use this to download data for Colab 
+		print('Now downloading tutorials')
+		for f in list_of_tutorials:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/%s"%f
+			print('Downloading tutorial %s'%f)
+			with open(check_folder(path = 'Tutorial_Notebooks', current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
 	tutorial_data={'Compare':['TA_Ru-dppz_400nm_DCM_paral.hdf5','TA_Ru-dppz_400nm_H2O_paral.hdf5','UVvis_SEC_Rudppz_ACN.dat'],
 				   'Master':['TA_Ru-dppz_400nm_ACN_paral.hdf5'],
 				   'Fitting-1':['TA_Ru-dppz_400nm_ACN.SIA','TA_Ru-dppz_400nm_ACN_chirp.dat','TA_Ru-dppz_400nm_DCM.SIA','TA_Ru-dppz_400nm_DCM_chirp.dat','TA_Ru-dppz_400nm_H2O.SIA','TA_Ru-dppz_400nm_H2O_chirp.dat'],
@@ -139,6 +134,9 @@ def download_all():
 					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
+		if single_tutorial is not None:   #this is a shortcut to download data fror Colab use
+			if not key==single_tutorial:
+				continue
 		for f in tutorial_data[key]:
 			if 'Master' in key:
 				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/Compare/Master/%s"%f
@@ -151,8 +149,9 @@ def download_all():
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)
 	tutorial_images=['Cor_Chirp.gif','Fig1_parallel_model.png','Fig2_consecutive_model.png','Fig3_complex_model.png','Intro_tutorial.png','Model_selection.jpg']
-	for f in tutorial_images:
-		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/img/%s"%f
-		with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
-			r = http.request('GET', url, preload_content=False)
-			shutil.copyfileobj(r, out)
+	if single_tutorial is None:
+		for f in tutorial_images:
+			url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/img/%s"%f
+			with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
+				r = http.request('GET', url, preload_content=False)
+				shutil.copyfileobj(r, out)
