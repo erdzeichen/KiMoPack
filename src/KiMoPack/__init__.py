@@ -77,6 +77,7 @@ def download_notebooks():
 					'Function_library_overview.pdf',
 					'function_library.py',
 					'import_library.py',
+					'Streak_camera_analysis.ipynb',
 					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools')
 	for f in list_of_tools:
@@ -98,7 +99,9 @@ def download_all(single_tutorial=None):
 							'Sample_1.SIA',
 							'Sample_2.SIA',
 							'XES_diff.SIA',
-							'XES_on.SIA']
+							'XES_on.SIA',
+							'FeCM02-266nm-4mw-QB390-t6-G63-w450-s150-556ms-E100.dat',
+							'FeCM02-266nm-4mw-QB390-t6-G63-w450-s150-556ms-E100_chirp.dat']
 	print('Now downloading the example files')
 	if (single_tutorial is None) or (single_tutorial == 'workflow'): #we do not use this to download data for Colab 
 		for f in list_of_example_data:

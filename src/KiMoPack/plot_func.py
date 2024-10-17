@@ -71,6 +71,7 @@ def download_notebooks():
 					'Function_library_overview.pdf',
 					'function_library.py',
 					'import_library.py',
+					'Streak_camera_analysis.ipynb',
 					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools')
 	for f in list_of_tools:
@@ -84,7 +85,7 @@ def download_all(single_tutorial=None):
 	http = urllib3.PoolManager()
 	if single_tutorial is None:
 		download_notebooks()
-		print('Now downloading the workflow tools and tutorials')		
+		print('Now downloading the workflow tools and tutorials')
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -92,7 +93,9 @@ def download_all(single_tutorial=None):
 							'Sample_1.SIA',
 							'Sample_2.SIA',
 							'XES_diff.SIA',
-							'XES_on.SIA']
+							'XES_on.SIA',
+							'FeCM02-266nm-4mw-QB390-t6-G63-w450-s150-556ms-E100.dat',
+							'FeCM02-266nm-4mw-QB390-t6-G63-w450-s150-556ms-E100_chirp.dat']
 	print('Now downloading the example files')
 	if (single_tutorial is None) or (single_tutorial == 'workflow'): #we do not use this to download data for Colab 
 		for f in list_of_example_data:
@@ -149,6 +152,7 @@ def download_all(single_tutorial=None):
 			with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
 				r = http.request('GET', url, preload_content=False)
 				shutil.copyfileobj(r, out)
+
 
 
 def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, LARGE_SIZE=18):
@@ -3803,7 +3807,12 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 			#finding where zero time is
 			for repeat in range(10):
 				fig,ax=plt.subplots(figsize=(12,12))
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+				if just_shift:
+					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+							lintresh = np.max(timelimits), timelimits =timelimits, intensity_range = intensity_range, 
+							title = 'select new time zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
+				else:
+					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = np.max(timelimits), timelimits =[-cutoff_window*0.3,cutoff_window*0.3], intensity_range = intensity_range, 
 							title = 'corrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
@@ -3813,11 +3822,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				print(fittingto)
 				fitcoeff[-1]+=fittingto
 				ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
-							
 				plt.close(fig)
 				fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits = timelimits, intensity_range = intensity_range, 
+							lintresh = np.max(timelimits), timelimits = np.array(timelimits)-fitcoeff[-1], intensity_range = intensity_range, 
 							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
@@ -5902,7 +5910,7 @@ class TA():	# object wrapper for the whole
 			return ds-correction
 
 
-	def Man_Chirp(self,shown_window=[-1,1],path=None,max_points=40,cmap=cm.prism,ds=None):
+	def Man_Chirp(self,shown_window=[-1,1],path=None,max_points=40,cmap=cm.prism,ds=None,just_shift=False):
 		'''Triggering of Manuel Fix_Chirp. usually used when Cor_Chirp has run already. 
 		Alternatively delete the chirp file. This Function opens a plot in which the user manually selects a number of points
 		These points will then be interpolated with a 4th order polynomial
@@ -5948,17 +5956,17 @@ class TA():	# object wrapper for the whole
 			temp_ds = Fix_Chirp(ds, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
 								wave_nm_bin = 10, shown_window = shown_window, filename = self.filename, 
 								scattercut = self.scattercut, bordercut = self.bordercut, 
-								path = check_folder(path = path, current_path = self.path), max_points = max_points)
+								path = check_folder(path = path, current_path = self.path), max_points = max_points, just_shift=just_shift)
 		else:
 			temp_ds = Fix_Chirp(ds, cmap = cmap, save_file = None, intensity_range = self.intensity_range, 
 								wave_nm_bin = 10, shown_window = shown_window, filename = self.filename+'_second_chirp', 
 								scattercut = self.scattercut, bordercut = self.bordercut, 
-								path = check_folder(path = path, current_path = self.path), max_points = max_points)
+								path = check_folder(path = path, current_path = self.path), max_points = max_points, just_shift=just_shift)
 		if isinstance(temp_ds,pandas.DataFrame):
 			self.ds=temp_ds
 			self.chirp_file=self.filename.split('.')[0] + '_chirp.dat'
 			if original:#we have run from scratch
-				self.Cor_Chirp(path=path)
+				self.Cor_Chirp(shown_window=shown_window,path=path,max_points=max_points,cmap=cmap,just_shift=just_shift)
 			else:
 				print('you provided a separate ds file. returned are the new fitcoeff and the combined fitcoeff, ta also has a new variable called ta.combined_fitcoeff')
 				save_file=check_folder(path=path,current_path = self.path, filename=self.filename+'_second_chirp')
