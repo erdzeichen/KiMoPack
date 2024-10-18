@@ -20,7 +20,21 @@ def Ivan_horse(filename):
 	ds.sort_index(inplace=True,axis=1)
 	return ds.T,'PLQY'
 
+def cor_streak_lund(filename):
+	'''This reads the file of the "DAC" that is exported as corrected file from the streak camera software ending'''
+	ds=pd.read_csv(filename,sep='\t',index_col=0)
+	ds.columns.name="nm"
+	ds.index.name="Time in ps"
+	data_type="Emission intensity"
+	baseunit="ps"
+	ds.index=ds.index.astype(float)
+	ds.columns=ds.columns.astype(float)
+	ds.sort_index(inplace=True,axis=1)
+	ds.sort_index(inplace=True,axis=0)
+	return ds,data_type,baseunit
+
 def streak_Lund(filename):
+	'''This is reading the filetype that is saved by the streak camera software as "dat" type'''
 	code=str(filename).split(os.sep)[-1]#split of the path
 	code=code.split('.')[0]				#split of the dot and fileending
 	code=code.split('-')
