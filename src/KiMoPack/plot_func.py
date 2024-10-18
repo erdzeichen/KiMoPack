@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.1"
+version = "7.11.3"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -129,6 +129,7 @@ def download_all(single_tutorial=None):
 					'Introduction':['catalysis1.SIA','catalysis2.SIA','con_1.SIA','con_1_solved.hdf5','con_2.SIA','con_2_chirp.dat','con_3.SIA','con_4.SIA','con_5.SIA','con_6.SIA','con_6_chirp.dat','full_consecutive_fit.hdf5','full_consecutive_fit_with_GS.hdf5','sample_1_chirp.dat'],
 					'Scan':['ACN_001.SIA','ACN_002.SIA','ACN_003.SIA','ACN_004.SIA','ACN_005.SIA','ACN_006.SIA','ACN_007.SIA','ACN_008.SIA','ACN_009.SIA','TA_Ru-dppz_400nm_ACN_mean.SIA','TA_Ru-dppz_400nm_ACN_mean_chirp.dat'],
 					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
+	#url = "https://github.com/erdzeichen/KiMoPack/blob/main/Tutorial_Notebooks/Data/"
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
 		if single_tutorial is not None:   #this is a shortcut to download data fror Colab use
@@ -141,7 +142,7 @@ def download_all(single_tutorial=None):
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)
 			else:
-				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/key/%s"%f
+				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/%s/%s"%(key,f)
 				with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','Data',key]), current_path = os.getcwd(), filename = f), 'wb') as out:
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)
