@@ -66,32 +66,38 @@ def check_folder(path = None, current_path = None, filename = None):
 		return directory
 	else:
 		return directory.joinpath(filename)
-def download_notebooks():
-	'''function loads the workflow notebooks into the active folder'''
+def download_notebooks(libraries_only=False):
+	'''function loads the workflow notebooks into the active folder
+	if libraries_only is set to True, only the function library and the import library are loaded'''
 	http = urllib3.PoolManager()
-	list_of_tools=['TA_Advanced_Fit.ipynb',
+	list_of_tools=['Function_library_overview.pdf',
+					'function_library.py',
+					'import_library.py',
+					'TA_Advanced_Fit.ipynb',
 					'TA_comparative_plotting_and_data_extraction.ipynb',
 					'TA_Raw_plotting.ipynb',
 					'TA_Raw_plotting_and_Simple_Fit.ipynb',
 					'TA_single_scan_handling.ipynb',
-					'Function_library_overview.pdf',
-					'function_library.py',
-					'import_library.py',
 					'Streak_camera_analysis.ipynb',
 					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools')
-	for f in list_of_tools:
+	for i,f in enumerate(list_of_tools):
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
 		print('Downloading Workflow Tools/%s'%f)
 		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
+		if libraries_only and i==2:
+			break
 def download_all(single_tutorial=None):
 	''' function loads workflow notebooks and example files and tutorials'''
 	http = urllib3.PoolManager()
 	if single_tutorial is None:
 		download_notebooks()
 		print('Now downloading the workflow tools and tutorials')
+	else:
+		download_notebooks(libraries_only=True)
+		print('Libraries downloaded')
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -147,7 +153,7 @@ def download_all(single_tutorial=None):
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)
 			else:
-				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/key/%s"%f
+				url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data/%s/%s"%(key,f)
 				with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','Data',key]), current_path = os.getcwd(), filename = f), 'wb') as out:
 					r = http.request('GET', url, preload_content=False)
 					shutil.copyfileobj(r, out)

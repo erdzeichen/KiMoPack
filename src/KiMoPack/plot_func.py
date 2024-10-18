@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.4"
+version = "7.11.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -58,34 +58,40 @@ print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.d
 print('The current working folder is:\n %s' % os.getcwd())
 
 #use this to trigger a real error for DeprecationWarnings
-#np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)                  
-
-def download_notebooks():
-	'''function loads the workflow notebooks into the active folder'''
+#np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)   
+               
+def download_notebooks(libraries_only=False):
+	'''function loads the workflow notebooks into the active folder
+	if libraries_only is set to True, only the function library and the import library are loaded'''
 	http = urllib3.PoolManager()
-	list_of_tools=['TA_Advanced_Fit.ipynb',
+	list_of_tools=['Function_library_overview.pdf',
+					'function_library.py',
+					'import_library.py',
+					'TA_Advanced_Fit.ipynb',
 					'TA_comparative_plotting_and_data_extraction.ipynb',
 					'TA_Raw_plotting.ipynb',
 					'TA_Raw_plotting_and_Simple_Fit.ipynb',
 					'TA_single_scan_handling.ipynb',
-					'Function_library_overview.pdf',
-					'function_library.py',
-					'import_library.py',
 					'Streak_camera_analysis.ipynb',
 					'XES_Raw_plotting_and_Simple_Fit.ipynb']
 	print('Now downloading the workflow tools')
-	for f in list_of_tools:
+	for i,f in enumerate(list_of_tools):
 		url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Workflow_tools/%s"%f
 		print('Downloading Workflow Tools/%s'%f)
 		with open(check_folder(path = 'Workflow_tools', current_path = os.getcwd(), filename = f), 'wb') as out:
 			r = http.request('GET', url, preload_content=False)
 			shutil.copyfileobj(r, out)
+		if libraries_only and i==2:
+			break
 def download_all(single_tutorial=None):
 	''' function loads workflow notebooks and example files and tutorials'''
 	http = urllib3.PoolManager()
 	if single_tutorial is None:
 		download_notebooks()
 		print('Now downloading the workflow tools and tutorials')
+	else:
+		download_notebooks(libraries_only=True)
+		print('Libraries downloaded')
 	list_of_example_data=['sample_1_chirp.dat',
 							'Sample_2_chirp.dat',
 							'sample_1.hdf5',
@@ -129,7 +135,6 @@ def download_all(single_tutorial=None):
 					'Introduction':['catalysis1.SIA','catalysis2.SIA','con_1.SIA','con_1_solved.hdf5','con_2.SIA','con_2_chirp.dat','con_3.SIA','con_4.SIA','con_5.SIA','con_6.SIA','con_6_chirp.dat','full_consecutive_fit.hdf5','full_consecutive_fit_with_GS.hdf5','sample_1_chirp.dat'],
 					'Scan':['ACN_001.SIA','ACN_002.SIA','ACN_003.SIA','ACN_004.SIA','ACN_005.SIA','ACN_006.SIA','ACN_007.SIA','ACN_008.SIA','ACN_009.SIA','TA_Ru-dppz_400nm_ACN_mean.SIA','TA_Ru-dppz_400nm_ACN_mean_chirp.dat'],
 					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
-	#url = "https://github.com/erdzeichen/KiMoPack/blob/main/Tutorial_Notebooks/Data/"
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
 		if single_tutorial is not None:   #this is a shortcut to download data fror Colab use
@@ -153,7 +158,6 @@ def download_all(single_tutorial=None):
 			with open(check_folder(path = os.sep.join(['Tutorial_Notebooks','img']), current_path = os.getcwd(), filename = f), 'wb') as out:
 				r = http.request('GET', url, preload_content=False)
 				shutil.copyfileobj(r, out)
-
 
 
 def changefonts(weight='bold', font='standard', SMALL_SIZE=11, MEDIUM_SIZE=13, LARGE_SIZE=18):
