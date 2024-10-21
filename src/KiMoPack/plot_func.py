@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.6"
+version = "7.11.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3732,7 +3732,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
 				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]-0.1),w,0.1,facecolor='white'))
 				for i,ent in enumerate(intensities):
-					ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=20)
+					if halfsize:
+						ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=10)
+					else:
+						ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=20)
 				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[0]),w/4.,0.1,facecolor='white'))
 				ax.text(ax.get_xlim()[0],shown_window[0],'Accept',fontsize=20)
 				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3./4.,shown_window[0]),w/4.,0.1,facecolor='white'))
