@@ -2,6 +2,20 @@ import numpy as np
 import pandas as pd
 import os
 
+def Uppsala(filename):
+	df=pd.read_csv(filename,index_col=0,sep=',').T
+	#df=df.fillna(0)
+	df=df.dropna(axis=1)
+	df.index=df.index.astype('float')
+	df.columns=df.columns.astype('float')
+	df.sort_index(inplace=True)
+	df.sort_index(inplace=True,axis=1)
+	df.astype('float')
+	df.index.name='Time in ps'
+	df.columns.name='Wavelength in nm'
+	return df,'differential absorption in mOD','ps'
+
+
 def Ivan_horse(filename):
 	#print(filename)
 	import scipy.constants as const
