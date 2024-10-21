@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.7"
+version = "7.11.8"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3833,7 +3833,7 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 							title = 'select new time zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				else:
 					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits =[-cutoff_window*0.3,cutoff_window*0.3], intensity_range = intensity_range, 
+							lintresh = np.max(timelimits), timelimits =np.array(timelimits)/5, intensity_range = intensity_range, 
 							title = 'corrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
 				#ax.set_ylim(-cutoff_window,cutoff_window)
@@ -3843,9 +3843,17 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				fitcoeff[-1]+=fittingto
 				ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
 				plt.close(fig)
-				fig,ax=plt.subplots(figsize=(12,12))
-				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+				if halfsize:
+					fig,ax=plt.subplots(figsize=(6,6))
+				else:
+					fig,ax=plt.subplots(figsize=(12,12))
+				if just_shift:
+					ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = np.max(timelimits), timelimits = np.array(timelimits)-fitcoeff[-1], intensity_range = intensity_range, 
+							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
+				else:
+					ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+							lintresh = np.max(timelimits), timelimits = np.array(timelimits)/5, intensity_range = intensity_range, 
 							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
 				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
 				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
