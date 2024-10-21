@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.5"
+version = "7.11.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -3721,7 +3721,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 			cutoff_window=np.abs(shown_window[1]-shown_window[0])
 			timelimits=shown_window+np.asarray([-window_difference,window_difference])
 			for repeat in range(30):
-				fig,ax=plt.subplots(figsize=(12,12))
+				if halfsize:
+					fig,ax=plt.subplots(figsize=(6,6))
+				else:
+					fig,ax=plt.subplots(figsize=(12,12))
 				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut,
 							timelimits = timelimits, intensity_range = intensity_range, 
 							title = 'select intensity where we can work,\n  if happy,  choose confirm or abort', 
@@ -3759,7 +3762,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 					continue
 			if not just_shift:
 				for repeat in range(10):
-					fig,ax=plt.subplots(figsize=(12,12))
+					if halfsize:
+						fig,ax=plt.subplots(figsize=(6,6))
+					else:
+						fig,ax=plt.subplots(figsize=(12,12))
 					ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 								timelimits = shown_window, intensity_range = intensity_range, 
 								title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
@@ -3767,7 +3773,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 					fig.tight_layout()
 					polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
 					plt.close(fig)
-					fig,ax=plt.subplots(figsize=(12,12))
+					if halfsize:
+						fig,ax=plt.subplots(figsize=(6,6))
+					else:
+						fig,ax=plt.subplots(figsize=(12,12))					
 					ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 								timelimits = shown_window, intensity_range = intensity_range, 
 								title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
@@ -3811,7 +3820,10 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 		if save_file is None:
 			#finding where zero time is
 			for repeat in range(10):
-				fig,ax=plt.subplots(figsize=(12,12))
+				if halfsize:
+					fig,ax=plt.subplots(figsize=(6,6))
+				else:
+					fig,ax=plt.subplots(figsize=(12,12))				
 				if just_shift:
 					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
 							lintresh = np.max(timelimits), timelimits =timelimits, intensity_range = intensity_range, 
