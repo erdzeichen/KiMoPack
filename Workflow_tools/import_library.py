@@ -2,6 +2,20 @@ import numpy as np
 import pandas as pd
 import os
 
+def NRL(filename):
+	ds=pd.read_csv(filename, sep=',', index_col=0, header=None)
+	ds.columns=ds.iloc[0,:]
+	ds.drop(0,inplace=True)
+	ds.index=ds.index.astype(float)
+	ds.columns=ds.columns.astype(float)
+	ds.sort_index(inplace=True,axis=0)
+	ds.sort_index(inplace=True,axis=1)
+	ds.astype('float')
+	ds=ds.T
+	ds.index.name='Time in ps'
+	ds.columns.name='Wavelength in nm'
+	return ds,'differential absorption in mOD','ps'
+
 def Uppsala(filename):
 	df=pd.read_csv(filename,index_col=0,sep=',').T
 	#df=df.fillna(0)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.11.8"
+version = "7.12.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -582,9 +582,10 @@ def Frame_golay(df, window=5, order=2,transpose=False):
 		for col in df.columns:
 			try:
 				df.loc[:,col]=savitzky_golay(df.loc[:,col].values, window, order)
-			except:
+			except Exception as e:
 				print(col)
 				print('was not smoothed')
+				print(e)
 		if transpose:
 			df=df.T
 		return df
@@ -1909,9 +1910,9 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = None, path = None, filename = None, f = 'standard', 
 					intensity_range = 1e-2, baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, 
 					error_matrix_amplification = 20, wave_nm_bin = 5, rel_wave = None, width = 10, rel_time = [1, 5, 10], 
-					time_width_percent = 10, ignore_time_region = None, save_figures_to_folder = True, log_fit = False, mod = None, 
-					subplot = False, color_offset = 0, log_scale = True, savetype = 'png', evaluation_style = False, lintresh = 1, 
-					scale_type = 'symlog', patches = False, print_click_position = False, 
+					time_width_percent = 10, ignore_time_region = None, save_figures_to_folder = True, return_figures_handles=False,
+					log_fit = False, mod = None, subplot = False, color_offset = 0, log_scale = True, savetype = 'png', 
+					evaluation_style = False, lintresh = 1, scale_type = 'symlog', patches = False, print_click_position = False, 
 					data_type = 'differential Absorption in $\mathregular{\Delta OD}$', plot_second_as_energy = True, units = 'nm',
 					equal_energy_bin = None):
 	'''Purly manual function that plots all the fit output figures. Quite cumbersome, 
@@ -2004,7 +2005,9 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 	
 	savetype : str or iterable (of str), optional 
 		matplotlib allows the saving of figures in various formats. (Default) "png", 
-		typical and recommendable options are "svg" and "pdf".  
+		typical and recommendable options are "svg" and "pdf".
+	
+	return_figures_handles
 		
 	evaluation_style : bool, optional
 		True (Default = False) adds a lot of extra information in the plot
@@ -2029,7 +2032,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 
 
 	save_figures_to_folder : bool, optional
-		(Default) is True, if True the Figures are automatically saved 
+		(Default) is True, if True the Figures are automatically saved
+		
+	return_figures_handles : bool, optional
+		(Default) is False, if True the Figure handles are returned as a dictionary.
 
 	log_scale : bool, optional
 		If True (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. 
@@ -2160,7 +2166,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		If a list/vector/DataFrame is given for the colours they will be used in the order provided.		
 	
 	print_click_position : bool, optional
-		if True then the click position is printed for the spectral plots 
+		if True then the click position is printed for the spectral plots
 	
 	Examples
 	------------
@@ -2548,6 +2554,15 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 				eval('fig%i'%(a+1)).savefig(check_folder(path=figure_path,filename='%s_%s.%s'%(fi,name_extension[a],savetype)),bbox_inches='tight')
 			except Exception as e:
 				print(e)
+	if return_figures_handles:
+		name_extension=['DAC','SUM','SEL','SPEC','FIG_MAT','concentrations','RESIDUAL']
+		returning_dict={}
+		for a in range(7):
+			try:
+				returning_dict[name_extension[a]]=eval('fig%i'%(a+1))
+			except Exception as e:
+				print(e)
+		return returning_dict
 
 def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-2, baseunit = 'ps',
 			timelimits = None, scattercut = None, bordercut = None, wave_nm_bin = None, width = 10,
@@ -2556,7 +2571,8 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			log_scale = True, plot_type = 'symlog', lintresh = 0.3, times = None, 
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\mathregular{\Delta OD}$',
-			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = None):
+			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = None,
+			return_figures_handles=False):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
 	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of 
 	cuts are created using the shaping parameters explained below.
@@ -2717,6 +2733,9 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	save_figures_to_folder : bool, optional
 		(Default) is False, if True the Figures are automatically saved 
+	
+	return_figures_handles : bool, optional
+		(Default) is False, if True the Figure handles are returned as a dictionary.
 		
 	savetype : str or iterable (of str), optional 
 		matplotlib allows the saving of figures in various formats. (Default) "png", 
@@ -2830,24 +2849,14 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 				eval('fig%i'%(a+1)).savefig(check_folder(path=path,filename='%s_%s.%s'%(fi,name_extension[a],savetype)),bbox_inches='tight',dpi=300)
 			except Exception as e:
 				print(e)
-	if return_plots:
+	if return_figures_handles:
 		return_dicten={}
-		try:
-			return_dicten[0]=fig1
-		except:
-			pass
-		try:
-			return_dicten[1]=fig2
-		except:
-			pass
-		try:
-			return_dicten[2]=fig3
-		except:
-			pass
-		try:
-			return_dicten[3]=fig4
-		except:
-			pass
+		name_extension=['RAW_MAT','RAW_SEL','RAW_SPEK','RAW_SVD']
+		for i in range(4):
+			try:
+				return_dicten[name_extension[i]]=eval('fig%i'%(i+1))
+			except:
+				pass
 		return return_dicten
 
 def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_time_region = None, 
@@ -4359,10 +4368,16 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 				listen.append(times_ori[:-1]+((times_ori[1:]-times_ori[:-1])*i/sub_sample))
 			times=np.unique(np.hstack(listen))
 			times.sort()
-		c=mod(times=times,pardf=pardf.loc[:,'value'])
+		try:
+			c=mod(times=times,pardf=pardf.loc[:,'value'])
+		except Exception as e:
+			print(e)
 		c=c.loc[times_ori,:]
 		if ext_spectra is None:
-			re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
+			try:
+				re=fill_int(ds=ds,c=c, return_shapes = dump_shapes)
+			except Exception as e:
+				print(e)
 		else:
 			ext_spectra.sort_index(inplace=True)
 			if 'ext_spectra_shift' in list(pardf.index.values):
@@ -5923,14 +5938,14 @@ class TA():	# object wrapper for the whole
 			if correction is None:raise ValueError('We must have correction given, to slow otherhwise')
 		if (lowlimit is None) and (correction is None):
 			if use_median:
-				correction=ds[:uplimit].median(axis=0)
+				correction=ds.loc[:uplimit].median(axis=0)
 			else:
-				correction=ds[:uplimit].mean(axis=0)
+				correction=ds.loc[:uplimit].mean(axis=0)
 		elif (lowlimit is not None) and (correction is None):
 			if use_median:
-				correction=ds[lowlimit:uplimit].median(axis=0)
+				correction=ds.loc[lowlimit:uplimit].median(axis=0)
 			else:
-				correction=ds[lowlimit:uplimit].mean(axis=0)
+				correction=ds.loc[lowlimit:uplimit].mean(axis=0)
 		if run_global:
 			self.ds=ds-correction
 			self.background_par=[lowlimit,uplimit,use_median,correction]
@@ -6442,7 +6457,7 @@ class TA():	# object wrapper for the whole
 
 	def Plot_RAW(self, plotting = range(4), title = None, scale_type = 'symlog', times = None,
 				cmap = None, filename = None, path = "result_figures", savetype = 'png' , print_click_position = False,
-				plot_second_as_energy = True, ds = None):
+				plot_second_as_energy = True, ds = None, return_figures_handles=False):
 		'''This is a wrapper function that triggers the plotting of various RAW (non fitted) plots. 
 		The shaping parameter are taken from the object and should be defined before.
 		The parameter in this plot call are to control the general look and features of the plot.
@@ -6520,7 +6535,10 @@ class TA():	# object wrapper for the whole
 		
 		savetype : str or iterable (of str), optional 
 			matplotlib allows the saving of figures in various formats. (Default) "png", 
-			typical and recommendable options are "svg" and "pdf".  
+			typical and recommendable options are "svg" and "pdf".
+			
+		return_figures_handles : bool, optional
+			(Default) is False, if True the Figure handles are returned as a dictionary. 
 			
 		print_click_position : bool, optional
 			if True then the click position is printed for the spectral plots 
@@ -6563,7 +6581,7 @@ class TA():	# object wrapper for the whole
 				title=self.filename
 			else:
 				title=filename
-		plot_raw(ds=ds, plotting=plotting, cmap=cmap, title=title, path=path, filename=filename, 
+		r=plot_raw(ds=ds, plotting=plotting, cmap=cmap, title=title, path=path, filename=filename, 
 				intensity_range=self.intensity_range, log_scale=self.log_scale, baseunit=self.baseunit, 
 				timelimits=self.timelimits, scattercut=self.scattercut, bordercut=self.bordercut, 
 				wave_nm_bin=self.wave_nm_bin, rel_wave=self.rel_wave, width=self.wavelength_bin, 
@@ -6571,7 +6589,10 @@ class TA():	# object wrapper for the whole
 				time_bin=self.time_bin, rel_time=self.rel_time, save_figures_to_folder=self.save_figures_to_folder, 
 				savetype=savetype,plot_type=scale_type,lintresh=self.lintresh, times=times, 
 				print_click_position = print_click_position, data_type = self.data_type, 
-				plot_second_as_energy = plot_second_as_energy, units=self.units, equal_energy_bin = self.equal_energy_bin)
+				plot_second_as_energy = plot_second_as_energy, units=self.units, equal_energy_bin = self.equal_energy_bin,
+				return_figures_handles=return_figures_handles)
+		if return_figures_handles:
+			return r
 
 
 	def Save_Plots(self, path = 'result_figures', savetype = None, title = None, filename = None, scale_type = 'symlog', 
@@ -7425,7 +7446,7 @@ class TA():	# object wrapper for the whole
 	def Plot_fit_output(self, plotting = range(7), path = 'result_figures', savetype = 'png', 
 						evaluation_style = False, title = None, scale_type = 'symlog', 
 						patches = False, filename = None, cmap = None , print_click_position = False,
-						plot_second_as_energy = True):
+						plot_second_as_energy = True, return_figures_handles=False):
 																	 
 		'''plots all the fit output figures. The figures can be called separately 
 		or with a list of plots. e.g. range(6) call plots 0-5 Manual plotting of certain type:
@@ -7502,6 +7523,9 @@ class TA():	# object wrapper for the whole
 			relative to self.path. Use and empty string to use the self.path
 			If set to None, the location of the plot_func will be used and
 			a subfolder with title "result_figures" be generated here
+		
+		return_figures_handles : bool, optional
+			(Default) is False, if True the Figure handles are returned as a dictionary.
 		
 		savetype : str or iterable (of str), optional 
 			matplotlib allows the saving of figures in various formats. (Default) "png", 
@@ -7588,7 +7612,7 @@ class TA():	# object wrapper for the whole
 			else:
 				title=filename
 		if not hasattr(plotting,"__iter__"):plotting=[plotting]
-		plot_fit_output(self.re, self.ds, cmap = cmap, plotting = plotting, title = title, 
+		returning_dict=plot_fit_output(self.re, self.ds, cmap = cmap, plotting = plotting, title = title, 
 						path = path, f = filename, intensity_range = self.intensity_range, 
 						log_scale = self.log_scale, baseunit = self.baseunit, timelimits = self.timelimits, 
 						scattercut = self.scattercut, bordercut = self.bordercut, 
@@ -7600,7 +7624,9 @@ class TA():	# object wrapper for the whole
 						filename = self.filename, scale_type = scale_type, patches = patches, lintresh = self.lintresh,
 						print_click_position = print_click_position, ignore_time_region = self.ignore_time_region,
 						data_type = self.data_type, plot_second_as_energy = plot_second_as_energy, units= self.units, 
-						equal_energy_bin = self.equal_energy_bin)
+						equal_energy_bin = self.equal_energy_bin, return_figures_handles=return_figures_handles)
+		if return_figures_handles:
+			return returning_dict
 
 
 

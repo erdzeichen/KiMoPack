@@ -3,7 +3,14 @@ Changelog
 *********
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
-.. _release-7.10.0:
+.. _release-7.12.0:
+7.12.0
+========
+Added the option to return the figures from the common plotfunction setting the option "return_figures_handles" will in Plot_RAW and Plot_Fit_output trigger that a dictionary of the plots is returned.
+Added X-ray workflow
+Added the general option pf.halfsize=False If set to true all figures will be half the size (better for inline plotting)
+
+.. _release-7.11.0:
 7.11.0
 ========
 Add the option to use Cor chirp for only time shifting

@@ -22,6 +22,10 @@ Most of the plot defining parameter (like, what for which wavelength the kinetic
 is plotted or at what times the kinetics are extracted are defined by the
 :ref:´Plot shaping options without influence on the fitting´.
 
+The Ploting function know several options to return the plots as a dictionary or to save plots.
+The global parameter pf.halfsize can be set to True to reduce the size of the plots. 
+This happens automatically for inline plotting.
+
 Plot_RAW
 --------
 
