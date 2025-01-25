@@ -108,3 +108,31 @@ def Amine_func(filename):
 	df.index.name='Time in ns'
 	df.columns.name='Wavelength in nm'
 	return df,'differential absorption','ns'
+	
+def Lund_colors():
+	cols={
+	'black':[0,0,0],  		
+	'wine_red':[152,30,50],	
+	'brown':[153,102,51],	
+	'dark_blue':[0,0,128],	
+	'gold':[233,131,0],
+	'darker grey':[146,139,129],
+	'green':[85,118,48],
+	'light_grey':[203,199,191],
+	'light blue grey':[189,203,197],
+	'light green grey':[199,210,138],
+	'pink':[233,196,199], 
+	'blue':[185,211,220],  		
+	'light_green':[173,202,184],  		
+	'yellow':[214,210,196],  		
+	'light_brown':[191,184,175],  		
+	'pastel pink':[219,173,177],  
+	'pastel blue':[164,196,207],  		
+	'pastel green':[153,190,167],  		
+	'pastel yellow':[203,197,169],  		
+	'pastel brown':[180,168,154],
+	'white':[255,255,255],	
+	}
+	cols=pd.DataFrame(cols).T/255.
+	cols.columns=['R','G','B']
+	return cols
