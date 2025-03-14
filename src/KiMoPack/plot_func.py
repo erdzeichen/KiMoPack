@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.4"
+version = "7.12.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4263,14 +4263,13 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 			changed=True
 			if 'background' in list(pardf.index.values):
 				if 'infinite' in list(pardf.index.values):
-					labels[-1]='Non Decaying'
-					labels[-2]='background'
-				else:
-					labels[-1]='background'
+					labels[-2]='Non Decaying'
+				labels[-1]='background'
 			else:
 				if 'infinite' in list(pardf.index.values):
 					labels[-1]='Non Decaying'
-				else:changed=False
+				else:
+					changed=False
 			if changed:
 				re['DAC'].columns=labels
 				re['c'].columns=labels
