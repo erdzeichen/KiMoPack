@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.1"
+version = "7.12.4"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -15,6 +15,7 @@ if 1: #Hide imports
 	from matplotlib.ticker import FuncFormatter
 	from matplotlib.colors import BoundaryNorm,Normalize,SymLogNorm
 	from matplotlib.ticker import LinearLocator	
+	import math
 	import re
 	import scipy
 	import scipy.constants
@@ -576,8 +577,13 @@ def Frame_golay(df, window=5, order=2,transpose=False):
 	
 	'''
 	#df=df.fillna(0)
+
 	if transpose:
 		df=df.T
+	window= min(len(df.index.values), window)  # Ensure it's an odd number
+	order= min(len(df.index.values), order)
+	if window % 2 == 0:
+		window -= 1
 	if isinstance(df,pandas.DataFrame):
 		for col in df.columns:
 			try:
@@ -4018,6 +4024,7 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
 		if infinite:
 			labels=list(c.columns.values)
 			labels[-1]='Non Decaying'
+			c.columns=labels
 			if 'background' in list(pardf.index.values):
 				c['background']=1
 		else:
@@ -6774,6 +6781,7 @@ class TA():	# object wrapper for the whole
 				else:
 					initial_error.append(err_func(paras = par_into_chirpfit, ds = fit_ds_loop, mod = mod, final = False, log_fit = self.log_fit))	
 				if initial_error[-1]<initial_error[-2]:
+					self.opt_chirp=temp
 					if initial_error[-2]/initial_error[-1]>100:#something fishy going on. lets try again
 						print('Chirp_loop {:02d} strange decrease step size'.format(loop+1))
 						initial_error[-1] = initial_error[-2]
@@ -6808,6 +6816,7 @@ class TA():	# object wrapper for the whole
 			print('chirp fit improved error by %.2g percent'%(100*(1-initial_error[-1]/initial_error[0])))
 			if isinstance(temp, list) or isinstance(temp, type(np.arange(1))):
 				self.fitcoeff = temp
+				
 			else:
 				raise
 			time = ds_back_corr.index.values.astype('float')#extract the time
@@ -6815,6 +6824,7 @@ class TA():	# object wrapper for the whole
 			fit_ds = sub_ds(ds = self.ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, equal_energy_bin = self.equal_energy_bin, time_bin = self.time_bin)
 			if pardf.vary.any():
 				results.params = results_in_chirp.params
+			
 		return results, fit_ds
 		
 		
@@ -9086,7 +9096,7 @@ class TA():	# object wrapper for the whole
 					ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			else:
 				scattercut  =  flatten(self.scattercut)
-				for i in range(len(scattercut)/2+1):
+				for i in range(math.ceil(len(scattercut)/2+1)):
 					if i  ==  0:
 						if halfsize:
 							ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
@@ -9126,7 +9136,7 @@ class TA():	# object wrapper for the whole
 							re['DAC'].iloc[:,j].loc[o.scattercut[1]:].plot(subplots=False,ax=a[j],legend=False,color=col[i],label = '_nolegend_')
 						else:
 							scattercut = flatten(o.scattercut)
-							for m in range(len(scattercut)/2+1):
+							for m in range(math.ceil(len(scattercut)/2+1)):
 								if m == 0:
 									re['DAC'].iloc[:,j].loc[:scattercut[0]].plot(subplots=False,ax=a[j],legend=False,color=col[i])
 									if j==0:
@@ -9151,7 +9161,7 @@ class TA():	# object wrapper for the whole
 						DAC.loc[o.scattercut[1]:, :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 					else:
 						scattercut = flatten(o.scattercut)
-						for i in range(len(scattercut)/2+1):
+						for i in range(math.ceil(len(scattercut)/2+1)):
 							if i == 0:
 								ax = DAC.loc[:scattercut[0], :].plot(subplots=separate_plots,ax=ax,legend=False,color=colors[(i+1)*len(species):(i+2)*len(species)])
 							elif i<(len(scattercut)/2):
