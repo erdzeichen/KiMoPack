@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.5"
+version = "7.12.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4340,7 +4340,7 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 					print('----------------------------------')
 					print(pardf)
 				else:
-					if np.abs(tm.time()-start_time)>30:
+					if np.abs(tm.time()-start_time)>10:
 						start_time=tm.time()
 						print(re['error'])
 			if dump_shapes:
@@ -4784,7 +4784,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				print('----------------------------------')
 				print(pardf)
 			else:
-				if np.abs(tm.time()-start_time)>30:
+				if np.abs(tm.time()-start_time)>10:
 					start_time=tm.time()
 					print(re['error'])
 		if final:
@@ -7161,7 +7161,7 @@ class TA():	# object wrapper for the whole
 												write_paras=None,multi_project=None,unique_parameter=None,
 												weights=None,same_DAS=None,sub_sample=None,pulse_sample=None,same_shape_params=None):
 				return None
-		print('Optimizing, after the starting error the new error values will be displayed every 30s')
+		print('Optimizing, after the starting error the new error values will be displayed every 10s \n to interrupt try to press ctrl+shift+q')
 		if multi_project is None:
 			#check if there is any concentration to optimise
 			if (filename is None) and dump_shapes: filename = self.filename
