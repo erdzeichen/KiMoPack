@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.6"
+version = "7.12.7"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -4186,7 +4186,18 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 	filename : None or str, optional
 		Only used in conjunction with 'dump_paras'. The program uses this filename to dump the 
 		parameter to disk 
-		
+	
+	sub_sample: False or iter, option
+		Default is False: if a whole number value is given the time vector that comes from the measurements is sampled finer. The purpose is to in 
+		the model catch faster dynamics than would be possible. Careful this is bloating up the size of the time vector and the simulation time is 
+		to some extend proportional to this number
+	
+	pulse_sample: False or iter, option
+		Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
+		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+		to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
+		This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)    
+	
 	ext_spectra : DataFrame, optional
 		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
 		given in "C(t)" this function will only work for external models. The name of the spectral column 
@@ -4587,6 +4598,18 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 		used as guides and not exclusively. This means the code will assume that these spectra are correct and 
 		substract them, then calulate the difference and return as DAS the provided spectra plus the difference spectra
 		
+	sub_sample: False or iter, option
+		Default is False: if a whole number value is given the time vector that comes from the measurements is sampled finer. The purpose is to in 
+		the model catch faster dynamics than would be possible. Careful this is bloating up the size of the time vector and the simulation time is 
+		to some extend proportional to this number
+	
+	pulse_sample: False or iter, option
+		Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
+		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+		to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
+		This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)
+	
+	
 	write_paras : bool, optional 
 		if True(Default) writes the currently varried values to screen
 
@@ -6996,6 +7019,17 @@ class TA():	# object wrapper for the whole
 				df < tol  (corresponds to fatol)
 				number_of_function_evaluations < maxfev (default 200 * n variables)
 				number_of_iterations < maxiter           (default 200 * n variables)
+			
+			sub_sample: False or iter, option
+				Default is False: if a whole number value is given the time vector that comes from the measurements is sampled finer. The purpose is to in 
+				the model catch faster dynamics than would be possible. Careful this is bloating up the size of the time vector and the simulation time is 
+				to some extend proportional to this number
+			
+			pulse_sample: False or iter, option
+				Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
+				pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+				to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
+				This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)
 
 			same_shape_params: bool, optional
 				This parameter decides if the same shaping parameter (scattercut,rebinning are used in the multiprojects
