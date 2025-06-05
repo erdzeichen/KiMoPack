@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.7"
+version = "7.12.9"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -430,7 +430,7 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 		root_window.withdraw()
 		root_window.attributes('-topmost',True)
 		root_window.after(1000, lambda: root_window.focus_force())
-		path_list = filedialog.askopenfilename(initialdir=os.getcwd(),multiple=True,filetypes=[('TA project files','*.%s'%fileending)])									 
+		path_list = filedialog.askopenfilename(initialdir=os.getcwd(),multiple=True,filetypes=[('TA project files','*.%s'%fileending),('SIA measurement files','*.SIA'),('all files','*.*')])									 
 		if project_list is None:
 			project_list=[]
 	elif project_list=='all':
@@ -7317,7 +7317,7 @@ class TA():	# object wrapper for the whole
 							else: #go above min
 								par_local.add(fixed_par,value=pardf_local[fixed_par].value*1.05,min=pardf_local[fixed_par].value,vary=vary_error_parameter)
 							
-							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False,sub_sample=None,pulse_sample=None):
+							def sub_problem(par_local,varied_par,pardf_local,fit_ds=None,mod=None,log_fit=None,multi_project=None,unique_parameter=None,weights=None,target_s2=None,ext_spectra=None,same_DAS=False,sub_sample=None,pulse_sample=None,other_optimizers=None):
 								pardf_local[varied_par].value=par_local[varied_par].value
 								if par_to_pardf(pardf_local).vary.any():
 									if multi_project is None:
@@ -7346,18 +7346,19 @@ class TA():	# object wrapper for the whole
 								if other_optimizers is None:
 									results_local = mini_local.minimize(method='nelder',options={'maxiter':100,'fatol':one_percent_precission})
 								else:
-									results_local = mini_local.minimize(method=other_optimizers,options={'maxiter':100,'fatol':one_percent_precission})
+									results_local = mini_local.minimize(method=other_optimizers)
 								iterative_calls+=results_local.nfev
 								if results_local.success:
 									conf_limits[fixed_par][i]=results_local.params[fixed_par].value
 								else:
 									print("tried to optimise %i times achieved residual %g with targeted %g"%(results_local.nfev,(np.sqrt(results_local.residual[0])+target_s2),target_s2))
-							except Exception:
+							except Exception as e:
 								#print("Unexpected error:", sys.exc_info()[0])
 								#print('##############################################')
 								#print('The error was:')
-								#print(e)
+								#
 								print("error in %s at %s limit"%(fixed_par,i))
+								print(e)
 								continue
 				else:
 					print("please use a confidence level between 0.6 and 1")
