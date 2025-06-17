@@ -121,6 +121,7 @@ def download_all(single_tutorial=None):
 						'Function_library_overview.pdf',
 						'import_library.py',
 						'KiMoPack_tutorial_0_Introduction.ipynb',
+						'KiMoPack_tutorial_0_Introduction_Compact.ipynb',
 						'KiMoPack_tutorial_1_Fitting.ipynb',
 						'KiMoPack_tutorial_2_Fitting.ipynb',
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
