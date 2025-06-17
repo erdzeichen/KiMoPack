@@ -333,14 +333,12 @@ def P13(times,pardf):
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
-			dc[0]=-pardf['k0']*dt*c_temp[0]-pardf['k4']*dt*c_temp[0]-pardf['k2']*dt*c_temp[0]+g[i]*dt					
+			dc[0]=-pardf['k0']*dt*c_temp[0]-pardf['k2']*dt*c_temp[0]+g[i]*dt		
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
-			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k4']*dt*c_temp[0]
+			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]
 			c_temp=c_temp+dc
 			c_temp[c_temp<0]=0
-			#for b in range(c.shape[1]):
-			#	c_temp[b] =np.nanmax([(c_temp[b]+float(dc[b])),0.])		#check that nothing will be below 0 (concentrations)
 		c[i,:] =c_temp												#store the temporary concentrations into the main matrix
 	c=pandas.DataFrame(c,index=times)								#write back the right indexes
 	c.index.name='time'												#and give it a name

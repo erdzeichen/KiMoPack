@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.9"
+version = "7.12.12"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -54,6 +54,7 @@ if 1: #Hide imports
 	shading = 'auto'  # gouraud
 	standard_map = cm.jet
 	halfsize=False
+	global start_time
 	start_time=tm.time()
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
@@ -116,6 +117,7 @@ def download_all(single_tutorial=None):
 						'Function_library_overview.pdf',
 						'import_library.py',
 						'KiMoPack_tutorial_0_Introduction.ipynb',
+						'KiMoPack_tutorial_0_Introduction_Compact.ipynb',
 						'KiMoPack_tutorial_1_Fitting.ipynb',
 						'KiMoPack_tutorial_2_Fitting.ipynb',
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
@@ -550,7 +552,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 	return savgol_filter(x=y, window_length=window_size, polyorder=order, deriv=deriv, delta=rate)
 
 
-def Frame_golay(df, window=5, order=2,transpose=False):
+def Frame_golay(df, window=5, order=3,transpose=False):
 	'''Convenience method that returns the Golay smoothed data for each column (DataFrame) or the series
 	
 	Parameters
@@ -3969,6 +3971,9 @@ def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
 		c*=np.tile(rise(x=times,sigma=resolution,begin=t0),(len(param),1)).T
 		c=pandas.DataFrame(c,index=times)
 		c.index.name='time'
+		if 'explicit_GS' in list(pardf.index.values):
+			gs=np.zeros((len(times),1),dtype='float')
+			c['GS']=gs
 		if 'background' in list(pardf.index.values):
 			c['background']=1
 		if 'infinite' in list(pardf.index.values):
@@ -4214,10 +4219,10 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 		if True(Default) writes the currently varried values to screen
 
 	'''
-	global start_time
 	time_label=ds.index.name
 	energy_label=ds.columns.name
 	pardf=par_to_pardf(paras)
+	global start_time
 	if log_fit:
 		pardf.loc[pardf.is_rate,'value']=pardf.loc[pardf.is_rate,'value'].apply(lambda x: 10**x)
 	if isinstance(mod,type('hello')):#did we use a build in model?
@@ -4620,7 +4625,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	r2_listen=[]
 	if same_shape_params:
 		slice_setting_object=multi_project[0].Copy()
-		
+	global start_time
 	
 	####### new same DAS, I'm lazy and will doublicate te loop. ###########
 	if same_DAS:
@@ -4807,9 +4812,13 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				print('----------------------------------')
 				print(pardf)
 			else:
-				if np.abs(tm.time()-start_time)>10:
+				try:
+					if np.abs(tm.time()-start_time)>10:
+						start_time=tm.time()
+						print(re['error'])
+				except Exception as e:
+					print(e)
 					start_time=tm.time()
-					print(re['error'])
 		if final:
 			return return_listen
 		else:
@@ -7106,6 +7115,8 @@ class TA():	# object wrapper for the whole
 		"""
 		if par is None:par=self.par
 		if mod is None:mod=self.mod
+		global start_time
+		start_time=tm.time()-15
 		try:
 			t0=par['t0']
 		except:
@@ -7173,8 +7184,7 @@ class TA():	# object wrapper for the whole
 		############################################################################
 		#----Global optimisation------------------------------------------------------
 		############################################################################
-		global start_time
-		start_time=start_time-30
+
 		try:
 			keyboard.__package__
 			def iter_cb(params, iterative, resid, ds=None,mod=None,log_fit=None,final=None,dump_paras=None,
