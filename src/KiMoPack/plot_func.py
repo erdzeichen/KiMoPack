@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.12.14"
+version = "7.12.16"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -32,22 +32,27 @@ if 1: #Hide imports
 	
 	try:
 		import h5py
-	except:
+	except Exception as e:
 		print('the h5py module was not imported that allows to save the projects files on windows you can install that with pip install h5py')
+		print(e)
 	try:
 		import keyboard
-	except:
+	except Exception as e:
 		print('the keyboard module was not imported. on Windows this allows to stop the fit by pressing q/n you can install it with "pip install keyboard" ')
+		print(e)
 	try:	
 		from pptx import Presentation
 		from pptx.util import Inches
-	except:
+	except Exception as e:
 		print('We need python-pptx to create a powerpoint file. Not essential. Either use pip or for anaconda: conda install -c conda-forge python-pptx')
+		print(e)
 	try:
 		import urllib3
 		import shutil
-	except:
-		print('We need the packages urllib3 and shutil to download files from the web') 
+	except Exception as e:
+		print('We need the packages urllib3 and shutil to download files from the web')
+		print(e)
+ 	
 	plt.ion()
 	pandas.options.mode.chained_assignment = None  # I use this a lot and think I can ignore it
 	FWHM = 2.35482
@@ -117,7 +122,6 @@ def download_all(single_tutorial=None):
 						'Function_library_overview.pdf',
 						'import_library.py',
 						'KiMoPack_tutorial_0_Introduction.ipynb',
-						'KiMoPack_tutorial_0_Introduction_Compact.ipynb',
 						'KiMoPack_tutorial_1_Fitting.ipynb',
 						'KiMoPack_tutorial_2_Fitting.ipynb',
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
@@ -885,9 +889,10 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 
 	'''
 	if (base_TA_object is not None) and (conversion_function is None):
-		if units is None:units=base_TA_object.ds.columns.name
-		if baseunit is None:baseunit=base_TA_object.ds.index.name
-	debug = True
+		if units is None:
+			units=base_TA_object.ds.columns.name
+		if baseunit is None:
+			baseunit=base_TA_object.ds.index.name
 	if list_of_scans is None:
 		scan_path=check_folder(path = path_to_scans, current_path = os.getcwd())
 		if filename_part is not None:#we specified a specific name and want only the files with this name in it
@@ -932,8 +937,9 @@ def Summarize_scans(list_of_scans = None, path_to_scans = 'Scans', list_to_dump 
 										equal_energy_bin = base_TA_object.equal_energy_bin)
 						if (base_TA_object.wave_nm_bin is not None) or (base_TA_object.equal_energy_bin is not None):
 							print('in the original TA objec the data was rebinned, which is now also done for the single scans. To avoid that use "ta.wave_nm_bin = None" and / or "ta.equal_energy_bin = None" before handing it to base_TA_object')
-					except:
+					except Exception as e:
 						print('applying the base_TA_object slices failed')
+						print(e)
 					list_of_projects.append(new_ds.values)
 			if base_TA_object is None:
 				ds = TA(filename = filename,path = path,  sep = sep, decimal = decimal, 
@@ -4706,7 +4712,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			else:
 				ds_stack.append(ds)
 			c_stack.append(c_temp)
-			height_stack.append(len(c_temp.index.values))
+			height_stack.append(len(c_temp.index.values))  #this remembers how many time points were added
 			
 		A_con=pandas.concat(ds_stack)
 		c_con=pandas.concat(c_stack)
@@ -4791,7 +4797,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				if i==0:
 					lower=0
 				else:
-					lower=np.array(height_stack)[:i].sum()
+					lower=np.array(height_stack)[:i].sum()  # here i made a change
 				re_local['A']=re['A'].copy().iloc[lower:lower+height_stack[i],:]
 				re_local['AC']=re['AC'].copy().iloc[lower:lower+height_stack[i],:]
 				re_local['AE']=re['AE'].copy().iloc[lower:lower+height_stack[i],:]
@@ -7146,6 +7152,9 @@ class TA():	# object wrapper for the whole
 			par['explicit_GS'].vary=False
 		except:
 			pass
+		if ext_spectra is not None:
+			if isinstance(ext_spectra, pandas.Series):
+				ext_spectra=ext_spectra.to_frame()
 			
 		try: # this is either freezing or enabling the re-optimization of all other parameter during confidence interval calculation
 			par['error_param_fix'].value=1
@@ -8085,6 +8094,36 @@ class TA():	# object wrapper for the whole
 							except:
 								
 								print('saving of ' + key2 + ' failed' )
+				elif key[:2] == 'multi_projects' :
+					for i,re in enumerate(self.__dict__['multi_projects']):
+						re_switch = True
+						for key2 in re.keys():
+							if key2 == 'fit_output':continue
+							
+							if key2 == 'error':
+								data = re[key2]
+								try:
+									f.create_dataset(name='multiproject-%i_re_error'%i, data=data)
+								except:
+									print('saving of multiproject %i'%i + key2 + ' failed' )
+							elif key2 == 'confidence':
+								for key3 in re['confidence'].keys():
+									try:
+										f.create_dataset(name='multiproject-%i_re_confidence_%s_upper'%(i,key3), data=self.__dict__['re'][key2][key3]['upper'])
+										f.create_dataset(name='multiproject-%i_re_confidence_%s_lower'%(i,key3), data=self.__dict__['re'][key2][key3]['lower'])
+									except:
+										try:
+											f.create_dataset(name='multiproject-%i_re_confidence_%s'%(i,key3), data=self.__dict__['re'][key2][key3])
+										except:
+											print('saving of' + key3 + 'in confidence failed')
+							elif isinstance(re[key2], pandas.DataFrame):
+								pass
+							else:
+								try:
+									f.create_dataset(name='multiproject-%i_re_'%i + key2, data=re[key2])
+								except:
+									
+									print('saving of multiproject-%i'%i + key2 + ' failed' )				
 				elif key == 'cmap':
 					pass
 				elif key == 'intensity_range':
