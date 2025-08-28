@@ -126,7 +126,8 @@ def download_all(single_tutorial=None):
 						'KiMoPack_tutorial_2_Fitting.ipynb',
 						'KiMoPack_tutorial_3_CompareFit.ipynb',
 						'KiMoPack_tutorial_4_ScanHandling.ipynb',
-						'KiMoPack_tutorial_5_MultiModal.ipynb']
+						'KiMoPack_tutorial_5_MultiModal.ipynb',
+						'KiMoPack_tutorial_6_Advanced_Fitting_options.ipynb']
 	if single_tutorial is None: #we do not use this to download data for Colab 
 		print('Now downloading tutorials')
 		for f in list_of_tutorials:

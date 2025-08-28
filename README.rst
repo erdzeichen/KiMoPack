@@ -77,10 +77,47 @@ Upgrade if already installed:
 
 .. code-block:: text
 
-    $ pip install KiMoPack -U
+    $ pip install --upgrade KiMoPack
 
+In general it is a good idea to create a local environment to install files in python if you are using python for many tasks. In a local environment only the packages that are needed are installed, which usually avoids that conflicts can appear. See the section towards the end of this Readme.
 
-In general it is a good idea to create a local environment to install files in python if you are using python for many tasks. In a local environment only the packages that are needed are installed, which usually avoids that conflicts can appear. It is very easy to do that. 
+Best usage
+-----------
+While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
+These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
+
+You can try either of these "lazy" oneliners
+
+.. code-block:: text
+
+	ipython -c "import KiMoPack; KiMoPack.download_notebooks()"
+	python -c "import KiMoPack; KiMoPack.download_notebooks()"
+	python3 -c "import KiMoPack; KiMoPack.download_notebooks()"
+
+If none of these work then start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack; KiMoPack.download_all()" This downloads the notebooks and tutorials from github for you. If you instead use "import KiMoPack; KiMoPack.download_notebooks()" then only the workflow tools are downloaded.
+Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
+
+Quickstart summary
+--------------------
+
+* Install Python >3.8 (Anaconda package or similar)  Hint: installing with adding to Path makes life a lot simpler
+* Install KiMoPack  
+	minial: pip install KiMoPack
+	better: pip install KiMoPack h5py tables nbopen python-pptx 
+* Download Notebooks:
+	ipython -c "import KiMoPack; KiMoPack.download_all()"
+	Or https://github.com/erdzeichen/KiMoPack
+* Start with:
+* 	(Tutorial Folder) KiMoPack_tutorial_0_Introduction.ipynb
+	(Workflow tools)  TA_Raw_plotting_and_Simple_Fit.ipynb for your own data
+
+If you have python in the path: go to the folder where your data is, 
+download/copy the notebooks there (Tutorial or Workflow)
+and type in a console (e.g. windows +r, or the address line)
+“jupyter notebook” or “jupyter lab” to start working at this location.
+
+Installing into a local environment
+------------------------------------
 
 Under Windows: open the anaconda command prompt or power shell (type anaconda under windows start) 
 Under Linuxs: open a console
@@ -116,22 +153,7 @@ Error: pytables:
 	
 	conda install -c conda-forge pytables  
 
-Best usage
------------
-While KiMoPack is a python library, we facilitate its use with Jupyter notebooks. For the typical analysis tasks we have developed a series of Notebooks that guide through the tasks.\n 
-These notebooks can be downloaded from https://github.com/erdzeichen/KiMoPack/tree/main/Workflow_tools or by command line. 
 
-You can try either of these "lazy" oneliners
-
-.. code-block:: text
-
-	ipython -c "import KiMoPack; KiMoPack.download_notebooks()"
-	python -c "import KiMoPack; KiMoPack.download_notebooks()"
-	python3 -c "import KiMoPack; KiMoPack.download_notebooks()"
-
-If none of these work then start any console (under windows e.g. type "cmd" and hit enter). In the console you then start python by typing "python" and hit enter, lastly you import Kimopack and run a function that downloads the files for you by typing "import KiMoPack; KiMoPack.download_all()" This downloads the notebooks and tutorials from github for you. If you instead use "import KiMoPack; KiMoPack.download_notebooks()" then only the workflow tools are downloaded.
-Please copy one of these notebooks into your data analysis folder and rename them to create a analysis log of your session. For more information please see the publication https://doi.org/10.1021/acs.jpca.2c00907, the tutorial videos, or the tutorial notebooks under https://github.com/erdzeichen/KiMoPack/tree/main/Tutorial_Notebooks_for_local_use. 
-	
 Citation
 ------------
 We have published a paper introducing the toolbox under https://doi.org/10.1021/acs.jpca.2c00907
