@@ -98,6 +98,13 @@ a number of parameter only affect one or multiple of the plots but not the fitti
 	and the Fonts are accessible via the function :meth:`pf.changefonts()<plot_func.changefonts>`
 *	The parameter **equal_energy_bin** can be set to a value which results in that the spectral plots are shown in enqual energy 
 	bins. This is useful for tracking vibrations and such. As of version 6.7.1 this is only happing for the RAW plotting. 
+*	The **scale_type**: can be set to 'linear', 'log' or 'symlog'. the latter is a combination of a linear range symmetric around zero 
+	limited by the parameter **lintresh** that takes that has in the plot the with of **linscale** decades. See the detailed documention
+	in the plotting function for more details.
+*	**cmap** and **line_colors** are setting all the colours in the plot. The parameter can either be set in 
+	the plotting function or as an object like ta.cmap
+*	**values** is a parameter that chooses which values in the 2d plots are marked on the color bar and is useful to highlight points. 
+	This is set in the object e.g. via ta.values=np.arange(start, stop, step)
 
 interactive Plotting
 ---------------------

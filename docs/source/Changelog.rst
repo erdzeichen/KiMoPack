@@ -3,6 +3,15 @@ Changelog
 *********
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
+.. _release-7.13.0:
+7.13.4
+========
+Loads of improvements with the tutorials
+Loads of cleaning in the multi project code. Fixed a stacking bug.
+Loads of option to improve the plot. Added lin_scale that sets the linear and log ratio in the plots, added line_colors that changes a different color map for lines and 2d, added "values" that chooses what is shown on the colourbar
+
+
+
 .. _release-7.12.0:
 7.12.0
 ========

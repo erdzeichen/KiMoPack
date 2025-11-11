@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.13.0"
+version = "7.13.5"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -10,6 +10,7 @@ if 1: #Hide imports
 	import matplotlib
 	import matplotlib.pyplot as plt
 	import matplotlib.cm as cm
+	from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 	import matplotlib.image as mpimg
 	from matplotlib.gridspec import GridSpec
 	from matplotlib.ticker import FuncFormatter
@@ -57,10 +58,12 @@ if 1: #Hide imports
 	pandas.options.mode.chained_assignment = None  # I use this a lot and think I can ignore it
 	FWHM = 2.35482
 	shading = 'auto'  # gouraud
-	standard_map = cm.jet
+	standard_map = cm.seismic
+	standard_colors = cm.tab20
 	halfsize=False
 	global start_time
 	start_time=tm.time()
+	
 print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
 print('The current working folder is:\n %s' % os.getcwd())
 
@@ -284,7 +287,7 @@ def s2_vs_smin2(Spectral_points = 512, Time_points = 130, number_of_species = 3,
 	return 1+(fitted_parameter*f_stat/Free_points)	  
 
 
-def GUI_open(project_list = None, path = None, filename_part = None, fileending = 'hdf5', sep = "\t", decimal = '.', 
+def GUI_open(project_list = None, path = None, filename_part = None, fileending = 'hdf5', sep = "\\t", decimal = '.', 
 			index_is_energy = False, transpose = False, sort_indexes = False, divide_times_by = None, 
 			shift_times_by = None, external_time = None, external_wave = None, use_same_name = True, data_type = None, 
 			units = None, baseunit = None, conversion_function = None):
@@ -323,7 +326,7 @@ def GUI_open(project_list = None, path = None, filename_part = None, fileending 
 		
 		sep : str (optional)
 			is the separator between different numbers, typical are tap '\t' (Default) ,one or 
-			multiple white spaces '\s+' or comma ','.
+			multiple white spaces '\\s+' or comma ','.
 		
 		decimal : str (optional) 
 			sets the ascii symbol that is used for the decimal sign. In most countries this is '.'(Default) 
@@ -659,9 +662,9 @@ def shift(df,name = None,shift = None):
 	return df
 	
 
-def colm(k,cmap = standard_map):
+def colm(k,cmap = cm.seismic):
 	'''If a colour map is given, this is used.'''
-	if isinstance(cmap,type(cm.jet)) or isinstance(cmap,type(cm.viridis)):
+	if isinstance(cmap,LinearSegmentedColormap):
 		if hasattr(k,'__iter__'):
 			if min(k) >0:#we got a color offset
 				mini = min(k)/(min(k)+1)
@@ -682,6 +685,8 @@ def colm(k,cmap = standard_map):
 			out = [cmap[int(ent),:] for ent in k]
 		elif isinstance(cmap,list):
 			out = [cmap[int(ent)] for ent in k]
+		elif isinstance(cmap,ListedColormap):
+			out = [cmap.colors[int(ent)] for ent in k]
 		else:
 			print('didn\'t find the right ')
 		return out
@@ -1257,7 +1262,6 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		x=scipy.constants.h*scipy.constants.c/(x*1e-9*scipy.constants.electron_volt)
 		if from_fit:#they are already binned
 			ds.columns=x
-			ds.sort_index(axis=1,ascending=False)
 		elif (x[1:]-x[:-1]>equal_energy_bin).all():
 			raise ValueError("equal_energy_bin bins are to small for the data")
 		else:
@@ -1418,9 +1422,9 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 
 def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps', timelimits = None,
 			scattercut = None, bordercut = None, wave_nm_bin = None, ignore_time_region = None,
-			time_bin = None, log_scale = False, plot_type = 'symlog', lintresh = 1, 
-			wavelength_bin = None, levels = 256, use_colorbar = True, cmap = None, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None, from_fit = False):
+			time_bin = None, log_scale = False, plot_type = 'symlog', lintresh = 1, linscale=1,
+			wavelength_bin = None, levels = 256, use_colorbar = True, cmap = None, values=None,
+			data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', equal_energy_bin = None, from_fit = False):
 	'''function for plotting matrix of TA data.
 	
 	Parameters
@@ -1436,7 +1440,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 	
 	title : None or str
 		title to be used on top of each plot
@@ -1510,6 +1514,12 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	lintresh : float
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
+	
+	linscale : float
+		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
+		time zero linear and beyond the linear treshold 'lintresh' on a logarithmic scale. The linscale 
+		parameter decided how wide this range is in decade units. Meaning how much focus is layed on the 
+		linear scale in the plot. 
 		
 	wavelength_bin : float, optional
 		the width used in kinetics, see below (Default) 10nm
@@ -1521,6 +1531,10 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	use_colorbar : bool, optional
 		if True (Default) a colour bar is added to the 2d plot for intensity explanation, switch
 		mostely used for creating multiple plots
+	
+	values : iterable(list, vector,..)
+		this are the values at which there is a tick and a value in the colorbar. Default is None,
+		in which case there are the two extremes and the middle chosen
 	
 	cmap : None or matplotlib color map, optional
 		is a powerfull variable that chooses the colour map applied for all plots. If set to 
@@ -1548,9 +1562,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	'''
 	global halfsize
 	if cmap is None:
-		cmap=standard_map
-	elif not np.array([isinstance(cmap,type(cm.viridis)),isinstance(cmap,type(cm.jet)),isinstance(cmap,type(cm.Blues)),isinstance(cmap,type(cm.coolwarm)),isinstance(cmap,type(cm.terrain))]).any():#we must have a 
-		cmap=standard_map
+		cmap=cm.jet
 
 	if ax is None:
 		ax_ori=False
@@ -1564,9 +1576,8 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	if timelimits is None:
 		timelimits=(ds.index.min(),ds.index.max())
 	ds = sub_ds(ds, scattercut = scattercut, bordercut = bordercut, timelimits = timelimits, wave_nm_bin = wave_nm_bin, 
-				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region, 
+				wavelength_bin = wavelength_bin, time_bin = time_bin, ignore_time_region = ignore_time_region, wavelength=None,
 				drop_scatter = False, drop_ignore = False, equal_energy_bin = equal_energy_bin, from_fit = from_fit)		
-	
 	if intensity_range is None:
 		try:
 			maxim=max([abs(ds.values.min()),abs(ds.values.max())])
@@ -1589,7 +1600,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 			norm = BoundaryNorm(boundaries=bounds0, ncolors=len(bounds0))
 			mid_color=colm(k=range(levels),cmap=cmap)
 		else:
-			norm=SymLogNorm(abs(max(intensity_range)-min(intensity_range))/100, linscale=1.0, vmin=min(intensity_range), vmax=max(intensity_range), clip=True, base=10)
+			norm=SymLogNorm(abs(max(intensity_range)-min(intensity_range))/100, linscale=linscale, vmin=min(intensity_range), vmax=max(intensity_range), clip=True, base=10)
 			mid_color=cmap(0.5)
 	else:
 		if 0:
@@ -1666,10 +1677,11 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 				pass	
 	if use_colorbar:
 		mid=(intensity_range[1]+intensity_range[0])/2
-		if log_scale:
-			values=[intensity_range[0],mid-abs(intensity_range[0]-mid)/10,mid-abs(intensity_range[0]-mid)/100,mid,mid+abs(intensity_range[1]-mid)/100,mid+abs(intensity_range[1]-mid)/10,intensity_range[1]]
-		else:
-			values=[intensity_range[0],intensity_range[0]+abs(intensity_range[0]-mid)/2,mid,intensity_range[1]-abs(intensity_range[1]-mid)/2,intensity_range[1]]
+		if values is None:
+			if log_scale:
+				values=[intensity_range[0],mid-abs(intensity_range[0]-mid)/10,mid-abs(intensity_range[0]-mid)/100,mid,mid+abs(intensity_range[1]-mid)/100,mid+abs(intensity_range[1]-mid)/10,intensity_range[1]]
+			else:
+				values=[intensity_range[0],intensity_range[0]+abs(intensity_range[0]-mid)/2,mid,intensity_range[1]-abs(intensity_range[1]-mid)/2,intensity_range[1]]
 																				  
 		labels=['%.2g'%(a) for a in values]
 		labels[0]='<' + labels[0]
@@ -1740,9 +1752,9 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False, title = None, 
 				intensity_range = None, baseunit = 'ps', timelimits = None,
 				scattercut = None, bordercut = None, wave_nm_bin = None, ignore_time_region = None,
-				time_bin = None, log_scale = False, scale_type = 'symlog', lintresh = 1, 
-				wavelength_bin = None, levels = 256, plot_with_colorbar = True, cmap = None, 
-				data_type = 'differential Absorption in $\mathregular{\Delta OD}$', equal_energy_bin = None):													   
+				time_bin = None, log_scale = False, scale_type = 'symlog', lintresh = 1, linscale=1,
+				wavelength_bin = None, levels = 256, plot_with_colorbar = True, cmap = None, values=None,
+				data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', equal_energy_bin = None):													   
 	'''Plots the fit output as a single plot with meas,fitted and difference. 
 	The differnece used err_matrix_amplification as a factor. patches moves the labels from the
 	title into white patches in the top of the figure
@@ -1761,7 +1773,7 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 		
 	patches : bool, optional
 		If False (Default) the names "measured" "fitted" "difference" will be placed above the images.
@@ -1839,6 +1851,12 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	lintresh : float
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
+	
+	linscale : float
+		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
+		time zero linear and beyond the linear treshold 'lintresh' on a logarithmic scale. The linscale 
+		parameter decided how wide this range is in decade units. Meaning how much focus is layed on the 
+		linear scale in the plot. 
 		
 	wavelength_bin : float, optional
 		the width used in kinetics, see below (Default) 10nm
@@ -1846,6 +1864,10 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	levels : int, optional
 		how many different colours to use in the description. less makes for more contrast but less 
 		intensity details (Default) 256
+		
+	values : iterable(list, vector,..)
+		this are the values at which there is a tick and a value in the colorbar. Default is None,
+		in which case there are the two extremes and the middle chosen
 		
 	plot_with_colorbar : bool, optional
 		if True (Default) a colour bar is added to the 2d plot for intensity explanation, switch
@@ -1882,16 +1904,20 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	if patches:			
 		plot2d(re['A'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[0], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut,
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, 
+				values=values, from_fit = True)
 		plot2d(re['AC'], cmap = cmap, log_scale = log_scale, intensity_range = intensity_range, ax = ax[1], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, 
-				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut, 
+				scattercut = scattercut, timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, 
+				values=values,from_fit = True)
+		if values is not None:
+			values=np.array(values)/error_matrix_amplification
 		plot2d(re['AE'], cmap = cmap, log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, ax = ax[2], 
 				baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, values=values, from_fit = True)
 		for i in range(3):
 			ax[i].set_title(label='')
 			stringen=['measured','calculated','difference']
@@ -1907,29 +1933,31 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	else:
 		plot2d(re['A'], cmap = cmap, title = 'Measured', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[0], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)																					
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, values=values, from_fit = True)																					
 		plot2d(re['AC'], cmap = cmap, title = 'Calculated', log_scale = log_scale, intensity_range = intensity_range, 
 				ax = ax[1], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits , data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits , data_type = data_type, equal_energy_bin = equal_energy_bin, values=values, from_fit = True)
+		if values is not None:
+			values=np.array(values)/error_matrix_amplification
 		plot2d(re['AE'], cmap = cmap, title = 'Difference', log_scale = log_scale, intensity_range = np.array(intensity_range)/error_matrix_amplification, 
 				ax = ax[2], baseunit = baseunit, use_colorbar = plot_with_colorbar, levels = levels, plot_type = scale_type, 
-				ignore_time_region = ignore_time_region,  lintresh = lintresh, bordercut = bordercut, scattercut = scattercut, 
-				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, from_fit = True)
+				ignore_time_region = ignore_time_region,  lintresh = lintresh, linscale = linscale, bordercut = bordercut, scattercut = scattercut, 
+				timelimits = timelimits, data_type = data_type, equal_energy_bin = equal_energy_bin, values=values, from_fit = True)
 		#fig.subplots_adjust(left=0.15, bottom=0.067, right=0.97, top=0.97, wspace=0.0, hspace=0.398)
 	fig.tight_layout()
 	return fig
 	
 	
-def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = None, path = None, filename = None, f = 'standard', 
+def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7), title = None, path = None, filename = None, f = 'standard', 
 					intensity_range = 1e-2, baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, 
 					error_matrix_amplification = 20, wave_nm_bin = 5, rel_wave = None, width = 10, rel_time = [1, 5, 10], 
 					time_width_percent = 10, ignore_time_region = None, save_figures_to_folder = True, return_figures_handles=False,
 					log_fit = False, mod = None, subplot = False, color_offset = 0, log_scale = True, savetype = 'png', 
-					evaluation_style = False, lintresh = 1, scale_type = 'symlog', patches = False, print_click_position = False, 
-					data_type = 'differential Absorption in $\mathregular{\Delta OD}$', plot_second_as_energy = True, units = 'nm',
-					equal_energy_bin = None):
+					evaluation_style = False, lintresh = 1, linscale=1, scale_type = 'symlog', patches = False, print_click_position = False, 
+					data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', plot_second_as_energy = True, units = 'nm',
+					equal_energy_bin = None, values=None):
 	'''Purly manual function that plots all the fit output figures. Quite cumbersome, 
 	but offers a lot of manual options. The figures can be called separately 
 	or with a list of plots. e.g. range(6) call plots 0-5 Manual plotting of certain type:
@@ -1941,7 +1969,16 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 	In all plots the RAW data is plotted as dots and the fit with lines 
 	
 	*Contents of the plots*
-
+	Overview:
+	0. DAC
+	1. summed wavelength
+	2. Kinetics at fixed wavelength
+	3. Spectra at fixed time
+	4. 2D Matrixes
+	5. Concentrations (populations)
+	6. Residuals
+	
+	Details:
 	0. DAC contains the assigned spectra for each component of the fit. For
 	   a modelling with independent exponential decays this corresponds to
 	   the "Decay Associated Spectra" (DAS). For all other models this
@@ -1953,22 +1990,22 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 	   intensity (concentration matrix) times this spectral strength. As the
 	   concentration maxima for all DAS are 1 this corresponds to the
 	   spectral strength for the DAS. (please see the documentation for the
-	   fitting algorithm for further details)
+	   fitting algorithm for further details).
 
 	1. summed intensity. All wavelength of the spectral axis are summed for
 	   data and fit. The data is plotted in a number of ways vs linear and
 	   logarithmic axis. This plot is not ment for publication but very
 	   useful to evaluate the quality of a fit.
 
-	2. plot kinetics for selected wavelength (see corresponding RAW plot)
+	2. plot kinetics for selected wavelength (see corresponding RAW plot).
 
-	3. plot spectra at selected times (see corresponding RAW plot)
+	3. plot spectra at selected times (see corresponding RAW plot).
 
 	4. plots matrix (measured, modelled and error Matrix). The parameter are
 	   the same as used for the corresponding RAW plot with the addition of
 	   "error_matrix_amplification" which is a scaling factor multiplied
 	   onto the error matrix. I recommend to play with different "cmap",
-	   "log_scale" and "intensity_scale" to create a pleasing plot
+	   "log_scale" and "intensity_scale" to create a pleasing plot.
 
 	5. concentrations. In the progress of the modelling/fitting a matrix is
 	   generated that contains the relative concentrations of the species
@@ -1977,6 +2014,11 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 	   in the documentation of the fitting function. The modeled spectra are
 	   the convolution of these vectors (giving the time-development) and
 	   the DAS/SAS (giving the spectral development).
+	
+	6. Residuals: This plot contains the residual Kinetics (similar to 2. but
+		the measured kinetics minus the model.
+		
+
 	
 	Parameters
 	---------------
@@ -1991,7 +2033,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 	error_matrix_amplification : int, optional
 		the error matrix AE is multiplied by this factor for the plot.
 	
@@ -2067,9 +2109,19 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		colors are skipped. Usually only used if multiple plots are created, and the data/or fit is
 		only shown for some of them.
 		
+	values : iterable(list, vector,..)
+		this are the values at which there is a tick and a value in the colorbar. Default is None,
+		in which case there are the two extremes and the middle chosen
+		
 	lintresh : float
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
-		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 1 
+		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
+	
+	linscale : float
+		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
+		time zero linear and beyond the linear treshold 'lintresh' on a logarithmic scale. The linscale 
+		parameter decided how wide this range is in decade units. Meaning how much focus is layed on the 
+		linear scale in the plot.  
 
 
 	rel_time : float or list/vector (of floats), optional
@@ -2230,47 +2282,63 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		#for i,col in enumerate(re['DAC']):
 			#re['DAC'].iloc[:,i]=re['DAC'].iloc[:,i].values*re['c'].max().iloc[i]
 		if halfsize:
-			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(6,2.5),dpi=100)
+			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(8,2.5),dpi=100)
 		else:
-			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(12,5),dpi=100)
+			fig1,(ax1a,ax1b,ax1c)=plt.subplots(1,3,figsize=(16,5),dpi=100)
 		n_colors=len(re['DAC'].columns)
+		if line_colors is None:
+			colors=colm(range(n_colors),cmap=cmap)
+		else:
+			colors=colm(range(n_colors),cmap=line_colors)
 		DAC=re['DAC']
+		if equal_energy_bin is not None:# we work with optical data but want to bin in equal energy
+			DAC.index=scipy.constants.h*scipy.constants.c/(DAC.index.values*1e-9*scipy.constants.electron_volt)
+			DAC.index.name='Energy in eV'
+			DAC.columns.name='Energy in eV'
+			DAC.sort_index(axis=0,inplace=True,ascending=False)
+			
 		DAC_copy=DAC.copy()
 		normed=(DAC/DAC.abs().max())
 		for i,col in enumerate(DAC_copy):
 			DAC_copy.iloc[:,i]=DAC_copy.iloc[:,i].values*re['c'].abs().max().iloc[i]
-		if scattercut is None:	
-			DAC.plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap))
-			normed.plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap))
-			DAC_copy.plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap))
+		if scattercut is None:
+			DAC.plot(ax=ax1b,color=colors)
+			normed.plot(ax=ax1a,color=colors)
+			DAC_copy.plot(ax=ax1c,color=colors)
 		elif isinstance(scattercut[0], numbers.Number):
-			DAC.loc[:scattercut[0],:].plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap))
-			DAC.loc[scattercut[1]:,:].plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')
-			normed.loc[:scattercut[0],:].plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap))
-			normed.loc[scattercut[1]:,:].plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')			
-			DAC_copy.loc[:scattercut[0],:].plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap))
-			DAC_copy.loc[scattercut[1]:,:].plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')	
+			if equal_energy_bin is not None:
+				scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+				scattercut=scattercut[::-1]
+			DAC.loc[:scattercut[0],:].plot(ax=ax1b,color=colors)
+			DAC.loc[scattercut[1]:,:].plot(ax=ax1b,color=colors, label='_nolegend_')
+			normed.loc[:scattercut[0],:].plot(ax=ax1a,color=colors)
+			normed.loc[scattercut[1]:,:].plot(ax=ax1a,color=colors, label='_nolegend_')			
+			DAC_copy.loc[:scattercut[0],:].plot(ax=ax1c,color=colors)
+			DAC_copy.loc[scattercut[1]:,:].plot(ax=ax1c,color=colors, label='_nolegend_')	
 		else:
 			try:
 				scattercut=flatten(scattercut)
+				if equal_energy_bin is not None:
+					scattercut=[scipy.constants.h*scipy.constants.c/(a*1e-9*scipy.constants.electron_volt) for a in scattercut]
+					scattercut=scattercut[::-1]
 				for i in range(len(scattercut)/2+1):
 					if i==0:
-						DAC.loc[:scattercut[0],:].plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap))
-						normed.loc[:scattercut[0],:].plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap))
-						DAC_copy.loc[:scattercut[0],:].plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap))
+						DAC.loc[:scattercut[0],:].plot(ax=ax1b,color=colors)
+						normed.loc[:scattercut[0],:].plot(ax=ax1a,color=colors)
+						DAC_copy.loc[:scattercut[0],:].plot(ax=ax1c,color=colors)
 					elif i<(len(scattercut)/2):
-						DAC.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')
-						normed.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')			
-						DAC_copy.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')	
+						DAC.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1b,color=colors, label='_nolegend_')
+						normed.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1a,color=colors, label='_nolegend_')			
+						DAC_copy.loc[scattercut[2*i-1]:scattercut[2*i],:].plot(ax=ax1c,color=colors, label='_nolegend_')	
 					else:
-						DAC.loc[scattercut[-1]:,:].plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')
-						normed.loc[scattercut[-1]:,:].plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')			
-						DAC_copy.loc[scattercut[-1]:,:].plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap), label='_nolegend_')	
+						DAC.loc[scattercut[-1]:,:].plot(ax=ax1b,color=colors, label='_nolegend_')
+						normed.loc[scattercut[-1]:,:].plot(ax=ax1a,color=colors, label='_nolegend_')			
+						DAC_copy.loc[scattercut[-1]:,:].plot(ax=ax1c,color=colors, label='_nolegend_')	
 			except:
-				DAC.plot(ax=ax1b,color=colm(range(n_colors),cmap=cmap))
-				normed.plot(ax=ax1a,color=colm(range(n_colors),cmap=cmap))
-				DAC_copy.plot(ax=ax1c,color=colm(range(n_colors),cmap=cmap))	
-		
+				DAC.plot(ax=ax1b,color=colors)
+				normed.plot(ax=ax1a,color=colors)
+				DAC_copy.plot(ax=ax1c,color=colors)
+				
 		if mod in ['paral','exponential']:
 			try:
 				names=['decay %i: %.3g %s'%(i,a,baseunit) for i,a in enumerate(times)]
@@ -2315,12 +2383,16 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 			ax1c.set_title(f)
 		else:
 			if len(title)>1:ax1c.set_title(title)
+		if equal_energy_bin is not None:
+			ax1b.set_xlim(np.max(ax1b.get_xlim()),np.min(ax1b.get_xlim()))
+			ax1a.set_xlim(np.max(ax1a.get_xlim()),np.min(ax1a.get_xlim()))
+			ax1c.set_xlim(np.max(ax1c.get_xlim()),np.min(ax1c.get_xlim()))
 		ax1a.plot(ax1a.get_xlim(),[0,0],'black',zorder=10)
 		ax1b.plot(ax1b.get_xlim(),[0,0],'black',zorder=10)
 		ax1c.plot(ax1b.get_xlim(),[0,0],'black',zorder=10)
-		ax1a.set_xlabel(ds.columns.name)
-		ax1b.set_xlabel(ds.columns.name)
-		ax1c.set_xlabel(ds.columns.name)
+		ax1a.set_xlabel(DAC.columns.name)
+		ax1b.set_xlabel(DAC.columns.name)
+		ax1c.set_xlabel(DAC.columns.name)
 		ax1a.set_ylabel('intensity norm.')
 		ax1b.set_ylabel('intensity in arb. units')
 		ax1c.set_ylabel('intensity*max(c) in arb. units')
@@ -2445,13 +2517,14 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 		else:
 			fig3,ax3 = plt.subplots(figsize = (15,6),dpi = 100)
 		#fig3,ax3 = plt.subplots(figsize = (8,4),dpi = 100)
-		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
-					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
-					  timelimits = timelimits, text_in_legend = time_string, title = title, 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+
 		_=plot1d( ds = re['A'], cmap = cmap,ax = ax3, subplot = True, width = width, 
 					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
-					  baseunit = baseunit , lintresh = lintresh , timelimits = timelimits, 
+					  baseunit = baseunit , lintresh = lintresh , linscale=linscale,  timelimits = timelimits, 
+					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
+					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, linscale=linscale,
+					  timelimits = timelimits, text_in_legend = time_string, title = title, 
 					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
 		ax3.autoscale(axis = 'y',tight = True)
 		for t in times:
@@ -2483,7 +2556,7 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 							error_matrix_amplification = error_matrix_amplification, wave_nm_bin = None, equal_energy_bin = equal_energy_bin,
 							use_images = True, log_scale = log_scale, scale_type = scale_type, patches = patches, 
 							lintresh = lintresh, bordercut = bordercut, ignore_time_region = ignore_time_region, 
-							scattercut = scattercut, timelimits = timelimits, levels = 200,  data_type = data_type)	
+							scattercut = scattercut, timelimits = timelimits, levels = 200,  data_type = data_type, values=values)	
 		plt.ion()
 		plt.show()
 	if 5 in plotting:
@@ -2553,8 +2626,6 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 			if isinstance(t, float):
 				ax7.plot([t, t], ax7.get_ylim(), lw = 0.5, zorder = 10, alpha = 0.5, color = 'black')
 		fig7.tight_layout()							
-	plt.ion()
-	plt.show()
 	if print_click_position:
 		plt.connect('button_press_event', mouse_move)
 	if save_figures_to_folder:
@@ -2582,10 +2653,10 @@ def plot_fit_output( re, ds, cmap = standard_map, plotting = range(7), title = N
 def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-2, baseunit = 'ps',
 			timelimits = None, scattercut = None, bordercut = None, wave_nm_bin = None, width = 10,
 			rel_wave = np.arange(400, 900, 100), rel_time = [1, 5, 10], time_width_percent = 10,
-			ignore_time_region = None, time_bin = None, cmap = None, color_offset = 0, 
-			log_scale = True, plot_type = 'symlog', lintresh = 0.3, times = None, 
+			ignore_time_region = None, time_bin = None, cmap = None, line_colors = None, color_offset = 0, 
+			log_scale = True, plot_type = 'symlog', lintresh = 0.3, linscale=1, times = None, values=None,
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
-			print_click_position = False, data_type = 'differential Absorption in $\mathregular{\Delta OD}$',
+			print_click_position = False, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$',
 			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = None,
 			return_figures_handles=False):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
@@ -2628,7 +2699,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 	
 	baseunit : str
 		baseunit is a neat way to change the unit on the time axis of the plots. (Default) "ps", but they 
@@ -2730,6 +2801,10 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		At the (Default) 0 the colours are chose from the beginning, for a larger value Color_offset 
 		colors are skipped. Usually only used if multiple plots are created, and the data/or fit is
 		only shown for some of them.
+	
+	values : iterable(list, vector,..)
+		this are the values at which there is a tick and a value in the colorbar. Default is None,
+		in which case there are the two extremes and the middle chosen
 		 
 	log_scale : bool, optional
 		If True (Default), The 2D plots (Matrix) is plotted with a pseudo logarithmic intensity scale. 
@@ -2742,6 +2817,12 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 	lintresh : float
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
+	
+	linscale : float
+		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
+		time zero linear and beyond the linear treshold 'lintresh' on a logarithmic scale. The linscale 
+		parameter decided how wide this range is in decade units. Meaning how much focus is layed on the 
+		linear scale in the plot. 
 		
 	times : None or int
 		are the number of components to be used in the SVD (Default) is None (which is seen as 6)
@@ -2793,9 +2874,9 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 	if 0 in plotting:#MAtrix
 		fig1 = plot2d(ds = ds, cmap = cmap, ignore_time_region = ignore_time_region, plot_type = plot_type, 
 					baseunit = baseunit, intensity_range = intensity_range, scattercut = scattercut, 
-					bordercut = bordercut, wave_nm_bin = wave_nm_bin, levels = 200, lintresh = lintresh, 
+					bordercut = bordercut, wave_nm_bin = wave_nm_bin, levels = 200, lintresh = lintresh, linscale=linscale,
 					timelimits = timelimits, time_bin = time_bin, title = title, log_scale = log_scale, 
-					data_type = data_type, equal_energy_bin = equal_energy_bin)
+					data_type = data_type, equal_energy_bin = equal_energy_bin, values=values)
 		fig1.tight_layout()
 		if debug:print('plotted Matrix')
 	if 1 in plotting:#kinetics
@@ -2804,13 +2885,13 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		else:
 			fig2,ax2=plt.subplots(figsize=(10,6),dpi=100)
 		
-		_ = plot1d(ds = ds, ax = ax2, subplot = True, cmap = cmap, width = width, wavelength = rel_wave,
-					title = title, lines_are = 'data' ,	  plot_type = plot_type, lintresh = lintresh, 
+		_ = plot1d(ds = ds, ax = ax2, subplot = True, cmap = cmap, line_colors=line_colors, width = width, wavelength = rel_wave,
+					title = title, lines_are = 'data' ,	  plot_type = plot_type, lintresh = lintresh, linscale=linscale,
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
 					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
 					units = units)
-		_ = plot1d(ds = ds, ax = ax2, subplot = False, cmap = cmap, width = width, wavelength = rel_wave,
-					title = title, lines_are = 'smoothed', plot_type = plot_type, lintresh = lintresh, 
+		_ = plot1d(ds = ds, ax = ax2, subplot = False, cmap = cmap, line_colors=line_colors, width = width, wavelength = rel_wave,
+					title = title, lines_are = 'smoothed', plot_type = plot_type, lintresh = lintresh, linscale=linscale,
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
 					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
 					units = units )
@@ -2821,21 +2902,21 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		else:
 			fig3,ax3 = plt.subplots(figsize = (10,6),dpi = 100)
 
-		_ = plot_time(ds, subplot = True, ax = ax3, plot_second_as_energy = False, cmap = cmap, 
+		_ = plot_time(ds, subplot = True, ax = ax3, plot_second_as_energy = False, cmap = cmap, line_colors=line_colors,
 						rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 						baseunit = baseunit, lines_are = 'data'	  , scattercut = scattercut, 
 						wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
 						ignore_time_region = ignore_time_region, data_type = data_type, units = units, 
 						equal_energy_bin = equal_energy_bin)
 		if plot_second_as_energy:
-			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = True, cmap = cmap, 
+			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = True, cmap = cmap, line_colors=line_colors, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
 					ignore_time_region = ignore_time_region, data_type = data_type, units = units, 
 					equal_energy_bin = equal_energy_bin)
 		else:
-			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = False, cmap = cmap, 
+			_ = plot_time(ds ,subplot = False, ax = ax3, plot_second_as_energy = False, cmap = cmap, line_colors=line_colors, 
 					rel_time = rel_time, time_width_percent = time_width_percent, title = title, 
 					baseunit = baseunit, lines_are = 'smoothed', scattercut = scattercut, 
 					wave_nm_bin = wave_nm_bin, bordercut = bordercut, intensity_range = intensity_range, 
@@ -2877,8 +2958,8 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_time_region = None, 
 			wave_nm_bin = None, title = None, text_in_legend = None, baseunit = 'ps', 
 			lines_are = 'smoothed', scattercut = None, bordercut = None, subplot = False, linewidth = 1, 
-			color_offset = 0, intensity_range = None, plot_second_as_energy = True, cmap = standard_map, 
-			data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', equal_energy_bin = None, from_fit = None):
+			color_offset = 0, intensity_range = None, plot_second_as_energy = True, cmap = cm.jet, line_colors =cm.tab20,
+			data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', units = 'nm', equal_energy_bin = None, from_fit = None):
 	'''Function to create plots at a certain time. In general you give under rel_time a 
 		list of times at which yu do want to plot the time width percentage means that 
 		this function integrates ewverything plus minus 10% at this time. lines_are is a 
@@ -2900,7 +2981,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 	
 	rel_time : float or list/vector (of floats), optional
 		For each entry in rel_time a spectrum is plotted. If time_width_percent=0 (Default) the 
@@ -3008,10 +3089,13 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 	if not hasattr(rel_time,'__iter__'):rel_time=[rel_time]
 	rel_time=[a for a in rel_time if a<ds.index.values.astype('float').max()]
 	
-	if isinstance(cmap,list):
+	if isinstance(cmap,list) or isinstance(cmap,np.ndarray):
 		colors=cmap[color_offset:]
-	else:
-		colors=colm(np.arange(color_offset,len(rel_time)+color_offset),cmap=cmap)
+	else:#automatic color choice
+		if line_colors is None:# no specific color map given
+			colors = colm(np.arange(color_offset, len(rel_time)+color_offset), cmap = line_colors)
+		else:
+			colors = colm(np.arange(color_offset, len(rel_time)+color_offset), cmap = line_colors)
 	if ax is None:
 		if halfsize:
 			fig,ax1=plt.subplots(figsize=(5,3),dpi=100)
@@ -3140,9 +3224,10 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 
 
 def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = False, title = None, intensity_range = None, 
-			baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, cmap = standard_map, plot_type = 'symlog',
-			lintresh = 0.1, text_in_legend = None, lines_are = 'smoothed', color_offset = 0, ignore_time_region = None,
-			linewidth = 1, data_type = 'differential Absorption in $\mathregular{\Delta OD}$', units = 'nm', from_fit = False):																			  
+			baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, cmap = cm.jet, line_colors =cm.tab20, 
+			plot_type = 'symlog', lintresh = 0.1, linscale=1, text_in_legend = None, lines_are = 'smoothed', 
+			color_offset = 0, ignore_time_region = None, linewidth = 1, 
+			data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', units = 'nm', from_fit = False):																			  
 	'''Plots the single line kinetic for specific wavelength given with the parameter wavelength.
 
 	Parameters
@@ -3165,7 +3250,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		
 	data_type : str
 		this is the datatype and effectively the unit put on the intensity axis 
-		(Default)'differential Absorption in $\mathregular{\Delta OD}$
+		(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 		
 	width : float, optional
 		the width used in kinetics, see below (Default) 10nm		
@@ -3266,6 +3351,12 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
 		time zero linear and beyond this linear treshold 'lintresh' on a logarithmic scale. (Default) 0.3 
 	
+	linscale : float
+		The pseudo logratihmic range "symlog" is used for most time axis. Symlog plots a range around
+		time zero linear and beyond the linear treshold 'lintresh' on a logarithmic scale. The linscale 
+		parameter decided how wide this range is in decade units. Meaning how much focus is layed on the 
+		linear scale in the plot. 
+	
 	from_fit : bool optional
 		i needed this swtich to avoid re-slicing of data in spectal axis for equal energy bins
 
@@ -3282,10 +3373,13 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		ax1=ax
 	if width is None:width=1
 	if not hasattr(wavelength, '__iter__'):wavelength = [wavelength]
-	if isinstance(cmap,list):
+	if isinstance(cmap,list) or isinstance(cmap,np.ndarray):
 		colors=cmap[color_offset:]
-	else:
-		colors = colm(np.arange(color_offset, len(wavelength)+color_offset), cmap = cmap)
+	else:#automatic color choice
+		if line_colors is None:# no specific color map given
+			colors = colm(np.arange(color_offset, len(wavelength)+color_offset), cmap = cmap)
+		else:
+			colors = colm(np.arange(color_offset, len(wavelength)+color_offset), cmap = line_colors)
 	ds = sub_ds(ds = ds, wavelength = wavelength, wavelength_bin = width, scattercut = scattercut, 
 				ignore_time_region = ignore_time_region, drop_ignore = True, from_fit = from_fit)
 	if 'smoothed' in lines_are:
@@ -3342,23 +3436,42 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		labels=labels[:len(wavelength)]
 		for i,entry in enumerate(labels):
 			labels[i]=entry + ' %s'%units
-		if 'smoothed' in lines_are:leg=ax1.legend(labels,title='%g %s width, lines=smoothed'%(width,units),labelspacing=0,ncol=2,columnspacing=1,handlelength=1,frameon=False)
-		elif 'data' in lines_are:  leg=ax1.legend(labels,title='%g %s width'%(width,units)				  ,labelspacing=0,ncol=2,columnspacing=1,handlelength=1,frameon=False)
-		elif 'fitted' in lines_are:leg=ax1.legend(labels,title='%g %s width, lines=fit'%(width,units)	  ,labelspacing=0,ncol=2,columnspacing=1,handlelength=1,frameon=False)
+		
+		if len(labels)>40:
+			ncol=3
+		else:
+			ncol=2
+		if len(labels)>60:
+			ncol=4
 		if text_in_legend is not None:
-			stringen=leg.get_title().get_text()
-			texten=text_in_legend
-			leg.set_title(texten + '\n' +stringen)
+			title_add=text_in_legend + '\n'
+		else:
+			title_add=''
+		if 'smoothed' in lines_are:
+			leg=ax1.legend(labels,title='%s %g %s width, lines=smoothed'%(title_add,width,units),
+			labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,loc='upper left', 
+			bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+		elif 'data' in lines_are:  
+			leg=ax1.legend(labels,title='%s %g %s width'%(title_add,width,units),labelspacing=0,
+			ncol=ncol,columnspacing=1,handlelength=1,
+			frameon=False,loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+		elif 'fitted' in lines_are:
+			leg=ax1.legend(labels,title='%s %g %s width, lines=fit'%(title_add,width,units),
+			labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,
+			loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+
 		
 	x=ds.index.values.astype('float')
 	#limits and ticks
 	if timelimits is None:timelimits=[min(x),max(x)]
 	if "symlog" in plot_type:
-		lintresh=lintresh
-		ax1.set_xscale('symlog', linthresh=lintresh,subs=range(2,9),linscale=lintresh/4.)
+		ax1.set_xscale('symlog', linthresh=lintresh,subs=range(2,9),linscale=linscale)
 		try:
 			if lintresh>0.5:
-				ticks=np.concatenate((np.arange(-100,0,10,),[-5,-3,-2,-1,-0.5,0,0.5],np.logspace(0,10,11)))
+				if linscale>1:
+					ticks=np.concatenate((np.arange(-100,0,10,),[-5,-3,-2,-1,-0.5,0,0.2,0.4,0.6,0.8],np.logspace(0,10,11)))
+				else:
+					ticks=np.concatenate((np.arange(-100,0,10,),[-5,-3,-2,-1,-0.5,0,0.5],np.logspace(0,10,11)))
 			elif lintresh>=0.3:
 				ticks=np.concatenate((np.arange(-100,0,10,),[-5,-3,-2,-1,-0.3,0,0.3],np.logspace(0,10,11)))
 			elif lintresh>=0.1:
@@ -3392,14 +3505,18 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 				except:
 					print('title could not be set')
 		if "symlog" in plot_type:
-			ax1.plot([lintresh,lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
-			ax1.plot([-lintresh,-lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5)
+			ax1.plot([lintresh,lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5, label='_nolegend_')
+			ax1.plot([-lintresh,-lintresh],ax1.get_ylim(),color='black',linestyle='dashed',alpha=0.5, label='_nolegend_')
 				
 	ax1.set_xlabel(ds.index.name)
 	ax1.set_ylabel(data_type)		
 	#ax1.set_xlabel('time in %s'%baseunit)
 	#ax1.set_ylabel('differential Absorption in $\mathregular{\Delta OD}$')
 	ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: '%.2g'%(x)))
+	try:
+		fig.tight_layout()
+	except:
+		pass
 	if ax is None:
 		return fig
 	else:
@@ -3408,7 +3525,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 
 def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-1, 150], wave_nm_bin = 10, 
 		time_bin = None, wavelength_bin = None, plotting = True, baseunit = 'ps', title = None, ignore_time_region = None, 
-		cmap = None, equal_energy_bin = None, data_type = 'differential Absorption in $\mathregular{\Delta OD}$'):
+		cmap = None, equal_energy_bin = None, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$'):
 	'''This function calculates the SVD and plots an overview.
 	
 	Parameters
@@ -4593,7 +4710,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	
 	weights : list of floats, optional
 		only used in conjunction with 'multi_project'. The "weights" option allows to 
-		give each multi\_project a specific weight (number) that is multiplied to the error. 
+		give each multi\\_project a specific weight (number) that is multiplied to the error. 
 		If the weight object has the same number of items as the 'multi_project' it is assumed 
 		that ta (the embedded project) has the weight of 1, otherwise the first weight is for the 
 		embedded object
@@ -5112,7 +5229,7 @@ def pardf_to_timedf(pardf):
 
 
 class TA():	# object wrapper for the whole
-	def __init__(self, filename=None, path = None, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
+	def __init__(self, filename=None, path = None, sep = "\\t", decimal = '.', index_is_energy = False, transpose = False,
 				sort_indexes = False, divide_times_by = None, shift_times_by = None, external_time = None, external_wave = None, 
 				use_same_name = True, data_type = None , units = None, baseunit = None, ds = None, conversion_function = None):		 
 		'''Function that opens and imports data into an TA object
@@ -5127,7 +5244,9 @@ class TA():	# object wrapper for the whole
 			
 			* expects a filename in string form for opening a single file. 
 			* alternatively 'gui' can be set as filename, then a TKinter gui is opened for select.
-			* alternatively 'recent' can given as key word. in this case it tries to find a text file named "recent.dat" that should contain the path to the last file opened with the GUI. this file is then opened. if this file is not found the GUI is opened instead
+			* alternatively 'recent' can given as key word. in this case it tries to find a text file 
+			  named "recent.dat" that should contain the path to the last file opened with the GUI. 
+			  this file is then opened. if this file is not found the GUI is opened instead
 		
 		path : str or path object (optional)
 			if path is a string without the operation system dependent separator, it is treated as a relative path, 
@@ -5136,7 +5255,7 @@ class TA():	# object wrapper for the whole
 		
 		sep : str (optional)
 			is the separator between different numbers, typical are tap (Backslash t) (Default) ,one or 
-			multiple white spaces 'backslash s+' or comma ','.
+			multiple white spaces '\\s+' or comma ','.
 		
 		decimal : str (optional) 
 			sets the ascii symbol that is used for the decimal sign. In most countries this is '.'(Default) 
@@ -5179,7 +5298,7 @@ class TA():	# object wrapper for the whole
 		
 		data_type : str, None
 			this is the datatype and effectively the unit put on the intensity axis 
-			(Default)'differential Absorption in $\mathregular{\Delta OD}$
+			(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 		
 		external_time : None or str (optional)
 			Here a filename extension (string) can be given that contains the time vector. 
@@ -5711,7 +5830,7 @@ class TA():	# object wrapper for the whole
 			the longest (then use the ta.Backgound function prior to fit) and expand from there
 		data_type : str
 			this is the datatype and effectively the unit put on the intensity axis 
-			(Default)'differential Absorption in $\mathregular{\Delta OD}$
+			(Default)'differential Absorption in $\\mathregular{\\Delta OD}$
 		self.wave_nm_bin  : None or float 
 			(Default)  None\n
 			rebins the original data into even intervals. If set to None the original data will be used. 
@@ -5735,7 +5854,7 @@ class TA():	# object wrapper for the whole
 		self.ds_ori.index.name : str, optional
 			Standard 'Time in %s' % self.baseunit 
 		self.data_type: str (optional)
-			self.data_type='diff. Absorption in $\mathregular{\Delta OD}$'
+			self.data_type='diff. Absorption in $\\mathregular{\\Delta OD}$'
 		self.fitcoeff : list (5 floats)
 			chirp correction polynom
 		self.chirp_file : str
@@ -5760,7 +5879,8 @@ class TA():	# object wrapper for the whole
 
 		'''
 		self.log_scale = False if not hasattr(self, 'log_scale') else self.log_scale
-		self.cmap = standard_map if not hasattr(self, 'cmap') else self.cmap
+		self.cmap = cm.seismic if not hasattr(self, 'cmap') else self.cmap
+		self.line_colors = cm.tab20 if not hasattr(self, 'line_colors') else self.line_colors
 		self.lintresh = 0.3 if not hasattr(self, 'lintresh') else self.lintresh
 		self.log_fit = False if not hasattr(self, 'log_fit') else self.log_fit
 		self.ignore_time_region = None if not hasattr(self, 'ignore_time_region') else self.ignore_time_region
@@ -5784,6 +5904,8 @@ class TA():	# object wrapper for the whole
 		self.ds_ori.index.name = 'Time in %s' % self.baseunit if not hasattr(self, 'ds_ori.index.name') else self.ds_ori.index.name
 		self.equal_energy_bin = None if not hasattr(self, 'equal_energy_bin') else self.equal_energy_bin
 		self.units='nm' if not hasattr(self, 'units') else self.units
+		self.lintresh = 0.1 if not hasattr(self, 'lintresh') else self.lintresh
+		self.linscale = 1 if not hasattr(self, 'linscale') else self.linscale
 		if self.units == 'nm':
 			self.ds_ori.columns.name = 'Wavelength in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
 		elif self.units == 'eV':
@@ -5792,7 +5914,7 @@ class TA():	# object wrapper for the whole
 			self.ds_ori.columns.name = 'Energy in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
 		else:
 			self.ds_ori.columns.name = 'Energy in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
-		self.data_type= 'diff. Absorption in $\mathregular{\Delta OD}$' if not hasattr(self, 'data_type') else self.data_type
+		self.data_type= 'diff. Absorption in $\\mathregular{\\Delta OD}$' if not hasattr(self, 'data_type') else self.data_type
 		
 		try:#self.fitcoeff
 			self.fitcoeff
@@ -6153,7 +6275,8 @@ class TA():	# object wrapper for the whole
 			
 			
 
-	def Cor_Chirp(self, chirp_file = None, path = None, shown_window = [-1, 1], fitcoeff = None, max_points = 40, cmap = cm.prism, just_shift=False):
+	def Cor_Chirp(self, chirp_file = None, path = None, shown_window = [-1, 1], 
+					fitcoeff = None, max_points = 40, cmap = cm.prism, just_shift=False):
 		'''*Cor_Chirp* is a powerful Function to correct for a different arrival times of 
 		different wavelength (sometimes call chirp). 
 		In general if a file is opened for the first time this function is opening 
@@ -6315,7 +6438,7 @@ class TA():	# object wrapper for the whole
 		self.ds.columns.name=self.ds_ori.columns.name
 		self.ds.index.name=self.ds_ori.index.name
 
-	def Plot_Interactive(self, fitted = False, ds = None, cmap = None, plot_on_move = False):
+	def Plot_Interactive(self, fitted = False, ds = None, cmap = None, plot_on_move = False, colors=None):
 		'''interactive plotting function. it plots the matrix in the middle and two slices that are selected by the mouse (click) 
 		
 		Parameters
@@ -6357,6 +6480,7 @@ class TA():	# object wrapper for the whole
 		 '''
 		from matplotlib.widgets import Cursor
 		if cmap is None:cmap=self.cmap
+		if colors is None:colors=self.colors
 		if ds is None:
 			if not fitted:
 				if self.ds is None:
@@ -6386,6 +6510,7 @@ class TA():	# object wrapper for the whole
 				self.ax= fig.add_subplot(gs[1:, :3])
 				self.ds=ds
 				self.cmap=cmap
+				self.colors=colors
 				self.intensity_range=intensity_range
 				self.log_scale=log_scale
 				self.baseunit=baseunit
@@ -6501,7 +6626,7 @@ class TA():	# object wrapper for the whole
 
 
 	def Plot_RAW(self, plotting = range(4), title = None, scale_type = 'symlog', times = None,
-				cmap = None, filename = None, path = "result_figures", savetype = 'png' , print_click_position = False,
+				cmap = None, line_colors= None, filename = None, path = "result_figures", savetype = 'png' , print_click_position = False,
 				plot_second_as_energy = True, ds = None, return_figures_handles=False):
 		'''This is a wrapper function that triggers the plotting of various RAW (non fitted) plots. 
 		The shaping parameter are taken from the object and should be defined before.
@@ -6614,6 +6739,11 @@ class TA():	# object wrapper for the whole
 		if self.save_figures_to_folder:
 			self.figure_path=path
 		if cmap is None:cmap=self.cmap
+		if line_colors is None:line_colors=self.line_colors
+		if 'values' in self.__dict__.keys():
+			values=self.values
+		else:
+			values=None
 		if ds is None:
 			if self.ds is None:
 				ds=self.ds_ori.copy()
@@ -6626,16 +6756,16 @@ class TA():	# object wrapper for the whole
 				title=self.filename
 			else:
 				title=filename
-		r=plot_raw(ds=ds, plotting=plotting, cmap=cmap, title=title, path=path, filename=filename, 
+		r=plot_raw(ds=ds, plotting=plotting, cmap=cmap, line_colors=line_colors, title=title, path=path, filename=filename, 
 				intensity_range=self.intensity_range, log_scale=self.log_scale, baseunit=self.baseunit, 
 				timelimits=self.timelimits, scattercut=self.scattercut, bordercut=self.bordercut, 
 				wave_nm_bin=self.wave_nm_bin, rel_wave=self.rel_wave, width=self.wavelength_bin, 
 				time_width_percent=self.time_width_percent, ignore_time_region=self.ignore_time_region, 
 				time_bin=self.time_bin, rel_time=self.rel_time, save_figures_to_folder=self.save_figures_to_folder, 
-				savetype=savetype,plot_type=scale_type,lintresh=self.lintresh, times=times, 
+				savetype=savetype,plot_type=scale_type,lintresh=self.lintresh, linscale=self.linscale, times=times, 
 				print_click_position = print_click_position, data_type = self.data_type, 
 				plot_second_as_energy = plot_second_as_energy, units=self.units, equal_energy_bin = self.equal_energy_bin,
-				return_figures_handles=return_figures_handles)
+				return_figures_handles=return_figures_handles,values=values)
 		if return_figures_handles:
 			return r
 
@@ -6905,7 +7035,8 @@ class TA():	# object wrapper for the whole
 				the "ctrl+shift+q" key simultaneously (hardcoded). Consider using the parameter write_paras or 
 				dump_paras to observe details during the fit.
 				
-		All mandatory parameters are in general taken from the internal oject (self) The optional parameter control the behaviour of the fitting function  
+		All mandatory parameters are in general taken from the internal oject (self) The optional 
+		parameter control the behaviour of the fitting function  
 		
 		Parameters
 		------------------
@@ -6926,7 +7057,7 @@ class TA():	# object wrapper for the whole
 				reaches the by F-statistics defined confidence bound. See :meth:`plot_func.s2_vs_smin2` for details 
 				on how this level is determined. Careful, this option might run for very long time.
 				Meaning that it typically takes 50 optimization per variable parameter (hard coded limit 200)
-				The confidence level is to be understood that it defines the e.g. 0.65 * 100\% area that the
+				The confidence level is to be understood that it defines the e.g. 0.65 * 100\\% area that the
 				parameter with this set of values is within this bounds.
 				Normal behaviour for this is to re-optimise the parameter during the optimization. if the parameter 
 				par['error_param_fix'] is present, this will be suppressed.
@@ -7013,7 +7144,7 @@ class TA():	# object wrapper for the whole
 			
 			weights : list of floats, optional
 				only used in conjunction with 'multi_project'. The "weights" option allows to 
-				give each multi\_project a specific weight (number) that is multiplied to the error. 
+				give each multi\\_project a specific weight (number) that is multiplied to the error. 
 				If the weight object has the same number of items as the 'multi_project' it is assumed 
 				that ta (the embedded project) has the weight of 1, otherwise the first weight is for the 
 				embedded object
@@ -7509,7 +7640,7 @@ class TA():	# object wrapper for the whole
 			
 	def Plot_fit_output(self, plotting = range(7), path = 'result_figures', savetype = 'png', 
 						evaluation_style = False, title = None, scale_type = 'symlog', 
-						patches = False, filename = None, cmap = None , print_click_position = False,
+						patches = False, filename = None, cmap = None , line_colors=None, print_click_position = False,
 						plot_second_as_energy = True, return_figures_handles=False):
 																	 
 		'''plots all the fit output figures. The figures can be called separately 
@@ -7522,8 +7653,19 @@ class TA():	# object wrapper for the whole
 		completed (and the "re" dictionary attached to the object.)
 		In all plots the RAW data is plotted as dots and the fit with lines 
 		
+		
 		Contents of the plots
-
+			
+			Overview:
+			0. DAC
+			1. summed wavelength
+			2. Kinetics at fixed wavelength
+			3. Spectra at fixed time
+			4. 2D Matrixes
+			5. Concentrations (populations)
+			6. Residuals
+			
+			Details:
 			0. DAC contains the assigned spectra for each component of the fit. For
 			   a modelling with independent exponential decays this corresponds to
 			   the "Decay Associated Spectra" (DAS). For all other models this
@@ -7559,6 +7701,9 @@ class TA():	# object wrapper for the whole
 			   in the documentation of the fitting function. The modeled spectra are
 			   the convolution of these vectors (giving the time-development) and
 			   the DAS/SAS (giving the spectral development).
+			
+			6. Residuals: This plot contains the residual Kinetics (similar to 2. but
+				the measured kinetics minus the model.
 		
 		Parameters
 		---------------
@@ -7669,23 +7814,28 @@ class TA():	# object wrapper for the whole
 		if self.save_figures_to_folder:
 			self.figure_path=path
 		if cmap is None:cmap=self.cmap
+		if line_colors is None:line_colors=self.line_colors
 		if filename is None:filename=self.filename
+		if 'values' in self.__dict__.keys():
+			values=self.values
+		else:
+			values=None
 		if title is None:
 			if filename is None:
 				title=self.filename
 			else:
 				title=filename
 		if not hasattr(plotting,"__iter__"):plotting=[plotting]
-		returning_dict=plot_fit_output(self.re, self.ds, cmap = cmap, plotting = plotting, title = title, 
+		returning_dict=plot_fit_output(self.re, self.ds, cmap = cmap, line_colors=line_colors, plotting = plotting, title = title, 
 						path = path, f = filename, intensity_range = self.intensity_range, 
 						log_scale = self.log_scale, baseunit = self.baseunit, timelimits = self.timelimits, 
 						scattercut = self.scattercut, bordercut = self.bordercut, 
 						error_matrix_amplification = self.error_matrix_amplification, 
 						wave_nm_bin = self.wave_nm_bin, rel_wave = self.rel_wave, width = self.wavelength_bin, 
 						rel_time = self.rel_time, save_figures_to_folder = self.save_figures_to_folder, 
-						log_fit = self.log_fit,mod = self.mod, savetype = savetype, 
+						log_fit = self.log_fit,mod = self.mod, savetype = savetype, values=values,
 						time_width_percent = self.time_width_percent, evaluation_style = evaluation_style, 
-						filename = self.filename, scale_type = scale_type, patches = patches, lintresh = self.lintresh,
+						filename = self.filename, scale_type = scale_type, patches = patches, lintresh = self.lintresh, linscale=self.linscale,
 						print_click_position = print_click_position, ignore_time_region = self.ignore_time_region,
 						data_type = self.data_type, plot_second_as_energy = plot_second_as_energy, units= self.units, 
 						equal_energy_bin = self.equal_energy_bin, return_figures_handles=return_figures_handles)
@@ -8126,7 +8276,9 @@ class TA():	# object wrapper for the whole
 									
 									print('saving of multiproject-%i'%i + key2 + ' failed' )				
 				elif key == 'cmap':
-					pass
+					f.create_dataset(name='cmap', data=self.__dict__['cmap'].name)
+				elif key == 'line_colors':
+					f.create_dataset(name='line_colors', data=self.__dict__['line_colors'].name)
 				elif key == 'intensity_range':
 					data=self.__dict__['intensity_range']
 					if isinstance(data, type(1e-3)):
@@ -8358,6 +8510,18 @@ class TA():	# object wrapper for the whole
 						self.__dict__[key]=None
 			except:
 				continue
+		for key in ['cmap','line_colors']:
+			try:
+				if isinstance(self.__dict__[key],bytes):
+					#print(key + ' set to None')
+					self.__dict__[key]=None
+				elif isinstance(self.__dict__[key],str):
+					if self.__dict__[key]=='None':
+						self.__dict__[key]=None
+					else:
+						self.__dict__[key]=cm.get_cmap(self.__dict__[key])
+			except:
+				continue
 		try:
 			self.figure_path=str(self.figure_path)
 			if 'None' in self.figure_path:
@@ -8384,7 +8548,7 @@ class TA():	# object wrapper for the whole
 
 
 	def Compare_at_time(self, rel_time = None, other = None, fitted = False, norm_window = None,
-						time_width_percent = None, spectra = None, data_and_fit = False, cmap = None , 
+						time_width_percent = None, spectra = None, data_and_fit = False, cmap = None , colors=None, 
 						print_click_position = False, linewidth = 1, title='', plot_second_as_energy = True):
 		'''This function plots multiple spectra into the same figure at a given rel_time (timepoints) and 
 		allows for normalization. Very useful to compare the spectra for different solvents or quenchers, or
@@ -8738,7 +8902,8 @@ class TA():	# object wrapper for the whole
 						  
 
 	def Compare_at_wave(self, rel_wave = None, other = None, fitted = False, norm_window = None,
-						width = None, cmap = None, data_and_fit = False, scale_type = 'symlog', linewidth = 1):
+						width = None, cmap = None, colors=None, 
+						data_and_fit = False, scale_type = 'symlog', linewidth = 1):
 		'''This function plots multiple kinetics into the same figure at one or
 		multiple given wavelength (rel_wave) and  allows for 
 		:ref:`Normalization and Scaling` Very useful to compare the 
@@ -8876,9 +9041,11 @@ class TA():	# object wrapper for the whole
 				fig, ax = plt.subplots(figsize = (10, 6), dpi = 100)
 			colors = colm(cmap = cmap, k = range(len(rel_wave)*(2+len(other))))
 			ax = plot1d(re['A'], ax = ax, wavelength = rel_wave, width = width, lines_are = 'data', 
-						cmap = colors, title = '', plot_type = scale_type, linewidth = linewidth)
+						cmap = colors, title = '', plot_type = scale_type, linewidth = linewidth,
+						lintresh = self.lintresh, linscale=self.linscale)
 			ax = plot1d(re['AC'], ax = ax, wavelength = rel_wave, width = width, lines_are = 'fitted', 
-						cmap = colors, title = '', subplot = True, plot_type = scale_type, linewidth = linewidth)
+						cmap = colors, title = '', subplot = True, plot_type = scale_type, linewidth = linewidth,
+						lintresh = self.lintresh, linscale=self.linscale)
 			#ax = plot1d(re['AC'], ax = ax, wavelength = rel_wave, width = width, lines_are = 'fitted', 
 			#			cmap = colors, color_offset = len(rel_wave), title = '', subplot = True, plot_type = scale_type)
 			hand,  labels = ax.get_legend_handles_labels()
@@ -8903,28 +9070,28 @@ class TA():	# object wrapper for the whole
 							if data_and_fit:
 								ax = plot1d(re['A']/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = '', lines_are = 'data', subplot = True, color_offset = color_offset,
-											plot_type = scale_type, linewidth = linewidth)
+											plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 							ax = plot1d(re['AC']/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 										title = '', lines_are = 'fitted', subplot = True, color_offset = color_offset, 
-										plot_type = scale_type, linewidth = linewidth)
+										plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 																					 
 						except:
 							print('scaling Failed!')
 							if data_and_fit:
 								ax = plot1d(re['A'], cmap = colors, ax = ax, wavelength = rel_wave, width = width, 
 												title = '', lines_are = 'data', subplot = True, color_offset = color_offset, 
-												plot_type = scale_type, linewidth = linewidth)
+												plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 							ax = plot1d(re['AC'], cmap = colors, ax = ax, wavelength = rel_wave, width = width, 
 											title = '', lines_are = 'fitted', subplot = True, color_offset = color_offset, 
-											plot_type = scale_type, linewidth = linewidth) 
+											plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale) 
 					else:
 						if data_and_fit:
 							ax = plot1d(re['A'], cmap = colors, ax = ax, wavelength = rel_wave, width = width, 
 											title = '', lines_are = 'data', subplot = True, color_offset = color_offset, 
-											plot_type = scale_type, linewidth = linewidth)
+											plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 						ax = plot1d(re['AC'], cmap = colors, ax = ax, wavelength = rel_wave, width = width, 
 										title = '', lines_are = 'fitted', subplot = True, color_offset = color_offset, 
-										plot_type = scale_type, linewidth = linewidth)
+										plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 					for ent in rel_wave:
 						if data_and_fit:
 							lab.append('%g nm'%ent + '_' + str(o.filename))
@@ -8954,11 +9121,13 @@ class TA():	# object wrapper for the whole
 			ax = plot1d(self.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width, title = self.filename,
 						baseunit = self.baseunit, lines_are = 'data', scattercut = self.scattercut, 
 						bordercut = self.bordercut, subplot = False, color_offset = 0, timelimits = self.timelimits, 
-						intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
+						intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth, 
+						lintresh = self.lintresh, linscale=self.linscale)
 			ax = plot1d(self.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width, title = self.filename, 
 						baseunit = self.baseunit, lines_are = 'smoothed', scattercut = self.scattercut, 
 						bordercut = self.bordercut, subplot = False, color_offset = 0, timelimits = self.timelimits, 
-						intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
+						intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth,
+						lintresh = self.lintresh, linscale=self.linscale)
 			if 1:
 				handles, labels=ax.get_legend_handles_labels()
 				lab=['%g nm'%a + '_' + str(self.filename) for a in rel_wave]
@@ -8974,36 +9143,36 @@ class TA():	# object wrapper for the whole
 								ax = plot1d(o.ds/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
 											lines_are = 'data', scattercut = self.scattercut, bordercut = self.bordercut,
-											subplot = True, color_offset = color_offset, 
+											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale,  
 											intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
 								ax = plot1d(o.ds/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
 											lines_are = 'smoothed', scattercut = self.scattercut, bordercut = self.bordercut,
-											subplot = True, color_offset = color_offset, 
+											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale,
 											intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
 							except:
 								print('scaling failed')
 								ax = plot1d(o.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
 											lines_are = 'data', scattercut = self.scattercut, bordercut = self.bordercut,
-											subplot = True, color_offset = color_offset, 
+											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale, 
 											intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
 								ax = plot1d(o.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
 											lines_are = 'smoothed', scattercut = self.scattercut, bordercut = self.bordercut,
-											subplot = True, color_offset = color_offset, 
+											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale,
 											intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
 						else:
 							ax = plot1d(o.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width, title = o.filename,
 										baseunit = self.baseunit, timelimits = self.timelimits, lines_are = 'data',
 										scattercut = self.scattercut, bordercut = self.bordercut, subplot = True,
 										color_offset = color_offset, intensity_range = self.intensity_range, 
-										plot_type = scale_type, linewidth = linewidth)
+										plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 							ax = plot1d(o.ds, cmap = colors, ax = ax, wavelength = rel_wave, width = width, title = o.filename,
 										baseunit = self.baseunit, timelimits = self.timelimits, lines_are = 'smoothed',
 										scattercut = self.scattercut, bordercut = self.bordercut, subplot = True,
 										color_offset = color_offset, intensity_range = self.intensity_range, 
-										plot_type = scale_type, linewidth = linewidth)
+										plot_type = scale_type, linewidth = linewidth, lintresh = self.lintresh, linscale=self.linscale)
 						for ent in ['%g nm'%a + '_' + str(o.filename) for a in rel_wave]:
 							lab.append(ent)
 						handles, labels=ax.get_legend_handles_labels()
