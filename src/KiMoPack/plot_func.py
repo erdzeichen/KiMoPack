@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.13.5"
+version = "7.13.6"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -2041,14 +2041,14 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 		This parameter determines which figures are plotted 
 		the figures can be called separately with plotting = 1
 		or with a list of plots (Default) e.g.~plotting=range(6) calls plots 0,1,2,3,4,5
-		The plots have the following numbers:\
-		0 - DAS or SAS\
-		1 - summed intensity\
-		2 - Kinetics\
-		3 - Spectra\
-		4 - Matrixes\
-		5 - Concentrations (the c-object)\
-		6 - Residuals\ 
+		The plots have the following numbers:\n
+		0 - DAS or SAS\n
+		1 - summed intensity\n
+		2 - Kinetics\n
+		3 - Spectra\n
+		4 - Matrixes\n
+		5 - Concentrations (the c-object)\n
+		6 - Residuals\n
 		The plotting takes all parameter from the "ta" object unless otherwise specified
 	
 	path : None, str or path object, optional
@@ -2653,7 +2653,7 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-2, baseunit = 'ps',
 			timelimits = None, scattercut = None, bordercut = None, wave_nm_bin = None, width = 10,
 			rel_wave = np.arange(400, 900, 100), rel_time = [1, 5, 10], time_width_percent = 10,
-			ignore_time_region = None, time_bin = None, cmap = None, line_colors = None, color_offset = 0, 
+			ignore_time_region = None, time_bin = None, cmap = cm.seismic, line_colors = None, color_offset = 0, 
 			log_scale = True, plot_type = 'symlog', lintresh = 0.3, linscale=1, times = None, values=None,
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$',
@@ -2927,9 +2927,11 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		if debug:print('plotted Spectra')
 	if 3 in plotting:		#---plot at set time----------
 		try:
+			if line_colors is None:
+				line_colors = cmap
 			fig4 = SVD(ds ,  times = times ,  timelimits = timelimits ,  scattercut = scattercut ,  
 					bordercut = bordercut ,  wave_nm_bin = wave_nm_bin, ignore_time_region = ignore_time_region,
-					cmap = cmap)
+					cmap = line_colors)
 											  
 		except:
 			print("SVD failed with:",sys.exc_info()[0])
@@ -3371,6 +3373,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 			fig,ax1=plt.subplots(figsize=(10,6),dpi=100)
 	else:
 		ax1=ax
+		fig=ax.get_figure()
 	if width is None:width=1
 	if not hasattr(wavelength, '__iter__'):wavelength = [wavelength]
 	if isinstance(cmap,list) or isinstance(cmap,np.ndarray):
@@ -3447,18 +3450,29 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 			title_add=text_in_legend + '\n'
 		else:
 			title_add=''
-		if 'smoothed' in lines_are:
-			leg=ax1.legend(labels,title='%s %g %s width, lines=smoothed'%(title_add,width,units),
-			labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,loc='upper left', 
-			bbox_to_anchor=(1.03, 1), borderaxespad=0.)
-		elif 'data' in lines_are:  
-			leg=ax1.legend(labels,title='%s %g %s width'%(title_add,width,units),labelspacing=0,
-			ncol=ncol,columnspacing=1,handlelength=1,
-			frameon=False,loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
-		elif 'fitted' in lines_are:
-			leg=ax1.legend(labels,title='%s %g %s width, lines=fit'%(title_add,width,units),
-			labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,
-			loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+		if True: #Legend inside the figure
+			if 'smoothed' in lines_are:
+				leg=ax1.legend(labels,title='%s %g %s width, lines=smoothed'%(title_add,width,units),
+				labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False)
+			elif 'data' in lines_are:  
+				leg=ax1.legend(labels,title='%s %g %s width'%(title_add,width,units),labelspacing=0,
+				ncol=ncol,columnspacing=1,handlelength=1,frameon=False)
+			elif 'fitted' in lines_are:
+				leg=ax1.legend(labels,title='%s %g %s width, lines=fit'%(title_add,width,units),
+				labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False)
+		else:
+			if 'smoothed' in lines_are:
+				leg=ax1.legend(labels,title='%s %g %s width, lines=smoothed'%(title_add,width,units),
+				labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,loc='upper left', 
+				bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+			elif 'data' in lines_are:  
+				leg=ax1.legend(labels,title='%s %g %s width'%(title_add,width,units),labelspacing=0,
+				ncol=ncol,columnspacing=1,handlelength=1,
+				frameon=False,loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
+			elif 'fitted' in lines_are:
+				leg=ax1.legend(labels,title='%s %g %s width, lines=fit'%(title_add,width,units),
+				labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False,
+				loc='upper left', bbox_to_anchor=(1.03, 1), borderaxespad=0.)
 
 		
 	x=ds.index.values.astype('float')
@@ -3524,8 +3538,8 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 
 
 def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-1, 150], wave_nm_bin = 10, 
-		time_bin = None, wavelength_bin = None, plotting = True, baseunit = 'ps', title = None, ignore_time_region = None, 
-		cmap = None, equal_energy_bin = None, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$'):
+		time_bin = None, wavelength_bin = None, plotting = True, baseunit = 'ps', title = None, 
+		ignore_time_region = None, cmap = cm.tab10, equal_energy_bin = None, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$'):
 	'''This function calculates the SVD and plots an overview.
 	
 	Parameters
@@ -5652,7 +5666,7 @@ class TA():	# object wrapper for the whole
 			
 		'''
 		
-		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0)
+		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0, engine='python')
 		if correct_ascii_errors:
 			if (self.ds_ori.applymap(type) == float).all().all():
 				pass#all columns were converted to float,nice
