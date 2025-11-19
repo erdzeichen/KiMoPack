@@ -25,7 +25,8 @@ def osc_split_sin_cos(times,pardf,comp=0):
 	if comp=0 then
 	f0 is frequency and the only mandatory entry
 	A0 is amplitude (default=1)
-	S0 fraction of cos while 1-S0 is the fraction of sin'''
+	S0 fraction of cos while 1-S0 is the fraction of sin
+	P0 is the phase shift in pi'''
 	if not 'f%i'%comp in list(pardf.index.values):
 		raise ValueError('frequency f%i is the minimum required parameter'%comp)
 	if 'S%i'%comp in list(pardf.index.values):
@@ -34,8 +35,12 @@ def osc_split_sin_cos(times,pardf,comp=0):
 			raise ValueError('fraction S%i must be between 1 and 0'%comp)
 	else:
 		S=1
-	oscil1=S*np.cos(2*np.pi*times/pardf['f%i'%comp])
-	oscil2=(1-S)*np.sin(2*np.pi*times/pardf['f%i'%comp])
+	if 'P%i'%comp in list(pardf.index.values):
+		P=pardf['P%i'%comp]
+	else:
+		P=0
+	oscil1=S*np.cos(2*np.pi*times/pardf['f%i'%comp]+P*np.pi)
+	oscil2=(1-S)*np.sin(2*np.pi*times/pardf['f%i'%comp]+P*np.pi)
 	oscil1=pandas.Series(oscil1,index=times)
 	oscil2=pandas.Series(oscil2,index=times)
 	oscil1.name='os%i_cos'%comp
@@ -333,10 +338,10 @@ def P13(times,pardf):
 		dt=(times[i]-times[i-1])/(sub_steps)						# as we are taking smaller steps the time intervals need to be adapted
 		c_temp=c[i-1,:]												#temporary matrix holding the changes (needed as we have sub steps and need to check for zero in the end)
 		for j in range(int(sub_steps)):
-			dc[0]=-pardf['k0']*dt*c_temp[0]-pardf['k2']*dt*c_temp[0]+g[i]*dt		
+			dc[0]=-pardf['k0']*dt*c_temp[0]-pardf['k4']*dt*c_temp[0]-pardf['k2']*dt*c_temp[0]+g[i]*dt					
 			dc[1]=pardf['k0']*dt*c_temp[0]-pardf['k1']*dt*c_temp[1]
 			dc[2]=pardf['k2']*dt*c_temp[0]-pardf['k3']*dt*c_temp[2]
-			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]
+			dc[3]=pardf['k1']*dt*c_temp[1]+pardf['k3']*dt*c_temp[2]+pardf['k4']*dt*c_temp[0]
 			c_temp=c_temp+dc
 			c_temp[c_temp<0]=0
 			#for b in range(c.shape[1]):
