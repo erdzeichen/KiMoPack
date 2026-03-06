@@ -132,7 +132,7 @@ Or if you also want make sure to have a later version of python
 
 .. code-block:: text
 
-	$ conda create --name kimopack python=3.11 ipython jupyterlab jupyter
+	$ conda create --name kimopack python=3.12 ipython jupyterlab jupyter scipy numpy pandas
 	$ conda activate kimopack
 	$ pip install KiMoPack h5py tables keyboard nbopen python-pptx
 

@@ -25,8 +25,7 @@ def osc_split_sin_cos(times,pardf,comp=0):
 	if comp=0 then
 	f0 is frequency and the only mandatory entry
 	A0 is amplitude (default=1)
-	S0 fraction of cos while 1-S0 is the fraction of sin
-	P0 is the phase shift in pi'''
+	S0 fraction of cos while 1-S0 is the fraction of sin'''
 	if not 'f%i'%comp in list(pardf.index.values):
 		raise ValueError('frequency f%i is the minimum required parameter'%comp)
 	if 'S%i'%comp in list(pardf.index.values):
@@ -35,12 +34,8 @@ def osc_split_sin_cos(times,pardf,comp=0):
 			raise ValueError('fraction S%i must be between 1 and 0'%comp)
 	else:
 		S=1
-	if 'P%i'%comp in list(pardf.index.values):
-		P=pardf['P%i'%comp]
-	else:
-		P=0
-	oscil1=S*np.cos(2*np.pi*times/pardf['f%i'%comp]+P*np.pi)
-	oscil2=(1-S)*np.sin(2*np.pi*times/pardf['f%i'%comp]+P*np.pi)
+	oscil1=S*np.cos(2*np.pi*times/pardf['f%i'%comp])
+	oscil2=(1-S)*np.sin(2*np.pi*times/pardf['f%i'%comp])
 	oscil1=pandas.Series(oscil1,index=times)
 	oscil2=pandas.Series(oscil2,index=times)
 	oscil1.name='os%i_cos'%comp
@@ -51,7 +46,9 @@ def oscil_comp(times,pardf,max_oscil=None):
 	'''counts how many osciallations are in there (assuming max 10 as guess) 
 	if more need to be fitted the parameter max_oscil must be set
 	then uses the function osc_split_sin_cos to calculate oscialltions and lets them decay 
-	with the parameter tk_i where "i" is the same index as f_i the frequencies'''
+	with the parameter tk_i where "i" is the same index as f_i the frequencies
+	pardf['extra_resolution'] is a simple additional broadening parameter should be later 
+	vectorized and applied separately'''
 	if max_oscil is None: #If we don't know how many osciallations we have we might want to find that number
 		for a in range(20):# lets assume we have max 20 osciallations and find out how many
 			if 'f%i'%a in list(pardf.index.values):
@@ -62,13 +59,16 @@ def oscil_comp(times,pardf,max_oscil=None):
 					pardf['tk%i'%a]=0
 			else:
 				break
+	resolution=pardf['resolution']
+	if pardf['extra_resolution'] in list(pardf.index.values):
+		resolution=pardf['resolution']+pardf['extra_resolution']
 	count_oscil=max_oscil+1
 	listen=['tk%i'%a for a in range(count_oscil)]
 	params=pardf[listen].values.reshape(1,-1)
 	inner=np.tile(times-pardf['t0'],(count_oscil,1)).T*params.astype(float)
 	c=exp(-1*inner)
 	c[(times-pardf['t0'])<0]=1
-	c*=np.tile(rise(x=times,sigma=pardf['resolution'],begin=pardf['t0']),(count_oscil,1)).T
+	c*=np.tile(rise(x=times,sigma=resolution,begin=pardf['t0']),(count_oscil,1)).T
 	c=pandas.DataFrame(c,index=times)
 	c.columns=['os%i_cos'%a for a in range(count_oscil)]
 	c.index.name='time'

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-version = "7.13.6"
+version = "7.14.0"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
 	import sys
 	import pandas
+	import warnings
 	import numpy as np
 	import numbers
 	import matplotlib
@@ -23,6 +24,8 @@ if 1: #Hide imports
 	from scipy.signal import savgol_filter
 	from scipy.special import erf
 	from scipy.stats import binned_statistic
+	from scipy.interpolate import interp1d
+
 	import scipy.stats	
 	import pathlib
 	from pathlib import Path
@@ -53,7 +56,7 @@ if 1: #Hide imports
 	except Exception as e:
 		print('We need the packages urllib3 and shutil to download files from the web')
 		print(e)
- 	
+	
 	plt.ion()
 	pandas.options.mode.chained_assignment = None  # I use this a lot and think I can ignore it
 	FWHM = 2.35482
@@ -64,12 +67,52 @@ if 1: #Hide imports
 	global start_time
 	start_time=tm.time()
 	
-print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
-print('The current working folder is:\n %s' % os.getcwd())
+	try:
+		import ipywidgets as widgets
+		from IPython.display import display, clear_output
+		_HAS_WIDGETS = True
+	except ImportError:
+		_HAS_WIDGETS = False
+	
+	print('Plot_func version %s\nwas imported from path:\n %s' % (version, os.path.dirname(os.path.realpath(__file__))))
+	print('The current working folder is:\n %s' % os.getcwd())
 
 #use this to trigger a real error for DeprecationWarnings
-#np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)   
-               
+#np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning)	  
+			   
+def _in_colab():
+    """Return True when running inside Google Colab."""
+    try:
+        import google.colab  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+def _setup_backend():
+    """Try to activate the best interactive matplotlib backend."""
+    if _in_colab():
+        # Colab: ipympl may or may not work – fall back to inline
+        try:
+            from google.colab import output as colab_output
+            colab_output.enable_custom_widget_manager()
+            from IPython import get_ipython
+            get_ipython().run_line_magic('matplotlib', 'widget')
+            return 'widget'
+        except Exception:
+            from IPython import get_ipython
+            get_ipython().run_line_magic('matplotlib', 'inline')
+            return 'inline'
+    else:
+        try:
+            from IPython import get_ipython
+            ip = get_ipython()
+            if ip is not None:
+                ip.run_line_magic('matplotlib', 'widget')
+                return 'widget'
+        except Exception:
+            pass
+    return 'fallback'			   
+			   
 def download_notebooks(libraries_only=False):
 	'''function loads the workflow notebooks into the active folder
 	if libraries_only is set to True, only the function library and the import library are loaded'''
@@ -148,7 +191,7 @@ def download_all(single_tutorial=None):
 					'MultiModal':['combined_optical_spectrum.SIA','XES_on.SIA']}
 	url = "https://raw.githubusercontent.com/erdzeichen/KiMoPack/main/Tutorial_Notebooks/Data"
 	for key in tutorial_data.keys():
-		if single_tutorial is not None:   #this is a shortcut to download data fror Colab use
+		if single_tutorial is not None:	  #this is a shortcut to download data fror Colab use
 			if not key==single_tutorial:
 				continue
 		for f in tutorial_data[key]:
@@ -251,11 +294,11 @@ def clean_double_string(filename, path=None):
 		f.truncate()
 		
 def mouse_move(event):
-    x, y = event.xdata, event.ydata
-    print(x, y)
+	x, y = event.xdata, event.ydata
+	print(x, y)
 
 def flatten(mainlist):
-    return [entry for sublist in mainlist for entry in sublist]
+	return [entry for sublist in mainlist for entry in sublist]
 
 def nearest_neighbor_method3(X, q):
 	'''returns nearest neighbour value to q''' 
@@ -1177,7 +1220,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		"rel_time" and "time_width_percent" work together for creating spectral plots at 
 		specific timepoints. For each entry in rel_time a spectrum is plotted. 
 		If however e.g. time_width_percent=10 the region between the timepoint closest 
-		to the  1.1 x timepoint and 0.9 x timepoint is averaged and shown 
+		to the	1.1 x timepoint and 0.9 x timepoint is averaged and shown 
 		(and the legend adjusted accordingly). This is particularly useful for the densly
 		sampled region close to t=0. Typically for a logarithmic recorded kinetics, the 
 		timepoints at later times will be further appart than 10 percent of the value, 
@@ -1270,7 +1313,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 			if rebin_max<len(x):
 				if (x[1:]-x[:-1]>equal_energy_bin).all():raise ValueError("equal_energy_bin bins are to small for the data")
 				bins=np.arange(x.min(),x[rebin_max],equal_energy_bin)
-				bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
+				bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]	
 				bins=(bin_edges[1:]+bin_edges[:-1])/2.
 				ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')   
 			else:
@@ -1287,7 +1330,7 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 		if rebin_max<len(x):
 			if (x[1:]-x[:-1]>wave_nm_bin).all():raise ValueError("wavelength_nm_bins bins are to small for the data")
 			bins=np.arange(x.min(),x[rebin_max],wave_nm_bin)
-			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]  
+			bin_means,bin_edges = binned_statistic(x[:rebin_max], ds.values[:,:rebin_max], statistic='mean',bins=bins)[:2]	
 			bins=(bin_edges[1:]+bin_edges[:-1])/2.
 			ds=pandas.concat((pandas.DataFrame(bin_means,index=y,columns=bins),ds.iloc[:,rebin_max:]), axis=1, join='outer')
 					   
@@ -1363,21 +1406,42 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 	ds.columns.name=energy_label
 	
 	if wavelength is not None:#ok we want to have singular wavelength
-		if not hasattr(wavelength,'__iter__'):wavelength=np.array([wavelength])
-		if len(wavelength)>1:wavelength.sort()
-		for i,wave in enumerate(wavelength):
-			upper=wave+wavelength_bin/2
-			lower=wave-wavelength_bin/2
+		if not hasattr(wavelength,'__iter__'):
+			wavelength=np.array([wavelength])
+		if len(wavelength)>1:
+			wavelength.sort()
+			
+		out = None #initialize
+		
+		for i, wave in enumerate(wavelength):
+			upper = wave + wavelength_bin/2
+			lower = wave - wavelength_bin/2
 			if equal_energy_bin is not None and from_fit:
-				upper=scipy.constants.h*scipy.constants.c/(lower*1e-9*scipy.constants.electron_volt)
-				lower=scipy.constants.h*scipy.constants.c/(upper*1e-9*scipy.constants.electron_volt)
-				wave=scipy.constants.h*scipy.constants.c/(wave*1e-9*scipy.constants.electron_volt)
+				upper = scipy.constants.h*scipy.constants.c/(lower*1e-9*scipy.constants.electron_volt)
+				lower = scipy.constants.h*scipy.constants.c/(upper*1e-9*scipy.constants.electron_volt)
+				wave  = scipy.constants.h*scipy.constants.c/(wave*1e-9*scipy.constants.electron_volt)
+
+			# clip to available wavelength range and skip if outside
+			col_min = float(ds.columns.min())
+			col_max = float(ds.columns.max())
+			lower_clipped = max(lower, col_min)
+			upper_clipped = min(upper, col_max)
+			if lower_clipped > col_max or upper_clipped < col_min:
+				continue
+			if lower_clipped > upper_clipped:
+				continue
+
 			if i == 0:
-				out=ds.loc[:,lower:upper].mean(axis='columns').to_frame()
+				out = ds.loc[:, lower_clipped:upper_clipped].mean(axis='columns').to_frame()
 				out.columns = [wave]
 			else:
-				if wave in out.columns:continue
-				out[wave] = ds.loc[:,lower:upper].mean(axis='columns')
+				if wave in out.columns:
+					continue
+				out[wave] = ds.loc[:, lower_clipped:upper_clipped].mean(axis='columns')
+
+		if out is None: #Nothing was collected, return original
+			return ds
+		
 		out.columns=out.columns.astype('float')
 		out.columns.name=energy_label
 		out.index.name=time_label
@@ -1444,7 +1508,7 @@ def plot2d(ds, ax = None, title = None, intensity_range = None, baseunit = 'ps',
 	
 	title : None or str
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string with this command title="" 
 		
 	intensity_range : None, float or list [of two floats]
@@ -1781,7 +1845,7 @@ def plot2d_fit(re, error_matrix_amplification=5, use_images=True, patches=False,
 	
 	title : None or str
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string with this command title="" 
 		
 	intensity_range : None, float or list [of two floats]
@@ -1957,7 +2021,7 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 					log_fit = False, mod = None, subplot = False, color_offset = 0, log_scale = True, savetype = 'png', 
 					evaluation_style = False, lintresh = 1, linscale=1, scale_type = 'symlog', patches = False, print_click_position = False, 
 					data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', plot_second_as_energy = True, units = 'nm',
-					equal_energy_bin = None, values=None):
+					equal_energy_bin = None, values=None,legend_inside=True):
 	'''Purly manual function that plots all the fit output figures. Quite cumbersome, 
 	but offers a lot of manual options. The figures can be called separately 
 	or with a list of plots. e.g. range(6) call plots 0-5 Manual plotting of certain type:
@@ -2076,7 +2140,7 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 	
 	scale_type : str, optional
 	   refers to the time-axis and takes, ’symlog’ (Default)(linear around zero and logarithmic otherwise)
-	   and ‘lin’ for linear and  ‘log’ for logarithmic, switching all the time axis to this type
+	   and ‘lin’ for linear and	 ‘log’ for logarithmic, switching all the time axis to this type
 	
 	patches : bool, optional
 		If False (Default) the names "measured" "fitted" "difference" will be placed above the images.
@@ -2132,7 +2196,7 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 		"rel_time" and "time_width_percent" work together for creating spectral plots at 
 		specific timepoints. For each entry in rel_time a spectrum is plotted. 
 		If however e.g. time_width_percent=10 the region between the timepoint closest 
-		to the  1.1 x timepoint and 0.9 x timepoint is averaged and shown 
+		to the	1.1 x timepoint and 0.9 x timepoint is averaged and shown 
 		(and the legend adjusted accordingly). This is particularly useful for the densly
 		sampled region close to t=0. Typically for a logarithmic recorded kinetics, the 
 		timepoints at later times will be further appart than 10 percent of the value, 
@@ -2521,11 +2585,11 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 		_=plot1d( ds = re['A'], cmap = cmap,ax = ax3, subplot = True, width = width, 
 					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
 					  baseunit = baseunit , lintresh = lintresh , linscale=linscale,  timelimits = timelimits, 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+					  ignore_time_region = ignore_time_region,	data_type = data_type, units = units, from_fit = True,legend_inside=legend_inside)
 		_=plot1d( ds = re['AC'], cmap = cmap, ax = ax3, width = width, wavelength = rel_wave, 
 					  lines_are = 'fitted', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, linscale=linscale,
 					  timelimits = timelimits, text_in_legend = time_string, title = title, 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+					  ignore_time_region = ignore_time_region,	data_type = data_type, units = units, from_fit = True,legend_inside=legend_inside)
 		ax3.autoscale(axis = 'y',tight = True)
 		for t in times:
 			if isinstance(t, float):
@@ -2555,8 +2619,8 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 		fig5 = plot2d_fit(re, cmap = cmap, intensity_range = intensity_range, baseunit = baseunit, 
 							error_matrix_amplification = error_matrix_amplification, wave_nm_bin = None, equal_energy_bin = equal_energy_bin,
 							use_images = True, log_scale = log_scale, scale_type = scale_type, patches = patches, 
-							lintresh = lintresh, bordercut = bordercut, ignore_time_region = ignore_time_region, 
-							scattercut = scattercut, timelimits = timelimits, levels = 200,  data_type = data_type, values=values)	
+							lintresh = lintresh, linscale=linscale, bordercut = bordercut, ignore_time_region = ignore_time_region, 
+							scattercut = scattercut, timelimits = timelimits, levels = 200,	 data_type = data_type, values=values)	
 		plt.ion()
 		plt.show()
 	if 5 in plotting:
@@ -2616,11 +2680,11 @@ def plot_fit_output( re, ds, cmap = None, line_colors = None, plotting = range(7
 		_=plot1d( ds = re['AE'], cmap = cmap, ax = ax7, width = width, wavelength = rel_wave, 
 					  lines_are = 'smoothed', plot_type = scale_type, baseunit = baseunit, lintresh = lintresh, 
 					  timelimits = timelimits, text_in_legend = time_string, title = 'residuals', 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+					  ignore_time_region = ignore_time_region,	data_type = data_type, units = units, from_fit = True)
 		_=plot1d( ds = re['AE'], cmap = cmap,ax = ax7, subplot = True, width = width, 
 					  wavelength = rel_wave,lines_are = 'data', plot_type = scale_type, 
 					  baseunit = baseunit , lintresh = lintresh , timelimits = timelimits, 
-					  ignore_time_region = ignore_time_region,  data_type = data_type, units = units, from_fit = True)
+					  ignore_time_region = ignore_time_region,	data_type = data_type, units = units, from_fit = True)
 		ax7.autoscale(axis = 'y',tight = True)
 		for t in times:
 			if isinstance(t, float):
@@ -2658,7 +2722,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 			save_figures_to_folder = False, savetype = 'png', path = None, filename = None, 
 			print_click_position = False, data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$',
 			plot_second_as_energy = True, units = 'nm', return_plots = False, equal_energy_bin = None,
-			return_figures_handles=False):
+			return_figures_handles=False,legend_inside=True):
 	'''This is the extended plot function, for convenient object based plotting see TA.Plot_RAW 
 	This function plotts of various RAW (non fitted) plots. Based on the DataFrame ds a number of 
 	cuts are created using the shaping parameters explained below.
@@ -2686,7 +2750,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	title : None or str
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string with this command title="" 
 		
 	intensity_range : None, float or list [of two floats]
@@ -2756,7 +2820,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		"rel_time" and "time_width_percent" work together for creating spectral plots at 
 		specific timepoints. For each entry in rel_time a spectrum is plotted. 
 		If however e.g. time_width_percent=10 the region between the timepoint closest 
-		to the  1.1 x timepoint and 0.9 x timepoint is averaged and shown 
+		to the	1.1 x timepoint and 0.9 x timepoint is averaged and shown 
 		(and the legend adjusted accordingly). This is particularly useful for the densly
 		sampled region close to t=0. Typically for a logarithmic recorded kinetics, the 
 		timepoints at later times will be further appart than 10 percent of the value, 
@@ -2835,7 +2899,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		
 	savetype : str or iterable (of str), optional 
 		matplotlib allows the saving of figures in various formats. (Default) "png", 
-		typical and recommendable options are "svg" and "pdf".  
+		typical and recommendable options are "svg" and "pdf".	
 		
 	path : None, str or path object, optional
 		This defines where the files are saved if the safe_figures_to_folder parameter is True, 
@@ -2855,7 +2919,7 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		if True then the click position is printed for the spectral plots 
 		
 	return_plots : bool, optional 
-		(Default) False, return is ignoriert. For True a dictionary with the handles to the figures is returned  
+		(Default) False, return is ignoriert. For True a dictionary with the handles to the figures is returned	 
 		
 	'''
 	global halfsize
@@ -2889,12 +2953,12 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 					title = title, lines_are = 'data' ,	  plot_type = plot_type, lintresh = lintresh, linscale=linscale,
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
 					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
-					units = units)
+					units = units,legend_inside=legend_inside)
 		_ = plot1d(ds = ds, ax = ax2, subplot = False, cmap = cmap, line_colors=line_colors, width = width, wavelength = rel_wave,
 					title = title, lines_are = 'smoothed', plot_type = plot_type, lintresh = lintresh, linscale=linscale,
 					timelimits = timelimits, intensity_range = intensity_range, scattercut = scattercut, 
 					ignore_time_region = ignore_time_region, baseunit = baseunit, data_type = data_type, 
-					units = units )
+					units = units, legend_inside=legend_inside )
 		if debug:print('plotted kinetics')
 	if 2 in plotting:#Spectra
 		if halfsize:
@@ -2929,8 +2993,8 @@ def plot_raw(ds = None, plotting = range(4), title = None, intensity_range = 1e-
 		try:
 			if line_colors is None:
 				line_colors = cmap
-			fig4 = SVD(ds ,  times = times ,  timelimits = timelimits ,  scattercut = scattercut ,  
-					bordercut = bordercut ,  wave_nm_bin = wave_nm_bin, ignore_time_region = ignore_time_region,
+			fig4 = SVD(ds ,	 times = times ,  timelimits = timelimits ,	 scattercut = scattercut ,	
+					bordercut = bordercut ,	 wave_nm_bin = wave_nm_bin, ignore_time_region = ignore_time_region,
 					cmap = line_colors)
 											  
 		except:
@@ -2993,7 +3057,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		"rel_time" and "time_width_percent" work together for creating spectral plots at 
 		specific timepoints. For each entry in rel_time a spectrum is plotted. 
 		If however e.g. time_width_percent=10 the region between the timepoint closest 
-		to the  1.1 x timepoint and 0.9 x timepoint is averaged and shown 
+		to the	1.1 x timepoint and 0.9 x timepoint is averaged and shown 
 		(and the legend adjusted accordingly). This is particularly useful for the densly
 		sampled region close to t=0. Typically for a logarithmic recorded kinetics, the 
 		timepoints at later times will be further appart than 10 percent of the value, 
@@ -3017,7 +3081,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		
 	title : None or str, optional
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string with this command title="" 
 		
 	linewidth : float, optional
@@ -3052,7 +3116,7 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		At the (Default) 0 the colours are chose from the beginning, for a larger value Color_offset 
 		colors are skipped. Usually only used if multiple plots are created, and the data/or fit is
 		only shown for some of them.
-		 		
+				
 	intensity_range : None, float or list [of two floats]
 		intensity_range is a general switch that governs what intensity range the plots show. 
 		For the 1d plots this is the y-axis for the 2d-plots this is the colour scale. 
@@ -3229,7 +3293,8 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 			baseunit = 'ps', timelimits = None, scattercut = None, bordercut = None, cmap = cm.jet, line_colors =cm.tab20, 
 			plot_type = 'symlog', lintresh = 0.1, linscale=1, text_in_legend = None, lines_are = 'smoothed', 
 			color_offset = 0, ignore_time_region = None, linewidth = 1, 
-			data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', units = 'nm', from_fit = False):																			  
+			data_type = 'differential Absorption in $\\mathregular{\\Delta OD}$', units = 'nm', from_fit = False,
+			legend_inside=True):																			  
 	'''Plots the single line kinetic for specific wavelength given with the parameter wavelength.
 
 	Parameters
@@ -3275,7 +3340,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 		
 	title : None or str
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string
 		
 	linewidth : float, optional
@@ -3450,7 +3515,7 @@ def plot1d(ds = None, wavelength = None, width = None, ax = None, subplot = Fals
 			title_add=text_in_legend + '\n'
 		else:
 			title_add=''
-		if True: #Legend inside the figure
+		if legend_inside: #Legend inside the figure
 			if 'smoothed' in lines_are:
 				leg=ax1.legend(labels,title='%s %g %s width, lines=smoothed'%(title_add,width,units),
 				labelspacing=0,ncol=ncol,columnspacing=1,handlelength=1,frameon=False)
@@ -3558,7 +3623,7 @@ def SVD(ds, times = None, scattercut = None, bordercut = None, timelimits = [5e-
 	
 	title : None or str
 		title to be used on top of each plot
-		The (Default) None triggers  self.filename to be used. Setting a specific title as string will
+		The (Default) None triggers	 self.filename to be used. Setting a specific title as string will
 		be used in all plots. To remove the title all together set an empty string with this command title="" 
 		
 	baseunit : str
@@ -3758,10 +3823,13 @@ def Species_Spectra(ta=None,conc=None,das=None):
 	return results
 
 
-def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, wave_nm_bin = 10, bordercut=None,
-			  shown_window = [-1.5, 1.5], filename = None, path = None, fitcoeff = None, max_points = 40, 
-			  cmap = cm.prism, just_shift=False):										
-	'''Manual selecting polynom for chirp. 	This function is opening 
+def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, 
+				wave_nm_bin = 10, bordercut=None, shown_window = [-1.5, 1.5], 
+				filename = None, path = None, fitcoeff = None, max_points = 40, 
+				cmap = cm.prism, just_shift=False,
+				sparse_method='sigmoid', sparse_poly_order=4,sparse_plot=True, 
+				sparse_t0_guess=0.0):										
+	'''Manual selecting polynom for chirp.	This function is opening 
 		a plot and allows the user to select a number of points, which are then 
 		approximated with a 4th order polynomial and finally to select a point 
 		that is declared as time zero. The observed window as well as the intensities 
@@ -3772,6 +3840,9 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 		finishes the selection. If no middle click exists, the process
 		automatically ends after max_points (40 preset).
 		Many of the parameters are from the raw plotting part
+		If the data has dense wavelengths, it falls through to the standard
+		FixChirp.  If the data is sparse (few or widely-gapped columns),
+	it prints a diagnostic message and uses find_chirp_sparse() instead.
 		
 	Parameters
 	-----------
@@ -3847,177 +3918,170 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 	just_shift: bool, optional
 		This will turn of the polynomial part of the fitting and lets you just select the new time zero
 	
+	sparse_method : str
+		Onset detection method for sparse mode.
+	sparse_poly_order : int
+		Polynomial order for sparse mode.
+	sparse_plot : bool
+		Show diagnostic figure in sparse mode.
+	sparse_t0_guess : float
+		Starting t0 guess for sparse mode.
 		
 		''' 
 	ds=ds.fillna(0)
 	if fitcoeff is not None:#we loaded a previous project this is a dublication, but I'm currently to lazy to make this tighter
-		if isinstance(fitcoeff,str):fitcoeff=np.array(fitcoeff.split(','),dtype='float')
-		if len(fitcoeff)==6:#old style parameter
-			fitcoeff[-2]-=fitcoeff[-1]
-			fitcoeff=fitcoeff[:5]
-		wl=ds.columns.values.astype('float')#extract the wavelength
-		time=ds.index.values.astype('float')#extract the time
-		for i in range(0, len(wl), 1):
-			correcttimeval = np.polyval(fitcoeff, wl[i])
-			f = scipy.interpolate.interp1d((time-correcttimeval), ds.values[:,i], bounds_error=False, fill_value=0)
-			fixed_wave = f(time)
-			ds.values[:, i] = fixed_wave
+		if isinstance(fitcoeff, str):
+			fitcoeff = np.array(fitcoeff.split(','), dtype=float)
+		if len(fitcoeff) == 6:			# old-style 6-param
+			fitcoeff[-2] = fitcoeff[-2] - fitcoeff[-1]
+			fitcoeff = fitcoeff[:5]
+		wl = ds.columns.values.astype(float)
+		time = ds.index.values.astype(float)
+		for i in range(len(wl)):
+			shift = np.polyval(fitcoeff, wl[i])
+			f = interp1d(time - shift, ds.values[:, i],
+						 bounds_error=False, fill_value=0)
+			ds.values[:, i] = f(time)
 		return ds
-	else:
-		if save_file is None:
-			#lets start by choosing a good intensity
-			if hasattr(intensity_range,'__iter__'):
-				maxim=max(abs(np.array(intensity_range)))
-				intensity_range=maxim
-			elif intensity_range is None:
-				intensity_range=ds.abs().max().max()
-			intensities=(2**np.arange(-6.,4.,1.))*intensity_range
-			window_difference=np.abs(shown_window[1]-shown_window[0])*0.1
-			cutoff_window=np.abs(shown_window[1]-shown_window[0])
-			timelimits=shown_window+np.asarray([-window_difference,window_difference])
-			for repeat in range(30):
-				if halfsize:
-					fig,ax=plt.subplots(figsize=(6,6))
-				else:
-					fig,ax=plt.subplots(figsize=(12,12))
-				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut,
-							timelimits = timelimits, intensity_range = intensity_range, 
-							title = 'select intensity where we can work,\n  if happy,  choose confirm or abort', 
-							use_colorbar = False, plot_type = "linear", log_scale = False)
-				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
-				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]-0.1),w,0.1,facecolor='white'))
-				for i,ent in enumerate(intensities):
-					if halfsize:
-						ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=10)
-					else:
-						ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=20)
-				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[0]),w/4.,0.1,facecolor='white'))
-				ax.text(ax.get_xlim()[0],shown_window[0],'Accept',fontsize=20)
-				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3./4.,shown_window[0]),w/4.,0.1,facecolor='white'))
-				ax.text(ax.get_xlim()[0]+w*3./4.,shown_window[0],'Cancel all',fontsize=20)
-				ax.set_ylim(shown_window)
-				fig.tight_layout()
-				choice =plt.ginput(1,timeout=15)
-				factor=int((choice[0][0]-ax.get_xlim()[0])/(w/10.))
-				
-				if choice[0][1] > (shown_window[0]+window_difference):
-					intensity_range=intensities[factor]
-					print((2**np.arange(-6.,4,1.))[factor])
-					intensity_range=[-intensity_range,intensity_range]
-					plt.close(fig)
-					continue		
-				elif choice[0][1] < (shown_window[0]+window_difference):#we choice to finish the choices
-					if choice[0][0] < ax.get_xlim()[0]+w/2:#
-						print('accept')
-						plt.close(fig)
-						break
-					else:
-						plt.close(fig)
-						return False
-				else:
-					print('click better please')
-					plt.close(fig)
-					continue
-			if not just_shift:
-				for repeat in range(10):
-					if halfsize:
-						fig,ax=plt.subplots(figsize=(6,6))
-					else:
-						fig,ax=plt.subplots(figsize=(12,12))
-					ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-								timelimits = shown_window, intensity_range = intensity_range, 
-								title = 'select points,  rightclick  =  remove last,  \n middle click (or both at once finishes ', 
-								use_colorbar = False, plot_type = "linear", log_scale = False)
-					fig.tight_layout()
-					polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
-					plt.close(fig)
-					if halfsize:
-						fig,ax=plt.subplots(figsize=(6,6))
-					else:
-						fig,ax=plt.subplots(figsize=(12,12))					
-					ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-								timelimits = shown_window, intensity_range = intensity_range, 
-								title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
-								plot_type = "linear", log_scale = False)
-					#Fit a polynomial of the form p(x) = p[2] + p[1] + p[0]
-					fitcoeff= np.polyfit(polypts[:, 0], polypts[:, 1], 4, full=False)
-					
-					correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
-					ax.plot(ds.columns.values.astype('float'),correcttimeval)
-					 
-					ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-					ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=20)
-					ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-									   
-					ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=20)
-					fig.tight_layout()
-					satisfied =plt.ginput(1)
-					plt.close(fig)
-					if satisfied[0][0] < ax.get_xlim()[0]+w/2:
-						print('accepted')
-						plt.close(fig)
-						break
-					elif repeat<8:
-						plt.close(fig)
-						continue
-					else:
-						plt.close(fig)
-						return False
+
+	if is_sparse_wavelength(ds):
+		n_wl = len(ds.columns)
+		wl = ds.columns.values.astype(float)
+		gaps = np.diff(wl)
+		print()
+		print("=" * 64)
+		print("	 SPARSE WAVELENGTH DATA DETECTED")
+		print("=" * 64)
+		print(f"  {n_wl} wavelength columns: "
+			  + ", ".join(f"{w:.0f}" for w in wl) + " nm")
+		if len(gaps):
+			print(f"  Column gaps: min {gaps.min():.0f} nm, "
+				  f"max {gaps.max():.0f} nm, "
+				  f"median {np.median(gaps):.0f} nm")
+		print()
+		print("	 → Standard 2D-surface chirp selection is unreliable")
+		print("	   for this kind of data.  Switching to automatic")
+		print("	   per-wavelength onset detection (sigmoid fit).")
+		print("=" * 64)
+		print()
+
+		ds_corr, fc, t0s = find_chirp_sparse(
+			ds, t_range=shown_window, method=sparse_method,
+			poly_order=sparse_poly_order, plot=sparse_plot,
+			t0_guess=sparse_t0_guess)
+
+		print("	 Detected arrival times:")
+		for wl_v, t0_v in sorted(t0s.items()):
+			print(f"	{wl_v:8.1f} nm	→  t0 = {t0_v:+.4f} ps")
+		print()
+		print("	 fitcoeff =", [f"{c:.6e}" for c in fc])
+		print()
+
+		# Save chirp file in the same format as the original
+		if filename is not None:
+			chirpname = filename.split('.')[0] + '_chirp.dat'
+			savepath = os.path.join(path, chirpname) if path else chirpname
+			try:
+				with open(savepath, 'w') as f:
+					f.write(",".join(str(c) for c in fc))
+				print(f"  Chirp file saved: {savepath}")
+			except Exception as e:
+				print(f"  Could not save chirp file: {e}")
+
+		# Copy axis names
+		ds_corr.index.name = ds.index.name
+		ds_corr.columns.name = ds.columns.name
+		return ds_corr
+
+	if save_file is None:
+		#lets start by choosing a good intensity
+		if hasattr(intensity_range,'__iter__'):
+			maxim=max(abs(np.array(intensity_range)))
+			intensity_range=maxim
+		elif intensity_range is None:
+			intensity_range=ds.abs().max().max()
+		intensities=(2**np.arange(-6.,4.,1.))*intensity_range
+		window_difference=np.abs(shown_window[1]-shown_window[0])*0.1
+		cutoff_window=np.abs(shown_window[1]-shown_window[0])
+		timelimits=shown_window+np.asarray([-window_difference,window_difference])
+		for repeat in range(30):
+			if halfsize:
+				fig,ax=plt.subplots(figsize=(6,6))
 			else:
-				fitcoeff=np.array([0,0,0,0,0])
-		else:
-			with open(save_file,'r') as f:
-				fitcoeff=f.readline()
-			fitcoeff=np.array(fitcoeff.split(','),dtype='float')
-			if len(fitcoeff)==6:#old style params
-				fitcoeff[-2]-=fitcoeff[-1]
-				fitcoeff=fitcoeff[:5]
-		time=ds.index.values.astype('float')#extract the time
-		print(fitcoeff)
-		ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
-		if save_file is None:
-			#finding where zero time is
+				fig,ax=plt.subplots(figsize=(12,12))
+			ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut,
+						timelimits = timelimits, intensity_range = intensity_range, 
+						title = 'select intensity where we can work,\n	if happy,  choose confirm or abort', 
+						use_colorbar = False, plot_type = "linear", log_scale = False)
+			w=(ax.get_xlim()[1]-ax.get_xlim()[0])
+			ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[1]-0.1),w,0.1,facecolor='white'))
+			for i,ent in enumerate(intensities):
+				if halfsize:
+					ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=10)
+				else:
+					ax.text(ax.get_xlim()[0]+i*w/10.,shown_window[1]-0.1,'%.1g'%(2**np.arange(-6.,4,1.))[i],fontsize=20)
+			ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],shown_window[0]),w/4.,0.1,facecolor='white'))
+			ax.text(ax.get_xlim()[0],shown_window[0],'Accept',fontsize=20)
+			ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3./4.,shown_window[0]),w/4.,0.1,facecolor='white'))
+			ax.text(ax.get_xlim()[0]+w*3./4.,shown_window[0],'Cancel all',fontsize=20)
+			ax.set_ylim(shown_window)
+			fig.tight_layout()
+			choice =plt.ginput(1,timeout=15)
+			factor=int((choice[0][0]-ax.get_xlim()[0])/(w/10.))
+			
+			if choice[0][1] > (shown_window[0]+window_difference):
+				intensity_range=intensities[factor]
+				print((2**np.arange(-6.,4,1.))[factor])
+				intensity_range=[-intensity_range,intensity_range]
+				plt.close(fig)
+				continue		
+			elif choice[0][1] < (shown_window[0]+window_difference):#we choice to finish the choices
+				if choice[0][0] < ax.get_xlim()[0]+w/2:#
+					print('accept')
+					plt.close(fig)
+					break
+				else:
+					plt.close(fig)
+					return False
+			else:
+				print('click better please')
+				plt.close(fig)
+				continue
+		if not just_shift:
 			for repeat in range(10):
 				if halfsize:
 					fig,ax=plt.subplots(figsize=(6,6))
 				else:
-					fig,ax=plt.subplots(figsize=(12,12))				
-				if just_shift:
-					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits =timelimits, intensity_range = intensity_range, 
-							title = 'select new time zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
-				else:
-					ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits =np.array(timelimits)/5, intensity_range = intensity_range, 
-							title = 'corrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
-				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
-				#ax.set_ylim(-cutoff_window,cutoff_window)
+					fig,ax=plt.subplots(figsize=(12,12))
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+							timelimits = shown_window, intensity_range = intensity_range, 
+							title = 'select points,	 rightclick	 =	remove last,  \n middle click (or both at once finishes ', 
+							use_colorbar = False, plot_type = "linear", log_scale = False)
 				fig.tight_layout()
-				fittingto = np.array(plt.ginput(1)[0])[1]
-				print(fittingto)
-				fitcoeff[-1]+=fittingto
-				ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
+				polypts=np.asarray(plt.ginput(n=max_points,timeout=300, show_clicks=True,mouse_add=1, mouse_pop=3, mouse_stop=2))
 				plt.close(fig)
 				if halfsize:
 					fig,ax=plt.subplots(figsize=(6,6))
 				else:
-					fig,ax=plt.subplots(figsize=(12,12))
-				if just_shift:
-					ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits = np.array(timelimits)-fitcoeff[-1], intensity_range = intensity_range, 
-							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
-				else:
-					ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
-							lintresh = np.max(timelimits), timelimits = np.array(timelimits)/5, intensity_range = intensity_range, 
-							title = 'corrected,  please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
-				ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
-				w=(ax.get_xlim()[1]-ax.get_xlim()[0])
+					fig,ax=plt.subplots(figsize=(12,12))					
+				ax = plot2d(ax = ax, ds = ds, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+							timelimits = shown_window, intensity_range = intensity_range, 
+							title = 'like it? %i more attempts'%(9-repeat), use_colorbar = False, 
+							plot_type = "linear", log_scale = False)
+				#Fit a polynomial of the form p(x) = p[2] + p[1] + p[0]
+				fitcoeff= np.polyfit(polypts[:, 0], polypts[:, 1], 4, full=False)
+				
+				correcttimeval = np.polyval(fitcoeff, ds.columns.values.astype('float'))
+				ax.plot(ds.columns.values.astype('float'),correcttimeval)
 				 
 				ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-				ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=30)
+				ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=20)
 				ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
-				ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=30)
+								   
+				ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=20)
+				fig.tight_layout()
 				satisfied =plt.ginput(1)
+				plt.close(fig)
 				if satisfied[0][0] < ax.get_xlim()[0]+w/2:
 					print('accepted')
 					plt.close(fig)
@@ -4028,19 +4092,84 @@ def Fix_Chirp(ds, save_file = None, scattercut = None, intensity_range = 5e-3, w
 				else:
 					plt.close(fig)
 					return False
-			print(fitcoeff)
-			if filename is None:
-				f='chirp.dat'
+		else:
+			fitcoeff=np.array([0,0,0,0,0])
+	else:
+		with open(save_file,'r') as f:
+			fitcoeff=f.readline()
+		fitcoeff=np.array(fitcoeff.split(','),dtype='float')
+		if len(fitcoeff)==6:#old style params
+			fitcoeff[-2]-=fitcoeff[-1]
+			fitcoeff=fitcoeff[:5]
+	time=ds.index.values.astype('float')#extract the time
+	print(fitcoeff)
+	ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
+	if save_file is None:
+		#finding where zero time is
+		for repeat in range(10):
+			if halfsize:
+				fig,ax=plt.subplots(figsize=(6,6))
 			else:
-				f=filename.split('.')[0]
-				f=f+'_chirp' + '.dat'
-			if path is None:
-				with open(f, 'w') as opened_file:
-					opened_file.write(','.join(map(str,np.array(fitcoeff))))
+				fig,ax=plt.subplots(figsize=(12,12))				
+			if just_shift:
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+						lintresh = np.max(timelimits), timelimits =timelimits, intensity_range = intensity_range, 
+						title = 'select new time zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
 			else:
-				with open(check_folder(path=path,filename=f), 'w') as opened_file:
-					opened_file.write(','.join(map(str,np.array(fitcoeff))))	
-		return ds_new
+				ax = plot2d(ax = ax, cmap = cmap, ds = ds_new, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+						lintresh = np.max(timelimits), timelimits =np.array(timelimits)/5, intensity_range = intensity_range, 
+						title = 'corrected select new zero', plot_type = 'lin', use_colorbar = False, log_scale = False)
+			ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
+			#ax.set_ylim(-cutoff_window,cutoff_window)
+			fig.tight_layout()
+			fittingto = np.array(plt.ginput(1)[0])[1]
+			print(fittingto)
+			fitcoeff[-1]+=fittingto
+			ds_new=ds.apply(lambda x:np.interp(x=time+np.polyval(fitcoeff,float(x.name)),xp=time,fp=x),axis=0,raw=False)
+			plt.close(fig)
+			if halfsize:
+				fig,ax=plt.subplots(figsize=(6,6))
+			else:
+				fig,ax=plt.subplots(figsize=(12,12))
+			if just_shift:
+				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+						lintresh = np.max(timelimits), timelimits = np.array(timelimits)-fitcoeff[-1], intensity_range = intensity_range, 
+						title = 'corrected,	 please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
+			else:
+				ax = plot2d(ax = ax, ds = ds_new, cmap = cmap, wave_nm_bin = wave_nm_bin, scattercut = scattercut, bordercut = bordercut, 
+						lintresh = np.max(timelimits), timelimits = np.array(timelimits)/5, intensity_range = intensity_range, 
+						title = 'corrected,	 please select', plot_type = 'lin', use_colorbar = False, log_scale = False)
+			ax.plot(ax.get_xlim(),[0,0],'black',lw=0.5)
+			w=(ax.get_xlim()[1]-ax.get_xlim()[0])
+			 
+			ax.add_patch( matplotlib.patches.Rectangle((ax.get_xlim()[0],ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
+			ax.text(ax.get_xlim()[0],ax.get_ylim()[0]+0.05,'Save',fontsize=30)
+			ax.add_patch(matplotlib.patches.Rectangle((ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]),w/4,0.2,facecolor='white'))
+			ax.text(ax.get_xlim()[0]+w*3/4,ax.get_ylim()[0]+0.05,'Redo',fontsize=30)
+			satisfied =plt.ginput(1)
+			if satisfied[0][0] < ax.get_xlim()[0]+w/2:
+				print('accepted')
+				plt.close(fig)
+				break
+			elif repeat<8:
+				plt.close(fig)
+				continue
+			else:
+				plt.close(fig)
+				return False
+		print(fitcoeff)
+		if filename is None:
+			f='chirp.dat'
+		else:
+			f=filename.split('.')[0]
+			f=f+'_chirp' + '.dat'
+		if path is None:
+			with open(f, 'w') as opened_file:
+				opened_file.write(','.join(map(str,np.array(fitcoeff))))
+		else:
+			with open(check_folder(path=path,filename=f), 'w') as opened_file:
+				opened_file.write(','.join(map(str,np.array(fitcoeff))))	
+	return ds_new
 
 
 def build_c(times, mod = 'paral', pardf = None, sub_steps = None):
@@ -4337,9 +4466,9 @@ def err_func(paras, ds, mod = 'paral', final = False, log_fit = False, dump_para
 	
 	pulse_sample: False or iter, option
 		Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
-		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.	This is better than sub sample, as it only adds 20 time points 
 		to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
-		This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)    
+		This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)	 
 	
 	ext_spectra : DataFrame, optional
 		(Default) is None, if given substract this spectra from the DataMatrix using the intensity 
@@ -4748,7 +4877,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 	
 	pulse_sample: False or iter, option
 		Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
-		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+		pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.	This is better than sub sample, as it only adds 20 time points 
 		to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
 		This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)
 	
@@ -4929,7 +5058,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 				if i==0:
 					lower=0
 				else:
-					lower=np.array(height_stack)[:i].sum()  # here i made a change
+					lower=np.array(height_stack)[:i].sum()	# here i made a change
 				re_local['A']=re['A'].copy().iloc[lower:lower+height_stack[i],:]
 				re_local['AC']=re['AC'].copy().iloc[lower:lower+height_stack[i],:]
 				re_local['AE']=re['AE'].copy().iloc[lower:lower+height_stack[i],:]
@@ -4961,7 +5090,7 @@ def err_func_multi(paras, mod = 'paral', final = False, log_fit = False, multi_p
 			return return_listen
 		else:
 			return re['error']
-	###################   not same DAS####################
+	###################	  not same DAS####################
 	else:
 		
 		for i,ta in enumerate(multi_project):
@@ -5240,6 +5369,282 @@ def pardf_to_timedf(pardf):
 				if key == 'init_value':pass#we don't save the init values, so we get an error when converting the saved file
 				else:print('conversion of this key failed:' + key)
 	return timedf
+
+def is_sparse_wavelength(ds, max_columns=20, gap_ratio=5.0):
+	"""Return True if the wavelength axis looks sparse.
+
+	Heuristic
+	---------
+	The data is considered "sparse" when *either*:
+	  • there are fewer than *max_columns* wavelength columns, **or**
+	  • the largest gap between adjacent columns exceeds
+		*gap_ratio* × the median gap.
+
+	Parameters
+	----------
+	ds : pandas.DataFrame
+		Data matrix (time × wavelength).
+	max_columns : int
+		Column-count threshold (default 20).
+	gap_ratio : float
+		How many times the max gap must exceed the median gap (default 5).
+	"""
+	wl = np.sort(ds.columns.values.astype(float))
+	n = len(wl)
+
+	if n <= max_columns:
+		return True
+
+	gaps = np.diff(wl)
+	if len(gaps) == 0:
+		return True
+
+	median_gap = np.median(gaps)
+	if median_gap == 0:
+		return True
+
+	return gaps.max() / median_gap > gap_ratio
+
+def read_sparse_SIA(filename, path=None, sep='\t', decimal='.',
+					baseunit='ps', units='nm',
+					data_type='diff. Absorption in OD',
+					shift_times_by=None, divide_times_by=None,
+					**kwargs):
+	"""Read SIA / CSV files with sparse or widely-spaced wavelength columns.
+
+	Returns a (DataFrame, datatype, baseunit) tuple that plugs straight
+	into KiMoPack's ``conversionfunction`` interface.
+
+	Parameters
+	----------
+	filename : str
+		Path to the file.
+	path : str or None
+		Directory prefix (joined with *filename* if given).
+	sep, decimal : str
+		CSV dialect settings.
+	baseunit, units, datatype : str
+		Axis labels for KiMoPack.
+	shifttimesby, dividetimesby : float or None
+		Post-import time axis adjustments.
+
+	Returns
+	-------
+	ds : pandas.DataFrame
+	datatype : str
+	baseunit : str
+	"""
+	filepath = os.path.join(path, filename) if path else filename
+
+	ds = pd.read_csv(filepath, sep=sep, decimal=decimal,
+					 index_col=0, header=0)
+	ds.columns = ds.columns.values.astype(float)
+	ds.index = ds.index.values.astype(float)
+	ds = ds.dropna(how='all', axis=0).dropna(how='all', axis=1)
+	ds = ds.sort_index(axis=0).sort_index(axis=1)
+
+	if shift_times_by is not None:
+		ds.index = ds.index.values + shift_times_by
+	if divide_times_by is not None:
+		ds.index = ds.index.values / divide_times_by
+
+	ds.index.name = (f'Time in {baseunit}'
+					 if baseunit in ('ps', 'ns', 'fs')
+					 else baseunit)
+	ds.columns.name = units
+	return ds, data_type, baseunit
+
+def _fit_sigmoid_onset(times, signal, t0_guess=0.0):
+	"""Fit an erf-step to a kinetic trace; return detected t0."""
+	n = max(3, len(signal) // 5)
+	baseline = np.median(signal[:n])
+	late = np.median(signal[-n:])
+	amp = late - baseline
+	if abs(amp) < 1e-10:
+		return None
+
+	def residual(params):
+		t0 = params['t0']; sig = params['sigma']
+		a = params['amp']; bg = params['bg']
+		return signal - (bg + a * 0.5 *
+						 (1 + erf((times - t0) / (sig * np.sqrt(2)))))
+
+	par = lmfit.Parameters()
+	par.add('t0',	 value=t0_guess, min=times.min(), max=times.max())
+	par.add('sigma', value=0.1, min=0.01,
+			max=(times.max() - times.min()) / 2)
+	par.add('amp',	 value=amp)
+	par.add('bg',	 value=baseline)
+	try:
+		res = lmfit.minimize(residual, par, method='nelder')
+		if res.success or res.nfev > 10:
+			return float(res.params['t0'].value)
+	except Exception:
+		pass
+	return _find_threshold_crossing(times, signal, 0.5)
+
+
+def _find_threshold_crossing(times, signal, fraction=0.5):
+	"""Half-height threshold crossing."""
+	n = max(3, len(signal) // 5)
+	bl = np.median(signal[:n])
+	late = np.median(signal[-n:])
+	thr = bl + fraction * (late - bl)
+	if abs(late - bl) < 1e-10:
+		return None
+	shifted = signal - thr
+	sc = np.where(np.diff(np.sign(shifted)))[0]
+	if len(sc) == 0:
+		return None
+	i = sc[0]
+	return float(times[i] + (times[i+1] - times[i])
+				 * abs(shifted[i]) / (abs(shifted[i]) + abs(shifted[i+1])))
+
+
+def _find_max_derivative(times, signal):
+	"""Time of steepest |d(signal)/dt|."""
+	dt = np.diff(times)
+	ds = np.diff(signal)
+	idx = np.argmax(np.abs(ds / dt))
+	return float(0.5 * (times[idx] + times[idx + 1]))
+
+
+def _apply_chirp(ds, fitcoeff):
+	"""Shift every column by its polynomial offset (interp1d)."""
+	times = ds.index.values.astype(float)
+	ds_new = ds.copy()
+	for col in ds.columns:
+		shift = np.polyval(fitcoeff, float(col))
+		f = interp1d(times - shift, ds[col].values,
+					 bounds_error=False, fill_value=0)
+		ds_new[col] = f(times)
+	ds_new.index.name = ds.index.name
+	ds_new.columns.name = ds.columns.name
+	return ds_new
+
+def find_chirp_sparse(ds, t_range=(-2, 2), method='sigmoid',
+					  poly_order=4, t0_guess=0.0, plot=True,
+					  threshold_fraction=0.5):
+	"""Chirp / t0 correction for data with few, widely-spaced wavelengths.
+
+	Fits the signal onset at each wavelength independently, then fits a
+	polynomial through the (wavelength, t0) pairs.
+
+	Parameters
+	----------
+	ds : DataFrame
+		Raw data (time × wavelength).
+	t_range : (float, float)
+		Time window for onset detection.
+	method : 'sigmoid' | 'threshold' | 'max_derivative'
+		Onset detection strategy.
+	poly_order : int
+		Polynomial order (auto-reduced when too few wavelengths).
+	t0_guess : float
+		Starting guess for t0.
+	plot : bool
+		Show a diagnostic figure.
+	threshold_fraction : float
+		For 'threshold' method.
+
+	Returns
+	-------
+	ds_corrected : DataFrame
+	fitcoeff : list of 5 floats	  [a4, a3, a2, a1, a0]
+	t0_per_wavelength : dict
+	"""
+	import matplotlib.pyplot as plt
+
+	wavelengths = ds.columns.values.astype(float)
+	times = ds.index.values.astype(float)
+	n_wl = len(wavelengths)
+
+	max_poly = max(1, n_wl - 2)
+	if poly_order > max_poly:
+		poly_order = max_poly
+
+	mask = (times >= t_range[0]) & (times <= t_range[1])
+	t_window = times[mask]
+	if len(t_window) < 5:
+		mask = np.ones(len(times), dtype=bool)
+		t_window = times[mask]
+
+	t0_values = {}
+	for wl in wavelengths:
+		trace = ds.loc[mask, wl].values.astype(float)
+		tw = t_window.copy()
+		if method == 'sigmoid':
+			t0 = _fit_sigmoid_onset(tw, trace, t0_guess)
+		elif method == 'threshold':
+			t0 = _find_threshold_crossing(tw, trace, threshold_fraction)
+		elif method == 'max_derivative':
+			t0 = _find_max_derivative(tw, trace)
+		else:
+			raise ValueError(f"Unknown method '{method}'")
+		if t0 is not None:
+			t0_values[wl] = t0
+
+	if len(t0_values) < 2:
+		med = (np.median(list(t0_values.values()))
+			   if t0_values else t0_guess)
+		fitcoeff = [0.0, 0.0, 0.0, 0.0, med]
+		return _apply_chirp(ds, fitcoeff), fitcoeff, t0_values
+
+	wl_arr = np.array(list(t0_values.keys()))
+	t0_arr = np.array(list(t0_values.values()))
+	coeffs = np.polyfit(wl_arr, t0_arr, poly_order)
+	fitcoeff = list(np.zeros(5))
+	fitcoeff[5 - len(coeffs):] = list(coeffs)
+
+	ds_corrected = _apply_chirp(ds, fitcoeff)
+
+	if plot:
+		fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+		ax = axes[0, 0]
+		for wl in wavelengths:
+			ax.plot(t_window, ds.loc[mask, wl].values,
+					'o-', label=f'{wl:.0f} nm', ms=3)
+		for wl, t0v in t0_values.items():
+			ax.axvline(t0v, ls='--', alpha=.5)
+		ax.set(xlabel='Time (ps)', ylabel='Signal',
+			   title='Raw traces + detected t0')
+		ax.legend(fontsize=8)
+
+		ax = axes[0, 1]
+		ax.plot(wl_arr, t0_arr, 'ro', ms=8, label='detected t0')
+		wf = np.linspace(wavelengths.min(), wavelengths.max(), 200)
+		ax.plot(wf, np.polyval(fitcoeff, wf), 'b-',
+				label=f'poly order {poly_order}')
+		ax.set(xlabel='Wavelength (nm)', ylabel='t0 (ps)',
+			   title='Chirp curve')
+		ax.legend()
+
+		ax = axes[1, 0]
+		m2 = ((ds_corrected.index.values >= t_range[0]) &
+			  (ds_corrected.index.values <= t_range[1]))
+		for wl in wavelengths:
+			ax.plot(ds_corrected.index.values[m2],
+					ds_corrected.loc[m2, wl].values,
+					'o-', label=f'{wl:.0f} nm', ms=3)
+		ax.set(xlabel='Time (ps)', ylabel='Signal',
+			   title='Corrected traces')
+		ax.legend(fontsize=8)
+
+		ax = axes[1, 1]; ax.axis('off')
+		txt = 'Chirp correction coefficients:\n'
+		for i, lab in enumerate(['a4','a3','a2','a1','a0']):
+			txt += f'  {lab} = {fitcoeff[i]:.6e}\n'
+		txt += '\nDetected t0 per wavelength:\n'
+		for wl, t0v in sorted(t0_values.items()):
+			txt += f'  {wl:.0f} nm: {t0v:.4f} ps\n'
+		ax.text(.1, .9, txt, transform=ax.transAxes, va='top',
+				fontfamily='monospace', fontsize=11)
+		plt.tight_layout()
+		plt.show()
+
+	return ds_corrected, fitcoeff, t0_values
+
 
 
 class TA():	# object wrapper for the whole
@@ -5587,7 +5992,7 @@ class TA():	# object wrapper for the whole
 	def __read_ascii_data(self, sep = "\t", decimal = '.', index_is_energy = False, transpose = False,
 							sort_indexes = False, divide_times_by = None, shift_times_by = None, 
 							external_time = None, external_wave = None, use_same_name = True, correct_ascii_errors = True,
-							data_type = None, units = None,  baseunit = None):
+							data_type = None, units = None,	 baseunit = None):
 		'''Fancy function that handles the import of pure ascii files.
 		
 		Parameters
@@ -5661,25 +6066,34 @@ class TA():	# object wrapper for the whole
 		use_same_name : bool, optional
 			this switches if the external filename included the loaded filename or is a separate file
 		
-		correct_ascii_errors :  bool (optional)
+		correct_ascii_errors :	bool (optional)
 			If True (Default) then the code tries to catch some stuff like double minus signs and double dots
 			
 		'''
 		
 		self.ds_ori=pandas.read_csv(check_folder(path=self.path,filename=self.filename), sep=sep, index_col=0, engine='python')
 		if correct_ascii_errors:
-			if (self.ds_ori.applymap(type) == float).all().all():
-				pass#all columns were converted to float,nice
-			else:
+			# Try a simple numeric conversion first; if it succeeds, we are done.
+			try:
+				ds_test = self.ds_ori.astype(float)
+				self.ds_ori = ds_test
+			except Exception:
+				# Some entries are not directly convertible; try gentle cleaning.
 				print('some data bad, try filtering')
-				try:# try forced conversion
-					self.ds_ori=self.ds_ori.applymap(lambda x:  re.sub('--', '-',x) if type(x) is str else x)
-					self.ds_ori=self.ds_ori.applymap(lambda x: re.sub(r'\.+', '.',x) if type(x) is str else x)
-					self.ds_ori=self.ds_ori.astype(np.float64)
+				try:
+					def _clean_cell(x):
+						if isinstance(x, str):
+							x = re.sub('--', '-', x)
+							x = re.sub(r'\.+', '.', x)
+						return x
+
+					self.ds_ori = self.ds_ori.applymap(_clean_cell)
+					self.ds_ori = self.ds_ori.astype(np.float64)
 				except Exception as e:
-					print('force cleaning went wrong and the file %s can not be read. Error message is:'%self.filename)
+					print('force cleaning went wrong and the file %s can not be read. Error message is' % self.filename)
 					print(e)
 					return False
+
 		if external_time is not None:
 			if use_same_name:
 				time_file=check_folder(path=self.path,filename=self.filename.split('.')[0]+'.'+external_time)
@@ -5777,14 +6191,14 @@ class TA():	# object wrapper for the whole
 		self.log_fit  : 
 			(Default)  False\n
 			Transfer all the time-fitting parameters into log-space before the fit
-		self.ignore_time_region  : None or list (of two floats or of lists)
+		self.ignore_time_region	 : None or list (of two floats or of lists)
 			(Default)  None
 			cut set a time range with a low and high limit from the fits. (Default) None nothing happens
 			The region will be removed during the fitting process (and will be missing in the fit-result
 			plots)\n
 			Usage single region: [lower region limit,upper region limit]\n
 			use for multiple regions:[[lower limit 1,upper limit 1],[lower limit 2,upper limit 2],...]
-		self.error_matrix_amplification  : 
+		self.error_matrix_amplification	 : 
 			(Default)  10
 		self.rel_wave  : float or list (of floats) 
 			(Default)  np.arange(300,1000,100)\n
@@ -5799,11 +6213,11 @@ class TA():	# object wrapper for the whole
 			(Default)  [0.2,0.3,0.5,1,3,10,30,100,300,1000,3000,9000]\n
 			For each entry in rel_time a spectrum is plotted. If time_width_percent=0 (Default) the 
 			nearest measured timepoint is chosen. For other values see 'time_width_percent'
-		self.time_width_percent  : float
+		self.time_width_percent	 : float
 			(Default)  0 "rel_time" and "time_width_percent" work together for 
 			creating spectral plots at specific timepoints. For each entry 
 			in rel_time a spectrum is plotted. If however e.g. time_width_percent=10 
-			the region between the timepoint closest to the  1.1 x timepoint 
+			the region between the timepoint closest to the	 1.1 x timepoint 
 			and 0.9 x timepoint is averaged and shown (and the legend adjusted accordingly). 
 			This is particularly useful for the densly
 			sampled region close to t=0. Typically for a logarithmic recorded kinetics, the 
@@ -5820,13 +6234,13 @@ class TA():	# object wrapper for the whole
 		self.mod  : 
 			(Default)  'exponential'\n
 			This is the default fitting function, in general this is discussed in the fitting section
-		self.scattercut  : None or iterable (of floats or other iterable, always pairs!)
+		self.scattercut	 : None or iterable (of floats or other iterable, always pairs!)
 			(Default)  None\n
 			intented to "cut" one or multiple scatter regions. (if (Default) None nothing
 			happens) If it is set the spectral region between the limits is set to zero. 
 			Usage single region: [lower region limit,upper region limit], 
 			use for multiple regions:[[lower limit 1,upper limit 1],[lower limit 2,upper limit 2],...]
-		self.bordercut  : None or iterable (with two floats)
+		self.bordercut	: None or iterable (with two floats)
 			(Default)  None\n
 			cut spectra at the low and high wavelength limit. (Default) None 
 			uses the limits of measurement 
@@ -5836,7 +6250,7 @@ class TA():	# object wrapper for the whole
 			This is a hard approach that also affects the fits. I do recommend to use this carefully, 
 			it is most useful for modulated data. A better choice for transient absorption that only 
 			affects the kinetics is 'time_width_percent'
-		self.timelimits  : None or list (of 2 floats)
+		self.timelimits	 : None or list (of 2 floats)
 			(Default)  None\n
 			cut times at the low and high time limit. (Default) None uses the limits of measurement
 			Important: If either the background or the chirp is to be fit this must include the 
@@ -5853,7 +6267,7 @@ class TA():	# object wrapper for the whole
 			the measured stepsize is wider than given here, then the original bins are used. 
 			This function is particularly useful for spectrometer with non-linear dispersion, 
 			like a prism in the infrared.
-		self.wavelength_bin  :  float, optional
+		self.wavelength_bin	 :	float, optional
 			(Default)  10nm the width used in kinetics, see below
 		self.intensity_range  : None, float or list [of two floats]
 			(Default)  None - intensity_range is a general switch that governs what intensity range the plots show. 
@@ -5881,13 +6295,13 @@ class TA():	# object wrapper for the whole
 		Examples
 		-----------
 
-		>>> ta.bordercut=[350,1200]  #remove all data outside this limit
-		>>> ta.scattercut=[522,605]  #set data inside this limit to zero
+		>>> ta.bordercut=[350,1200]	 #remove all data outside this limit
+		>>> ta.scattercut=[522,605]	 #set data inside this limit to zero
 		>>> ta.timelimits=[0.2,5000]  #remove all data outside this limit
 		>>> ta.wave_nm_bin=5  #rebin the data to this width
-		>>> ta.intensity_range=3e-3  #equivalent to [-3e-3,3e-3]
-		>>> ta.intensity_range=[-1e-3,3e-3]  #intensity that is plotted in 2d plot and y-axis in 1d plots
-		>>> ta.cmap=matplotlib.cm.prism  #choose different colour map
+		>>> ta.intensity_range=3e-3	 #equivalent to [-3e-3,3e-3]
+		>>> ta.intensity_range=[-1e-3,3e-3]	 #intensity that is plotted in 2d plot and y-axis in 1d plots
+		>>> ta.cmap=matplotlib.cm.prism	 #choose different colour map
 		>>> ta.ignore_time_region=[-0.1,0.1] #ignore -0.1ps to 0.1ps
 
 
@@ -5903,6 +6317,15 @@ class TA():	# object wrapper for the whole
 			self.rel_wave = self.rel_wave
 		except:
 			self.rel_wave = np.arange(300,1000,100) if not hasattr(self, 'rel_wave') else self.rel_wave
+		
+		
+		try:# for sparse wavelength grids, default to actual probe wavelengths
+			if len(self.ds.columns) <= 20:
+				self.relwave = list(self.ds.columns.values.astype(float))
+				self.wavelength_bin = 0.0
+		except Exception:
+			pass
+		
 		self.rel_time = [0.2,0.3,0.5,1,3,10,30,100,300,1000,3000,9000] if not hasattr(self, 'rel_time') else self.rel_time
 		self.time_width_percent = 0 if not hasattr(self, 'time_width_percent') else self.time_width_percent
 		self.baseunit = 'ps' if not hasattr(self, 'baseunit') else self.baseunit
@@ -5920,6 +6343,7 @@ class TA():	# object wrapper for the whole
 		self.units='nm' if not hasattr(self, 'units') else self.units
 		self.lintresh = 0.1 if not hasattr(self, 'lintresh') else self.lintresh
 		self.linscale = 1 if not hasattr(self, 'linscale') else self.linscale
+		self.legend_inside = True if not hasattr(self, 'legend_inside') else self.legend_inside
 		if self.units == 'nm':
 			self.ds_ori.columns.name = 'Wavelength in %s'%self.units if not hasattr(self, 'ds_ori.columns.name') else self.ds_ori.columns.name
 		elif self.units == 'eV':
@@ -6102,7 +6526,7 @@ class TA():	# object wrapper for the whole
 		--------
 		if the object self has the name "ta"
 		
-		typical useage:  		
+		typical useage:			
 				
 		>>> ta.Background()
 		
@@ -6672,7 +7096,7 @@ class TA():	# object wrapper for the whole
 		
 		title : None or str
 			title to be used on top of each plot
-			The (Default) None triggers  self.filename to be used. Setting a specific title as string will.
+			The (Default) None triggers	 self.filename to be used. Setting a specific title as string will.
 			be used in all plots. To remove the title all together set an empty string with this command title="" .
 		
 		Scale_type : None or str
@@ -6779,7 +7203,7 @@ class TA():	# object wrapper for the whole
 				savetype=savetype,plot_type=scale_type,lintresh=self.lintresh, linscale=self.linscale, times=times, 
 				print_click_position = print_click_position, data_type = self.data_type, 
 				plot_second_as_energy = plot_second_as_energy, units=self.units, equal_energy_bin = self.equal_energy_bin,
-				return_figures_handles=return_figures_handles,values=values)
+				return_figures_handles=return_figures_handles,values=values,legend_inside=self.legend_inside)
 		if return_figures_handles:
 			return r
 
@@ -6885,9 +7309,9 @@ class TA():	# object wrapper for the whole
 		
 		
 	def __Fit_Chirp_outer(self, pardf, results, fit_ds, fit_chirp_iterations, mod, deep_iteration = False):
-		'''Broken out Chirp optimization,  takes the fitted parameters and performs 'fit_chirp_iterations' times the loop,  
+		'''Broken out Chirp optimization,  takes the fitted parameters and performs 'fit_chirp_iterations' times the loop,	
 		(optimise chirp + optimize global) after each global iteration the error is compared to the previous. It continues until no improvement is made or 
-		until the 'fit_chirp_iterations' is reached. If the error is reduced by more than a factor of 100 in a single step,  it is assumed that something fishy is going on and we restart the fit,  but with a 10x smaller simplex stepsize and deep_iteraction FAlse
+		until the 'fit_chirp_iterations' is reached. If the error is reduced by more than a factor of 100 in a single step,	 it is assumed that something fishy is going on and we restart the fit,	 but with a 10x smaller simplex stepsize and deep_iteraction FAlse
 		
 		Parameters
 		-----------
@@ -6947,8 +7371,8 @@ class TA():	# object wrapper for the whole
 					else:
 						simp[i+1, i] = 1e-4	
 				#we start by optimizing the chirp with fixed Global fit
-				chirp_results  =  chirpmini.minimize('nelder',  options = {'maxfev':1e4, 'fatol':initial_error[-1]*1e-6, 'initial_simplex':simp})
-				end  =  tm.time()
+				chirp_results  =  chirpmini.minimize('nelder',	options = {'maxfev':1e4, 'fatol':initial_error[-1]*1e-6, 'initial_simplex':simp})
+				end	 =	tm.time()
 				opt_coeff = chirp_results.params
 				temp = np.array([opt_coeff['p4'].value, opt_coeff['p3'].value, opt_coeff['p2'].value, opt_coeff['p1'].value, opt_coeff['p0'].value])
 				#Create the new chirp corrected data
@@ -6957,8 +7381,8 @@ class TA():	# object wrapper for the whole
 				#New Global Fit
 				fit_ds_loop = sub_ds(ds = new_ds, scattercut = self.scattercut, bordercut = self.bordercut, timelimits = self.timelimits, wave_nm_bin = self.wave_nm_bin, equal_energy_bin = self.equal_energy_bin, time_bin = self.time_bin)	
 				if pardf.vary.any():							 
-					mini  =  lmfit.Minimizer(err_func, par_into_chirpfit, fcn_kws = {'ds':fit_ds_loop, 'mod':mod, 'log_fit':self.log_fit, 'final':False})
-					results_in_chirp  =  mini.minimize('nelder', options = {'maxiter':1e5})
+					mini  =	 lmfit.Minimizer(err_func, par_into_chirpfit, fcn_kws = {'ds':fit_ds_loop, 'mod':mod, 'log_fit':self.log_fit, 'final':False})
+					results_in_chirp  =	 mini.minimize('nelder', options = {'maxiter':1e5})
 					initial_error.append(results_in_chirp.residual[0])
 				else:
 					initial_error.append(err_func(paras = par_into_chirpfit, ds = fit_ds_loop, mod = mod, final = False, log_fit = self.log_fit))	
@@ -6969,7 +7393,7 @@ class TA():	# object wrapper for the whole
 						initial_error[-1] = initial_error[-2]
 						step_size = step_size/100
 						if len(initial_error)>4:
-							if initial_error[-4] == initial_error[-1]:#we have run this trick now three times,  time to break
+							if initial_error[-4] == initial_error[-1]:#we have run this trick now three times,	time to break
 								raise StopIteration
 						deep_iteration=False
 					else:
@@ -6986,7 +7410,7 @@ class TA():	# object wrapper for the whole
 			except:
 				print('failure in chirp optimisation in iteration %i'%(loop+1))
 				import sys
-				print("Unexpected error:",  sys.exc_info()[0])
+				print("Unexpected error:",	sys.exc_info()[0])
 				initial_error.append(initial_error[0])#to avoid that numbers are written
 				break
 		
@@ -7013,7 +7437,7 @@ class TA():	# object wrapper for the whole
 	def Fit_Global(self, par = None, mod = None, confidence_level = None, use_ampgo = False, other_optimizers=None, fit_chirp = False,
 						fit_chirp_iterations = 10, multi_project = None, unique_parameter = None, weights = None, same_DAS = False,
 						dump_paras = False, dump_shapes = False, filename = None, ext_spectra = None,
-					    write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None,same_shape_params=True):
+						write_paras=False, tol = 1e-5, sub_sample=None,pulse_sample=None,same_shape_params=True):
 		"""This function is performing a global fit of the data. As embedded object it uses 
 		the parameter control options of the lmfit project as an essential tool. 
 		(my thanks to Matthew Newville and colleagues for creating this phantastic tool) 
@@ -7021,24 +7445,24 @@ class TA():	# object wrapper for the whole
 		The what type of fitting is performed is controlled by setting of the parameter here.
 		
 		The general fitting follows this routine:
-			1. 	create a copy of the Data-Matrix self.ds is created with the shaping parameters
-			2. 	Then a Matrix is created that represents the fractional population of each species 
+			1.	create a copy of the Data-Matrix self.ds is created with the shaping parameters
+			2.	Then a Matrix is created that represents the fractional population of each species 
 				(or processes in case of the paral model). 
 				This Matrix contains one entry for each timepoint and represents the kinetic model 
 				based upon the starting parameter. (see below for a description of the models). 
 				This model formation can by done by using a build in or a user supplied function. 
 				(handled in the function "pf.build_c")
 				-> If an ext_spectra is provided this its intensity is substacted from the matrix (only for external models)
-			3. 	Then the process/species associated spectra for each of the species is calculated 
+			3.	Then the process/species associated spectra for each of the species is calculated 
 				using the linalg.lstsq algorithm from numpy 
 				(https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html)
-			4. 	From the convoluted calculated species concentrations and spectra a calculated matrix 
+			4.	From the convoluted calculated species concentrations and spectra a calculated matrix 
 				is formed (handled in the function "pf.fill_int")
-			5. 	The difference between calculated and measured spectra is calculated, point-wise squared 
+			5.	The difference between calculated and measured spectra is calculated, point-wise squared 
 				and summed together. (function "err_func" or "err_func_multi" if multiple datasets are fitted)
-			6. 	This difference is minimized by iterating 2-4 with changing parameters using an 
+			6.	This difference is minimized by iterating 2-4 with changing parameters using an 
 				optimization algorithm (generally nelder-mead simplex)
-			7. 	Finally in a last run of 2-5 the final spectra are calculated (using the "final" flag) 
+			7.	Finally in a last run of 2-5 the final spectra are calculated (using the "final" flag) 
 				and the optimized parameter, the matrixes 
 				("A"-measured, "AC" - calculated, "AE" - linear error), 
 				spectra (always called "DAS") the concentrations (called "c") 
@@ -7050,7 +7474,7 @@ class TA():	# object wrapper for the whole
 				dump_paras to observe details during the fit.
 				
 		All mandatory parameters are in general taken from the internal oject (self) The optional 
-		parameter control the behaviour of the fitting function  
+		parameter control the behaviour of the fitting function	 
 		
 		Parameters
 		------------------
@@ -7179,7 +7603,7 @@ class TA():	# object wrapper for the whole
 				the tolerance value that is handed to the optimizer (absolute) for nelder-mead the moment this means:
 				df < tol  (corresponds to fatol)
 				number_of_function_evaluations < maxfev (default 200 * n variables)
-				number_of_iterations < maxiter           (default 200 * n variables)
+				number_of_iterations < maxiter			 (default 200 * n variables)
 			
 			sub_sample: False or iter, option
 				Default is False: if a whole number value is given the time vector that comes from the measurements is sampled finer. The purpose is to in 
@@ -7188,7 +7612,7 @@ class TA():	# object wrapper for the whole
 			
 			pulse_sample: False or iter, option
 				Default is False, but will be activated if the zero time is not included in the fit. If True then additional points in the 
-				pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.  This is better than sub sample, as it only adds 20 time points 
+				pump_region=np.linspace(t0-4*resolution,t0+4*resolution,20) are added.	This is better than sub sample, as it only adds 20 time points 
 				to the data. This was necessary since otherwise the pulse (that is creating the intensity) is not sampled at all or only fractional. 
 				This switch mainly has an influence on the absolute intensities of the species (the concentration matrix)
 
@@ -7231,7 +7655,7 @@ class TA():	# object wrapper for the whole
 		Non optional:
 		
 		>>> ta=pf.TA('testfile.SIA') #load data
- 		>>> ta.mod='exponential'    #define model
+		>>> ta.mod='exponential'	#define model
 		>>> ta.par=lmfit.Parameters()  #create empty parameter object
 		>>> ta.par.add('k0',value=1/0.1,vary=True) #add at least one parameter to optimize
 		  
@@ -7246,10 +7670,10 @@ class TA():	# object wrapper for the whole
 		Trigger iterative Chirp fitting with fresh refinement of the Global kinetic parametersfor i in range(5):
 		
 		>>> for i in range(5):
-		>>> 	start_error=ta.re['error']
-		>>> 	ta.par=ta.par_fit
-		>>> 	ta.Fit_Global(fit_chirp=True)
-		>>> 	if not ta.re['error'] < start_error:break
+		>>>		start_error=ta.re['error']
+		>>>		ta.par=ta.par_fit
+		>>>		ta.Fit_Global(fit_chirp=True)
+		>>>		if not ta.re['error'] < start_error:break
 		
 		Trigger fit fit error calculations
 		
@@ -7348,9 +7772,9 @@ class TA():	# object wrapper for the whole
 						weights=None,same_DAS=None,sub_sample=None,pulse_sample=None,same_shape_params=None):
 				if keyboard.is_pressed("ctrl+shift+q"):
 					print('---------------------------------------------')
-					print('---------  Interupted by user          ------')
+					print('---------  Interupted by user		  ------')
 					print('---------------------------------------------')
-					print('-----------   Last fitted parameter    ------')
+					print('-----------	 Last fitted parameter	  ------')
 					print(par_to_pardf(params))
 					return True
 				else: 
@@ -7752,7 +8176,7 @@ class TA():	# object wrapper for the whole
 		
 		savetype : str or iterable (of str), optional 
 			matplotlib allows the saving of figures in various formats. (Default) "png", 
-			typical and recommendable options are "svg" and "pdf".  
+			typical and recommendable options are "svg" and "pdf".	
 			
 		evaluation_style : bool, optional
 			True (Default = False) adds a lot of extra information in the plot
@@ -7764,7 +8188,7 @@ class TA():	# object wrapper for the whole
 		   
 		scale_type : str, optional
 		   refers to the time-axis and takes, "symlog" (Default)(linear around zero and logarithmic otherwise)
-		   and "lin" for linear and  "log" for logarithmic, switching all the time axis to this type
+		   and "lin" for linear and	 "log" for logarithmic, switching all the time axis to this type
 		
 		patches : bool, optional
 			If False (Default) the names "measured" "fitted" "difference" will be placed above the images.
@@ -7852,7 +8276,7 @@ class TA():	# object wrapper for the whole
 						filename = self.filename, scale_type = scale_type, patches = patches, lintresh = self.lintresh, linscale=self.linscale,
 						print_click_position = print_click_position, ignore_time_region = self.ignore_time_region,
 						data_type = self.data_type, plot_second_as_energy = plot_second_as_energy, units= self.units, 
-						equal_energy_bin = self.equal_energy_bin, return_figures_handles=return_figures_handles)
+						equal_energy_bin = self.equal_energy_bin, return_figures_handles=return_figures_handles,legend_inside=self.legend_inside)
 		if return_figures_handles:
 			return returning_dict
 
@@ -8003,7 +8427,7 @@ class TA():	# object wrapper for the whole
 		savetype : str or iterable (of str), optional 
 			triggers the additional creation of a composite file in this format.
 			matplotlib allows the saving of figures in various formats. (Default) "png", 
-			typical and recommendable options are "svg" and "pdf".  
+			typical and recommendable options are "svg" and "pdf".	
 			
 		title : None or str, optional
 			(Default) None, Use this title on all plots. if None, use self.filename
@@ -8119,7 +8543,7 @@ class TA():	# object wrapper for the whole
 				print('The images and a powerpoint was saved to %s'%check_folder(path=path,current_path=self.path))
 			except Exception as e:
 				print('Error in powerpoint generation. Most likely a module is missing.')
-				print('We need python-pptx to create a powerpoint file.  Either use "pip install python-pptx" or "conda install -c conda-forge python-pptx" ')
+				print('We need python-pptx to create a powerpoint file.	 Either use "pip install python-pptx" or "conda install -c conda-forge python-pptx" ')
 				print('We will save the results as pdf format for now. Check th error if somehting else went wrong')
 				print(e)
 				savetype.append('pdf')
@@ -8607,7 +9031,7 @@ class TA():	# object wrapper for the whole
 		norm_window : None or list/vector (with 4 floats), optional
 			norm_window Give a list/tupel/vector with 4 entries in the order 
 			[Start - time, End - time, Start - wavelength, End - Wavelength], 
-			see section  :ref:`Normalization and Scaling`  in the documentation.
+			see section	 :ref:`Normalization and Scaling`  in the documentation.
 			If None (Default) no normalization is done.
 		
 		linewidth : float, optional
@@ -8698,7 +9122,7 @@ class TA():	# object wrapper for the whole
 		>>> plt.close("all") #make some space
 		>>> norm_window=[0.3,0.5,450,470] #define window in ground state bleach
 		>>> for t in [0.3,0.5,1,3,10,30]: #iterate over the wavelength 
-		>>> 	ta.Compare_at_time(rel_time = t, others = other_project, norm_window = norm_window)
+		>>>		ta.Compare_at_time(rel_time = t, others = other_project, norm_window = norm_window)
 		
 		'''
 		global halfsize
@@ -9028,7 +9452,7 @@ class TA():	# object wrapper for the whole
 		>>> plt.close('all') #make some space
 		>>> norm_window=[0.3,0.5,450,470] #define window in ground state bleach
 		>>> for wave in [300,400,500,600,700]: #iterate over the wavelength 
-		>>> 	ta.Compare_at_wave(rel_wave = wave, others = other_project, norm_window = norm_window)
+		>>>		ta.Compare_at_wave(rel_wave = wave, others = other_project, norm_window = norm_window)
 		
 		'''	
 		global halfsize
@@ -9157,7 +9581,7 @@ class TA():	# object wrapper for the whole
 								ax = plot1d(o.ds/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
 											lines_are = 'data', scattercut = self.scattercut, bordercut = self.bordercut,
-											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale,  
+											subplot = True, color_offset = color_offset, lintresh = self.lintresh, linscale=self.linscale,	
 											intensity_range = self.intensity_range, plot_type = scale_type, linewidth = linewidth)
 								ax = plot1d(o.ds/scaling, cmap = colors, ax = ax, wavelength = rel_wave, width = width,
 											title = o.filename, baseunit = self.baseunit, timelimits = self.timelimits,
@@ -9196,7 +9620,7 @@ class TA():	# object wrapper for the whole
 				if norm_window is not None:
 					ax.set_title('compare measured and smoothed data at given wavelength \n scaled to t=%g ps : %g ps , wl= %g nm: %g nm'%(norm_window[0],norm_window[1],norm_window[2],norm_window[3]))
 				ax.legend(hand,lab)
-		if self.save_figures_to_folder:  
+		if self.save_figures_to_folder:	 
 			fig.savefig(check_folder(path=self.figure_path,filename='compare_at_wave_%s.png'%'_'.join(['%g'%a for a in rel_wave])),
 			bbox_inches='tight')
 			return ax
@@ -9315,7 +9739,7 @@ class TA():	# object wrapper for the whole
 				a=ax.ravel()
 				handles,labels=a[0].get_legend_handles_labels()
 				hand.append(handles[-1])
-			elif isinstance(self.scattercut[0],  numbers.Number):
+			elif isinstance(self.scattercut[0],	 numbers.Number):
 				if halfsize:
 					ax = DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (6, 5), layout = (n_cols, 2), 
 															legend = False, color = col, sharex = False)
@@ -9351,34 +9775,34 @@ class TA():	# object wrapper for the whole
 		else:
 			if self.scattercut is None:
 				if halfsize:
-					ax  =  DAC.plot(subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.plot(subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
 				else:
-					ax  =  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			elif isinstance(self.scattercut[0], numbers.Number):
 				if halfsize:
-					ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
-					ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.loc[self.scattercut[1]:,	 :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
 				else:
-					ax  =  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
-					ax  =  DAC.loc[self.scattercut[1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.loc[:self.scattercut[0], :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+					ax	=  DAC.loc[self.scattercut[1]:,	 :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 			else:
-				scattercut  =  flatten(self.scattercut)
+				scattercut	=  flatten(self.scattercut)
 				for i in range(math.ceil(len(scattercut)/2+1)):
 					if i  ==  0:
 						if halfsize:
-							ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[:scattercut[0],	:].plot(subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
 						else:
-							ax  =  DAC.loc[:scattercut[0],  :].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[:scattercut[0],	:].plot(subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					elif i<(len(scattercut)/2):
 						if halfsize:
-							ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (8, 4), legend = False, color = colors[:len(species)], label = '_nolegend_')
 						else:
-							ax  =  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[scattercut[2*i-1]:scattercut[2*i],  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 					else:
 						if halfsize:
-							ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[scattercut[-1]:,	 :].plot(ax=ax, subplots = separate_plots, figsize = (8,4), legend = False, color = colors[:len(species)], label = '_nolegend_')
 						else:
-							ax  =  DAC.loc[scattercut[-1]:,  :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
+							ax	=  DAC.loc[scattercut[-1]:,	 :].plot(ax=ax, subplots = separate_plots, figsize = (16, 8), legend = False, color = colors[:len(species)], label = '_nolegend_')
 		if other is not None:
 			for i,o in enumerate(other):
 				try:

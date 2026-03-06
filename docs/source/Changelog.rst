@@ -3,6 +3,14 @@ Changelog
 *********
 In this changelog I will only mention the new capabilities. All other version jumps are bug fixes
 
+.. _release-7.14.0:
+7.14.0
+========
+Loads of bugfixes
+Sparse Matrix support significnatly increased.
+Automatic chirp correction for sparse matrix (started working on general and broken out gui)
+Started on Platform independent chirp
+
 .. _release-7.13.0:
 7.13.4
 ========
