@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-version = "7.14.0"
+version = "7.14.1"
 Copyright = '@Jens Uhlig'
 if 1: #Hide imports	
 	import os
@@ -1435,6 +1435,8 @@ def sub_ds(ds, times = None, time_width_percent = 0, ignore_time_region = None, 
 				out = ds.loc[:, lower_clipped:upper_clipped].mean(axis='columns').to_frame()
 				out.columns = [wave]
 			else:
+				if out is None:
+					out = pandas.DataFrame()
 				if wave in out.columns:
 					continue
 				out[wave] = ds.loc[:, lower_clipped:upper_clipped].mean(axis='columns')
@@ -3153,7 +3155,9 @@ def plot_time(ds, ax = None, rel_time = None, time_width_percent = 10, ignore_ti
 		'''
 	global halfsize
 	if not hasattr(rel_time,'__iter__'):rel_time=[rel_time]
-	rel_time=[a for a in rel_time if a<ds.index.values.astype('float').max()]
+	time_min = ds.index.values.astype('float').min()
+	time_max = ds.index.values.astype('float').max()
+	rel_time = [a for a in rel_time if time_min <= a <= time_max]
 	
 	if isinstance(cmap,list) or isinstance(cmap,np.ndarray):
 		colors=cmap[color_offset:]
